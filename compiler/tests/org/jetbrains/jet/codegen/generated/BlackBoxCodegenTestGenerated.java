@@ -5012,6 +5012,12 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest(fileName);
         }
         
+        @TestMetadata("kt4991.kt")
+        public void testKt4991() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/operatorConventions/kt4991.kt");
+            doTest(fileName);
+        }
+        
         @TestMetadata("compiler/testData/codegen/box/operatorConventions/compareTo")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(org.jetbrains.jet.JUnit3RunnerWithInners.class)
