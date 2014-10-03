@@ -3071,15 +3071,12 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
     public StackValue visitPrefixExpression(@NotNull JetPrefixExpression expression, StackValue receiver) {
         DeclarationDescriptor originalOperation = bindingContext.get(REFERENCE_TARGET, expression.getOperationReference());
         ResolvedCall<?> resolvedCall = getResolvedCallWithAssert(expression, bindingContext);
-        if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
-            resolvedCall = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
-        }
-        DeclarationDescriptor op = resolvedCall.getResultingDescriptor();
+        CallableDescriptor op = resolvedCall.getResultingDescriptor();
 
         assert op instanceof FunctionDescriptor || originalOperation == null : String.valueOf(op);
         Callable callable = resolveToCallable((FunctionDescriptor) op, false);
         if (callable instanceof IntrinsicMethod) {
-            Type returnType = typeMapper.mapType((FunctionDescriptor) op);
+            Type returnType = typeMapper.mapType(op);
             ((IntrinsicMethod) callable).generate(this, v, returnType, expression,
                                                   Collections.singletonList(expression.getBaseExpression()), receiver);
             return StackValue.onStack(returnType);
@@ -3122,15 +3119,10 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             return StackValue.onStack(base.type);
         }
 
-
         DeclarationDescriptor originalOperation = bindingContext.get(REFERENCE_TARGET, expression.getOperationReference());
-        ResolvedCall<?> resolvedCall = getResolvedCallWithAssert(expression, bindingContext);
-        if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
-            resolvedCall = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
-        }
-
-        DeclarationDescriptor op = resolvedCall.getResultingDescriptor();
         String originalOperationName = originalOperation != null ? originalOperation.getName().asString() : null;
+        ResolvedCall<?> resolvedCall = getResolvedCallWithAssert(expression, bindingContext);
+        DeclarationDescriptor op = resolvedCall.getResultingDescriptor();
         if (!(op instanceof FunctionDescriptor) || originalOperation == null) {
             throw new UnsupportedOperationException("Don't know how to generate this postfix expression: " + originalOperationName + " " + op);
         }

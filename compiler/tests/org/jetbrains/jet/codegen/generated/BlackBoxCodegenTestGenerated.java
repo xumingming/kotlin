@@ -3511,6 +3511,12 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                 doTest(fileName);
             }
             
+            @TestMetadata("kt4989.kt")
+            public void testKt4989() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/functions/localFunctions/kt4989.kt");
+                doTest(fileName);
+            }
+            
             @TestMetadata("localExtensionOnNullableParameter.kt")
             public void testLocalExtensionOnNullableParameter() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/functions/localFunctions/localExtensionOnNullableParameter.kt");

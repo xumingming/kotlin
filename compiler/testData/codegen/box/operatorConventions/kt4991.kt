@@ -16,7 +16,7 @@ fun box(): String {
 
     if (a.value != 1) return "fail 1"
 
-    postfix { ++value; this }
+    postfix { value++; this }
 
     if (b.value != 1) return "fail 2"
 
