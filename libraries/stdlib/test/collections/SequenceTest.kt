@@ -72,6 +72,18 @@ public class SequenceTest {
         }
     }
 
+    test fun filterMap() {
+        val data = sequenceOf("foo", "bg", "fake")
+        val mapped = data.filterMap({ it.startsWith('f') }, { it.length() })
+        assertEquals(listOf(3, 4), mapped.toList())
+    }
+
+    test fun filterMapIndexed() {
+        val data = sequenceOf("foo", "bg", "fake")
+        val mapped = data.filterMapIndexed({ index, it -> index > 0 }, { index, it -> index })
+        assertEquals(listOf(1, 2), mapped.toList())
+    }
+
     test fun withIndex() {
         val data = sequenceOf("foo", "bar")
         val indexed = data.withIndex().map { it.value.substring(0..it.index) }.toList()

@@ -7,7 +7,7 @@ fun mapping(): List<GenericFunction> {
 
     templates add f("withIndices()") {
         deprecate { "Use withIndex() instead." }
-        doc { "Returns a list containing pairs of each element of the original collection and their index" }
+        doc { "Returns a list containing pairs of each element of the original collection and their index." }
         returns("List<Pair<Int, T>>")
         body {
             """
@@ -17,7 +17,7 @@ fun mapping(): List<GenericFunction> {
         }
 
         returns(Sequences) { "Sequence<Pair<Int, T>>" }
-        doc(Sequences) { "Returns a sequence containing pairs of each element of the original collection and their index" }
+        doc(Sequences) { "Returns a sequence containing pairs of each element of the original collection and their index." }
         body(Sequences) {
             """
             var index = 0
@@ -27,7 +27,7 @@ fun mapping(): List<GenericFunction> {
     }
 
     templates add f("withIndex()") {
-        doc { "Returns a lazy [Iterable] of [IndexedValue] for each element of the original collection" }
+        doc { "Returns a lazy [Iterable] of [IndexedValue] for each element of the original collection." }
         returns("Iterable<IndexedValue<T>>")
         body {
             """
@@ -36,7 +36,7 @@ fun mapping(): List<GenericFunction> {
         }
 
         returns(Sequences) { "Sequence<IndexedValue<T>>" }
-        doc(Sequences) { "Returns a sequence of [IndexedValue] for each element of the original sequence" }
+        doc(Sequences) { "Returns a sequence of [IndexedValue] for each element of the original sequence." }
         body(Sequences) {
             """
             return IndexingSequence(this)
@@ -47,7 +47,7 @@ fun mapping(): List<GenericFunction> {
     templates add f("mapIndexed(transform: (Int, T) -> R)") {
         inline(true)
 
-        doc { "Returns a list containing the results of applying the given *transform* function to each element and its index of the original collection" }
+        doc { "Returns a list containing the results of applying the given [transform] function to each element and its index of the original collection." }
         typeParam("R")
         returns("List<R>")
         body {
@@ -61,7 +61,7 @@ fun mapping(): List<GenericFunction> {
         }
         inline(false, Sequences)
         returns(Sequences) { "Sequence<R>" }
-        doc(Sequences) { "Returns a sequence containing the results of applying the given *transform* function to each element and its index of the original sequence" }
+        doc(Sequences) { "Returns a sequence containing the results of applying the given [transform] function to each element and its index of the original sequence." }
         body(Sequences) {
             "return TransformingIndexedSequence(this, transform)"
         }
@@ -70,7 +70,7 @@ fun mapping(): List<GenericFunction> {
     templates add f("map(transform: (T) -> R)") {
         inline(true)
 
-        doc { "Returns a list containing the results of applying the given *transform* function to each element of the original collection" }
+        doc { "Returns a list containing the results of applying the given [transform] function to each element of the original collection." }
         typeParam("R")
         returns("List<R>")
         body {
@@ -86,7 +86,7 @@ fun mapping(): List<GenericFunction> {
 
         inline(false, Sequences)
         returns(Sequences) { "Sequence<R>" }
-        doc(Sequences) { "Returns a sequence containing the results of applying the given *transform* function to each element of the original sequence" }
+        doc(Sequences) { "Returns a sequence containing the results of applying the given [transform] function to each element of the original sequence." }
         body(Sequences) {
             "return TransformingSequence(this, transform)"
         }
@@ -94,6 +94,13 @@ fun mapping(): List<GenericFunction> {
 
     templates add f("filterMap(predicate: (T) -> Boolean, transform: (T) -> R)") {
         inline(true)
+
+        doc {
+            """
+            Returns a list containing the results of applying the given [transform] function to each element of the original collection
+            matching the given [predicate].
+            """
+        }
         typeParam("R")
         returns("List<R>")
         include(Maps)
@@ -103,9 +110,15 @@ fun mapping(): List<GenericFunction> {
 
         returns(Sequences) { "Sequence<R>" }
         inline(false, Sequences)
+        doc {
+            """
+            Returns a sequence containing the results of applying the given [transform] function to each element of the original sequence
+            matching the given [predicate].
+            """
+        }
         body(Sequences) {
             """
-            return TransformingSequence(FilteringSequence(this, false, predicate) as Sequence<T>, transform)
+            return TransformingSequence(FilteringSequence(this, predicate = predicate) as Sequence<T>, transform)
             """
         }
 
@@ -116,19 +129,32 @@ fun mapping(): List<GenericFunction> {
         typeParam("R")
         returns("List<R>")
 
+        doc {
+            """
+            Returns a list containing the results of applying the given [transform] function to each element and its index of the original collection
+            matching the given [predicate].
+            """
+        }
+
         body {
             "return filterMapIndexedTo(ArrayList<R>(), predicate, transform)"
         }
 
         exclude(Sequences)
-// TODO: Sequences
-//        returns(Sequences) { "Sequence<R>" }
-//        inline(false, Sequences)
-//        body(Sequences) {
-//            """
-//            return TransformingSequence(FilteringSequence(this, false, predicate) as Sequence<T>, transform)
-//            """
-//        }
+
+        returns(Sequences) { "Sequence<R>" }
+        inline(false, Sequences)
+        doc {
+            """
+            Returns a sequence containing the results of applying the given [transform] function to each element and its index of the original sequence
+            matching the given [predicate].
+            """
+        }
+        body(Sequences) {
+            """
+            return TransformingSequence(FilteringSequence(IndexingSequence(this), predicate = { iv -> predicate(iv.index, iv.value) }), { iv -> transform(iv.index, iv.value) })
+            """
+        }
 
 
     }
@@ -137,7 +163,7 @@ fun mapping(): List<GenericFunction> {
     templates add f("mapNotNull(transform: (T) -> R)") {
         inline(true)
         exclude(Strings, ArraysOfPrimitives)
-        doc { "Returns a list containing the results of applying the given *transform* function to each non-null element of the original collection" }
+        doc { "Returns a list containing the results of applying the given [transform] function to each non-null element of the original collection." }
         typeParam("T : Any")
         typeParam("R")
         returns("List<R>")
@@ -148,12 +174,12 @@ fun mapping(): List<GenericFunction> {
             """
         }
 
-        doc(Sequences) { "Returns a sequence containing the results of applying the given *transform* function to each non-null element of the original sequence" }
+        doc(Sequences) { "Returns a sequence containing the results of applying the given [transform] function to each non-null element of the original sequence." }
         returns(Sequences) { "Sequence<R>" }
         inline(false, Sequences)
         body(Sequences) {
             """
-            return TransformingSequence(FilteringSequence(this, false, { it == null }) as Sequence<T>, transform)
+            return TransformingSequence(FilteringSequence(this, false, { it == null }), { transform(it!!) })
             """
         }
     }
@@ -163,8 +189,8 @@ fun mapping(): List<GenericFunction> {
 
         doc {
             """
-            Appends transformed elements of the original collection using the given *transform* function
-            to the given *destination*
+            Appends elements of the original collection transformed using the given [transform] function
+            to the given [destination].
             """
         }
         typeParam("R")
@@ -186,8 +212,8 @@ fun mapping(): List<GenericFunction> {
 
         doc {
             """
-            Appends transformed elements and their indices of the original collection using the given *transform* function
-            to the given *destination*
+            Appends elements of the original collection transformed with their indices using the given [transform] function
+            to the given [destination].
             """
         }
         typeParam("R")
@@ -209,7 +235,10 @@ fun mapping(): List<GenericFunction> {
     templates add f("filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R)") {
         inline(true)
         doc {
-            "TODO"
+            """
+            Appends elements of the original collection matching the given [predicate] transformed using the given [transform] function
+            to the given [destination].
+            """
         }
         typeParam("R")
         typeParam("C : MutableCollection<in R>")
@@ -232,8 +261,8 @@ fun mapping(): List<GenericFunction> {
 
         doc {
             """
-            Appends transformed elements and their indices of the original collection using the given *transform* function
-            to the given *destination*
+            Appends elements of the original collection matching the given [predicate] transformed with their indices
+            using the given [transform] function to the given [destination].
             """
         }
         typeParam("R")
@@ -259,8 +288,8 @@ fun mapping(): List<GenericFunction> {
         exclude(Strings, ArraysOfPrimitives)
         doc {
             """
-            Appends transformed non-null elements of original collection using the given *transform* function
-            to the given *destination*
+            Appends non-null elements of the original collection transformed using the given [transform] function
+            to the given [destination].
             """
         }
         typeParam("T : Any")
@@ -284,7 +313,7 @@ fun mapping(): List<GenericFunction> {
         inline(true)
 
         exclude(Sequences)
-        doc { "Returns a single list of all elements yielded from results of *transform* function being invoked on each element of original collection" }
+        doc { "Returns a single list of all elements yielded from results of [transform] function being invoked on each element of original collection." }
         typeParam("R")
         returns("List<R>")
         body {
@@ -295,7 +324,7 @@ fun mapping(): List<GenericFunction> {
 
     templates add f("flatMap(transform: (T) -> Sequence<R>)") {
         only(Sequences)
-        doc { "Returns a single sequence of all elements from results of *transform* function being invoked on each element of original sequence" }
+        doc { "Returns a single sequence of all elements from results of [transform] function being invoked on each element of original sequence." }
         typeParam("R")
         returns("Sequence<R>")
         body {
@@ -306,7 +335,7 @@ fun mapping(): List<GenericFunction> {
     templates add f("flatMapTo(destination: C, transform: (T) -> Iterable<R>)") {
         inline(true)
         exclude(Sequences)
-        doc { "Appends all elements yielded from results of *transform* function being invoked on each element of original collection, to the given *destination*" }
+        doc { "Appends all elements yielded from results of [transform] function being invoked on each element of original collection, to the given [destination]." }
         typeParam("R")
         typeParam("C : MutableCollection<in R>")
         returns("C")
@@ -326,7 +355,7 @@ fun mapping(): List<GenericFunction> {
         inline(true)
 
         only(Sequences)
-        doc { "Appends all elements yielded from results of *transform* function being invoked on each element of original sequence, to the given *destination*" }
+        doc { "Appends all elements yielded from results of [transform] function being invoked on each element of original sequence, to the given [destination]." }
         typeParam("R")
         typeParam("C : MutableCollection<in R>")
         returns("C")
@@ -344,7 +373,7 @@ fun mapping(): List<GenericFunction> {
     templates add f("groupBy(toKey: (T) -> K)") {
         inline(true)
 
-        doc { "Returns a map of the elements in original collection grouped by the result of given *toKey* function" }
+        doc { "Returns a map of the elements in original collection grouped by the result of given [toKey] function." }
         typeParam("K")
         returns("Map<K, List<T>>")
         body { "return groupByTo(LinkedHashMap<K, MutableList<T>>(), toKey)" }
@@ -354,7 +383,7 @@ fun mapping(): List<GenericFunction> {
         inline(true)
 
         typeParam("K")
-        doc { "Appends elements from original collection grouped by the result of given *toKey* function to the given *map*" }
+        doc { "Appends elements from original collection grouped by the result of given [toKey] function to the given [map]." }
         returns("Map<K, MutableList<T>>")
         body {
             """
