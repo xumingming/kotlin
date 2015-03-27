@@ -74,7 +74,14 @@ fun mapping(): List<GenericFunction> {
         typeParam("R")
         returns("List<R>")
         body {
-            "return mapTo(ArrayList<R>(), transform)"
+            "return mapTo(ArrayList<R>(collectionSizeOrDefault(10)), transform)"
+        }
+
+        body(ArraysOfObjects, ArraysOfPrimitives, Maps) {
+            "return mapTo(ArrayList<R>(size()), transform)"
+        }
+        body(Strings) {
+            "return mapTo(ArrayList<R>(length()), transform)"
         }
 
         inline(false, Sequences)
@@ -83,8 +90,49 @@ fun mapping(): List<GenericFunction> {
         body(Sequences) {
             "return TransformingSequence(this, transform)"
         }
-        include(Maps)
     }
+
+    templates add f("filterMap(predicate: (T) -> Boolean, transform: (T) -> R)") {
+        inline(true)
+        typeParam("R")
+        returns("List<R>")
+        include(Maps)
+        body {
+            "return filterMapTo(ArrayList<R>(), predicate, transform)"
+        }
+
+        returns(Sequences) { "Sequence<R>" }
+        inline(false, Sequences)
+        body(Sequences) {
+            """
+            return TransformingSequence(FilteringSequence(this, false, predicate) as Sequence<T>, transform)
+            """
+        }
+
+    }
+
+    templates add f("filterMapIndexed(predicate: (Int, T) -> Boolean, transform: (Int, T) -> R)") {
+        inline(true)
+        typeParam("R")
+        returns("List<R>")
+
+        body {
+            "return filterMapIndexedTo(ArrayList<R>(), predicate, transform)"
+        }
+
+        exclude(Sequences)
+// TODO: Sequences
+//        returns(Sequences) { "Sequence<R>" }
+//        inline(false, Sequences)
+//        body(Sequences) {
+//            """
+//            return TransformingSequence(FilteringSequence(this, false, predicate) as Sequence<T>, transform)
+//            """
+//        }
+
+
+    }
+
 
     templates add f("mapNotNull(transform: (T) -> R)") {
         inline(true)
@@ -151,6 +199,55 @@ fun mapping(): List<GenericFunction> {
                 var index = 0
                 for (item in this)
                     destination.add(transform(index++, item))
+                return destination
+            """
+        }
+        include(Maps)
+    }
+
+
+    templates add f("filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R)") {
+        inline(true)
+        doc {
+            "TODO"
+        }
+        typeParam("R")
+        typeParam("C : MutableCollection<in R>")
+        returns("C")
+        body {
+            """
+            for (element in this) {
+                if (predicate(element)) {
+                    destination.add(transform(element))
+                }
+            }
+            return destination
+            """
+        }
+        include(Maps)
+    }
+
+    templates add f("filterMapIndexedTo(destination: C, predicate: (Int, T) -> Boolean, transform: (Int, T) -> R)") {
+        inline(true)
+
+        doc {
+            """
+            Appends transformed elements and their indices of the original collection using the given *transform* function
+            to the given *destination*
+            """
+        }
+        typeParam("R")
+        typeParam("C : MutableCollection<in R>")
+        returns("C")
+
+        body {
+            """
+                var index = 0
+                for (item in this) {
+                    if (predicate(index, item))
+                        destination.add(transform(index, item))
+                    index += 1
+                }
                 return destination
             """
         }

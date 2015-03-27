@@ -9,6 +9,476 @@ import java.util.*
 
 import java.util.Collections // TODO: it's temporary while we have java.util.Collections in js
 
+public inline fun <T, R> Array<out T>.filterMap(predicate: (T) -> Boolean, transform: (T) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> BooleanArray.filterMap(predicate: (Boolean) -> Boolean, transform: (Boolean) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> ByteArray.filterMap(predicate: (Byte) -> Boolean, transform: (Byte) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> CharArray.filterMap(predicate: (Char) -> Boolean, transform: (Char) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> DoubleArray.filterMap(predicate: (Double) -> Boolean, transform: (Double) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> FloatArray.filterMap(predicate: (Float) -> Boolean, transform: (Float) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> IntArray.filterMap(predicate: (Int) -> Boolean, transform: (Int) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> LongArray.filterMap(predicate: (Long) -> Boolean, transform: (Long) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> ShortArray.filterMap(predicate: (Short) -> Boolean, transform: (Short) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <T, R> Iterable<T>.filterMap(predicate: (T) -> Boolean, transform: (T) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <K, V, R> Map<K, V>.filterMap(predicate: (Map.Entry<K, V>) -> Boolean, transform: (Map.Entry<K, V>) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public fun <T, R> Sequence<T>.filterMap(predicate: (T) -> Boolean, transform: (T) -> R): Sequence<R> {
+    return TransformingSequence(FilteringSequence(this, false, predicate) as Sequence<T>, transform)
+}
+
+
+deprecated("Migrate to using Sequence<T> and respective functions")
+public fun <T, R> Stream<T>.filterMap(predicate: (T) -> Boolean, transform: (T) -> R): Stream<R> {
+    return TransformingStream(FilteringStream(this, false, predicate) as Stream<T>, transform)
+}
+
+public inline fun <R> String.filterMap(predicate: (Char) -> Boolean, transform: (Char) -> R): List<R> {
+    return filterMapTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <T, R> Array<out T>.filterMapIndexed(predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> BooleanArray.filterMapIndexed(predicate: (Int, Boolean) -> Boolean, transform: (Int, Boolean) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> ByteArray.filterMapIndexed(predicate: (Int, Byte) -> Boolean, transform: (Int, Byte) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> CharArray.filterMapIndexed(predicate: (Int, Char) -> Boolean, transform: (Int, Char) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> DoubleArray.filterMapIndexed(predicate: (Int, Double) -> Boolean, transform: (Int, Double) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> FloatArray.filterMapIndexed(predicate: (Int, Float) -> Boolean, transform: (Int, Float) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> IntArray.filterMapIndexed(predicate: (Int, Int) -> Boolean, transform: (Int, Int) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> LongArray.filterMapIndexed(predicate: (Int, Long) -> Boolean, transform: (Int, Long) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> ShortArray.filterMapIndexed(predicate: (Int, Short) -> Boolean, transform: (Int, Short) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <T, R> Iterable<T>.filterMapIndexed(predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+public inline fun <R> String.filterMapIndexed(predicate: (Int, Char) -> Boolean, transform: (Int, Char) -> R): List<R> {
+    return filterMapIndexedTo(ArrayList<R>(), predicate, transform)
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Array<out T>.filterMapIndexedTo(destination: C, predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> BooleanArray.filterMapIndexedTo(destination: C, predicate: (Int, Boolean) -> Boolean, transform: (Int, Boolean) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> ByteArray.filterMapIndexedTo(destination: C, predicate: (Int, Byte) -> Boolean, transform: (Int, Byte) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> CharArray.filterMapIndexedTo(destination: C, predicate: (Int, Char) -> Boolean, transform: (Int, Char) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> DoubleArray.filterMapIndexedTo(destination: C, predicate: (Int, Double) -> Boolean, transform: (Int, Double) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> FloatArray.filterMapIndexedTo(destination: C, predicate: (Int, Float) -> Boolean, transform: (Int, Float) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> IntArray.filterMapIndexedTo(destination: C, predicate: (Int, Int) -> Boolean, transform: (Int, Int) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> LongArray.filterMapIndexedTo(destination: C, predicate: (Int, Long) -> Boolean, transform: (Int, Long) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> ShortArray.filterMapIndexedTo(destination: C, predicate: (Int, Short) -> Boolean, transform: (Int, Short) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Iterable<T>.filterMapIndexedTo(destination: C, predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <K, V, R, C : MutableCollection<in R>> Map<K, V>.filterMapIndexedTo(destination: C, predicate: (Int, Map.Entry<K, V>) -> Boolean, transform: (Int, Map.Entry<K, V>) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Sequence<T>.filterMapIndexedTo(destination: C, predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+
+deprecated("Migrate to using Sequence<T> and respective functions")
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Stream<T>.filterMapIndexedTo(destination: C, predicate: (Int, T) -> Boolean, transform: (Int, T) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * Appends transformed elements and their indices of the original collection using the given *transform* function
+ * to the given *destination*
+ */
+public inline fun <R, C : MutableCollection<in R>> String.filterMapIndexedTo(destination: C, predicate: (Int, Char) -> Boolean, transform: (Int, Char) -> R): C {
+    var index = 0
+    for (item in this) {
+        if (predicate(index, item))
+            destination.add(transform(index, item))
+        index += 1
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Array<out T>.filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> BooleanArray.filterMapTo(destination: C, predicate: (Boolean) -> Boolean, transform: (Boolean) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> ByteArray.filterMapTo(destination: C, predicate: (Byte) -> Boolean, transform: (Byte) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> CharArray.filterMapTo(destination: C, predicate: (Char) -> Boolean, transform: (Char) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> DoubleArray.filterMapTo(destination: C, predicate: (Double) -> Boolean, transform: (Double) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> FloatArray.filterMapTo(destination: C, predicate: (Float) -> Boolean, transform: (Float) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> IntArray.filterMapTo(destination: C, predicate: (Int) -> Boolean, transform: (Int) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> LongArray.filterMapTo(destination: C, predicate: (Long) -> Boolean, transform: (Long) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> ShortArray.filterMapTo(destination: C, predicate: (Short) -> Boolean, transform: (Short) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Iterable<T>.filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <K, V, R, C : MutableCollection<in R>> Map<K, V>.filterMapTo(destination: C, predicate: (Map.Entry<K, V>) -> Boolean, transform: (Map.Entry<K, V>) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Sequence<T>.filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+
+deprecated("Migrate to using Sequence<T> and respective functions")
+/**
+ * TODO
+ */
+public inline fun <T, R, C : MutableCollection<in R>> Stream<T>.filterMapTo(destination: C, predicate: (T) -> Boolean, transform: (T) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
+/**
+ * TODO
+ */
+public inline fun <R, C : MutableCollection<in R>> String.filterMapTo(destination: C, predicate: (Char) -> Boolean, transform: (Char) -> R): C {
+    for (element in this) {
+        if (predicate(element)) {
+            destination.add(transform(element))
+        }
+    }
+    return destination
+}
+
 /**
  * Returns a single list of all elements yielded from results of *transform* function being invoked on each element of original collection
  */
@@ -520,77 +990,77 @@ public inline fun <K> String.groupByTo(map: MutableMap<K, MutableList<Char>>, to
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <T, R> Array<out T>.map(transform: (T) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> BooleanArray.map(transform: (Boolean) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> ByteArray.map(transform: (Byte) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> CharArray.map(transform: (Char) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> DoubleArray.map(transform: (Double) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> FloatArray.map(transform: (Float) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> IntArray.map(transform: (Int) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> LongArray.map(transform: (Long) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> ShortArray.map(transform: (Short) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <T, R> Iterable<T>.map(transform: (T) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(collectionSizeOrDefault(10)), transform)
 }
 
 /**
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <K, V, R> Map<K, V>.map(transform: (Map.Entry<K, V>) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(size()), transform)
 }
 
 /**
@@ -613,7 +1083,7 @@ public fun <T, R> Stream<T>.map(transform: (T) -> R): Stream<R> {
  * Returns a list containing the results of applying the given *transform* function to each element of the original collection
  */
 public inline fun <R> String.map(transform: (Char) -> R): List<R> {
-    return mapTo(ArrayList<R>(), transform)
+    return mapTo(ArrayList<R>(length()), transform)
 }
 
 /**
