@@ -59,7 +59,7 @@ class LazyJavaTypeResolver(
                 else c.module.builtIns.getUnitType()
             }
             is JavaClassifierType ->
-                if (PLATFORM_TYPES && attr.allowFlexible && attr.howThisTypeIsUsed != SUPERTYPE)
+                if (PLATFORM_TYPES && attr.allowFlexible && attr.howThisTypeIsUsed !in setOf(SUPERTYPE, SUPERTYPE_ARGUMENT))
                     FlexibleJavaClassifierTypeCapabilities.create(
                             LazyJavaClassifierType(javaType, attr.toFlexible(FLEXIBLE_LOWER_BOUND)),
                             LazyJavaClassifierType(javaType, attr.toFlexible(FLEXIBLE_UPPER_BOUND))
@@ -273,6 +273,8 @@ class LazyJavaTypeResolver(
                 FLEXIBLE_LOWER_BOUND -> return@l false
                 FLEXIBLE_UPPER_BOUND -> return@l true
             }
+
+            attr.howThisTypeIsUsed != SUPERTYPE_ARGUMENT && // immediate arguments of supertypes should not be nullable
             !attr.isMarkedNotNull &&
             // 'L extends List<T>' in Java is a List<T> in Kotlin, not a List<T?>
             // nullability will be taken care of in individual member signatures
