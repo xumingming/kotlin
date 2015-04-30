@@ -19,7 +19,7 @@ public open class Rendering {
         public/*package*/ constructor D_SuperG</*0*/ T>()
     }
 
-    public/*package*/ open inner class E_SubG : test.Rendering.D_SuperG<kotlin.String!> {
+    public/*package*/ open inner class E_SubG : test.Rendering.D_SuperG<kotlin.String> {
         public/*package*/ constructor E_SubG()
     }
 

@@ -2,7 +2,7 @@ package test
 
 public trait TypeParamOfClass {
 
-    public trait Sub</*0*/ T> : test.TypeParamOfClass.Super<T!> {
+    public trait Sub</*0*/ T> : test.TypeParamOfClass.Super<T> {
         public abstract override /*1*/ /*fake_override*/ fun dummy(): kotlin.Unit
         public abstract override /*1*/ fun foo(): T!
     }

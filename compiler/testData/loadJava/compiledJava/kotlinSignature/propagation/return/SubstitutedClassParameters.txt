@@ -2,7 +2,7 @@ package test
 
 public trait SubstitutedClassParameters {
 
-    public trait Sub : test.SubstitutedClassParameters.Super1<kotlin.String!>, test.SubstitutedClassParameters.Super2<kotlin.String!> {
+    public trait Sub : test.SubstitutedClassParameters.Super1<kotlin.String>, test.SubstitutedClassParameters.Super2<kotlin.String> {
         public abstract override /*2*/ /*fake_override*/ fun dummy(): kotlin.Unit
         public abstract override /*2*/ fun foo(): kotlin.String!
     }

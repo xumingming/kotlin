@@ -2,7 +2,7 @@ package test
 
 public trait ReturnNotSubtype {
 
-    public trait Sub : test.ReturnNotSubtype.Super<kotlin.Boolean!> {
+    public trait Sub : test.ReturnNotSubtype.Super<kotlin.Boolean> {
         public abstract override /*1*/ fun _void(): kotlin.Boolean
         public abstract override /*1*/ fun array(): kotlin.Array<(out) java.lang.Void!>!
         public abstract override /*1*/ fun klass(): java.lang.Class<*>!

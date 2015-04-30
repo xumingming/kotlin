@@ -4,16 +4,16 @@ public open class EnumArgumentWithCustomToString {
     public constructor EnumArgumentWithCustomToString()
     test.EnumArgumentWithCustomToString.EnumAnno(value = E.CAKE: test.EnumArgumentWithCustomToString.E) test.EnumArgumentWithCustomToString.EnumArrayAnno(value = {E.CAKE, E.CAKE}: kotlin.Array<out test.EnumArgumentWithCustomToString.E>) public/*package*/ open fun annotated(): kotlin.Unit
 
-    public open enum class E : kotlin.Enum<test.EnumArgumentWithCustomToString.E!> {
+    public open enum class E : kotlin.Enum<test.EnumArgumentWithCustomToString.E> {
         public enum entry CAKE : test.EnumArgumentWithCustomToString.E {
             private constructor CAKE()
-            public final override /*1*/ /*fake_override*/ fun compareTo(/*0*/ other: test.EnumArgumentWithCustomToString.E!): kotlin.Int
+            public final override /*1*/ /*fake_override*/ fun compareTo(/*0*/ other: test.EnumArgumentWithCustomToString.E): kotlin.Int
             public final override /*1*/ /*fake_override*/ fun name(): kotlin.String
             public final override /*1*/ /*fake_override*/ fun ordinal(): kotlin.Int
         }
 
         private constructor E()
-        public final override /*1*/ /*fake_override*/ fun compareTo(/*0*/ other: test.EnumArgumentWithCustomToString.E!): kotlin.Int
+        public final override /*1*/ /*fake_override*/ fun compareTo(/*0*/ other: test.EnumArgumentWithCustomToString.E): kotlin.Int
         public final override /*1*/ /*fake_override*/ fun name(): kotlin.String
         public final override /*1*/ /*fake_override*/ fun ordinal(): kotlin.Int
 

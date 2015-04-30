@@ -9,7 +9,7 @@ public trait LoadIterableWithPropagation {
         public abstract fun setReadOnlyIterable(/*0*/ org.jetbrains.annotations.ReadOnly() p0: kotlin.(Mutable)Iterable<T!>!): kotlin.Unit
     }
 
-    public open class LoadIterableImpl</*0*/ T> : test.LoadIterableWithPropagation.LoadIterable<T!> {
+    public open class LoadIterableImpl</*0*/ T> : test.LoadIterableWithPropagation.LoadIterable<T> {
         public constructor LoadIterableImpl</*0*/ T>()
         public open override /*1*/ fun getIterable(): kotlin.(Mutable)Iterable<T!>!
         public open override /*1*/ fun getReadOnlyIterable(): kotlin.(Mutable)Iterable<T!>!

@@ -6,13 +6,13 @@ public open class InnerOfGeneric {
     public abstract inner class A</*0*/ K> {
         public constructor A</*0*/ K>()
 
-        public abstract inner class Inner : test.InnerOfGeneric.S<K!> {
+        public abstract inner class Inner : test.InnerOfGeneric.S<K> {
             public constructor Inner()
             public open override /*1*/ /*fake_override*/ fun iterator(): kotlin.(Mutable)Iterator<K!>!
         }
     }
 
-    public open inner class B</*0*/ L> : test.InnerOfGeneric.A<L!> {
+    public open inner class B</*0*/ L> : test.InnerOfGeneric.A<L> {
         public constructor B</*0*/ L>()
 
         public open inner class SubInner : test.InnerOfGeneric.A.Inner {

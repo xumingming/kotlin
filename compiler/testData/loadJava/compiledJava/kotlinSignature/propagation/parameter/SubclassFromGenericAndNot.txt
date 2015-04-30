@@ -12,7 +12,7 @@ public trait SubclassFromGenericAndNot {
         public abstract fun foo(/*0*/ org.jetbrains.annotations.NotNull() p0: kotlin.String!): kotlin.Unit
     }
 
-    public trait Sub : test.SubclassFromGenericAndNot.NonGeneric, test.SubclassFromGenericAndNot.Generic<kotlin.String!> {
+    public trait Sub : test.SubclassFromGenericAndNot.NonGeneric, test.SubclassFromGenericAndNot.Generic<kotlin.String> {
         public abstract override /*2*/ /*fake_override*/ fun dummy(): kotlin.Unit
         public abstract override /*2*/ fun foo(/*0*/ key: kotlin.String!): kotlin.Unit
     }

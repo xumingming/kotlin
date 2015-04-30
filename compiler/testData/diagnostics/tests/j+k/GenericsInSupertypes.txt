@@ -64,7 +64,7 @@ package p {
         public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
     }
 
-    public open class B</*0*/ TB> : p.A<TB!> {
+    public open class B</*0*/ TB> : p.A<TB> {
         public constructor B</*0*/ TB>()
         public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
         public/*package*/ open override /*1*/ fun foo(/*0*/ p: p.A<TB!>!): kotlin.Unit
@@ -72,7 +72,7 @@ package p {
         public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
     }
 
-    public open class C</*0*/ TC> : p.B<TC!>, p.A<TC!> {
+    public open class C</*0*/ TC> : p.B<TC>, p.A<TC> {
         public constructor C</*0*/ TC>()
         public open override /*2*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
         public open override /*2*/ /*fake_override*/ fun foo(/*0*/ p: p.A<TC!>!): kotlin.Unit

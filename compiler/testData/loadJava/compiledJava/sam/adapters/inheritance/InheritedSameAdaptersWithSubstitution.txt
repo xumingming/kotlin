@@ -17,7 +17,7 @@ public trait InheritedSameAdaptersWithSubstitution {
         public abstract fun foo(/*0*/ p0: java.util.Comparator<T!>!): kotlin.Unit
     }
 
-    public trait Super2Substituted : test.InheritedSameAdaptersWithSubstitution.Super2<kotlin.String!> {
+    public trait Super2Substituted : test.InheritedSameAdaptersWithSubstitution.Super2<kotlin.String> {
         public final override /*1*/ /*fake_override*/ fun foo(/*0*/ p0: ((kotlin.String!, kotlin.String!) -> kotlin.Int)!): kotlin.Unit
         public abstract override /*1*/ /*fake_override*/ fun foo(/*0*/ p0: java.util.Comparator<kotlin.String!>!): kotlin.Unit
     }
