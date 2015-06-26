@@ -28,6 +28,7 @@ import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
 import org.jetbrains.org.objectweb.asm.tree.VarInsnNode
 import org.jetbrains.org.objectweb.asm.Type
 import com.intellij.util.containers.Stack
+import org.jetbrains.kotlin.codegen.optimization.common.getStackValuesStartingFrom
 
 class StoreStackBeforeInlineMethodTransformer : MethodTransformer() {
     override fun transform(internalClassName: String, methodNode: MethodNode) {
@@ -47,17 +48,17 @@ private fun needToProcess(node: MethodNode, frames: Array<Frame<BasicValue>?>): 
     var isThereAnyInlineMarker = false
 
     for ((insn, frame) in insns.zip(frames)) {
-        if (isInlineMarker(insn)) {
+        if (InlineCodegenUtil.isInlineMarker(insn)) {
             isThereAnyInlineMarker = true
 
             // inline marker is not available
             if (frame == null) return false
         }
 
-        if (isBeforeInlineMarker(insn)) {
+        if (InlineCodegenUtil.isBeforeInlineMarker(insn)) {
             balance++
         }
-        else if(isAfterInlineMarker(insn)) {
+        else if(InlineCodegenUtil.isAfterInlineMarker(insn)) {
             balance--
         }
 
@@ -65,20 +66,6 @@ private fun needToProcess(node: MethodNode, frames: Array<Frame<BasicValue>?>): 
     }
 
     return balance == 0 && isThereAnyInlineMarker
-}
-
-private fun isBeforeInlineMarker(insn: AbstractInsnNode) = isInlineMarker(insn, InlineCodegenUtil.INLINE_MARKER_BEFORE_METHOD_NAME)
-
-private fun isAfterInlineMarker(insn: AbstractInsnNode) = isInlineMarker(insn, InlineCodegenUtil.INLINE_MARKER_AFTER_METHOD_NAME)
-
-private fun isInlineMarker(insn: AbstractInsnNode, markerName: String? = null): Boolean {
-    return insn.getOpcode() == Opcodes.INVOKESTATIC &&
-           insn is MethodInsnNode &&
-           insn.owner == InlineCodegenUtil.INLINE_MARKER_CLASS_NAME &&
-           if (markerName != null) markerName == insn.name else (
-               insn.name == InlineCodegenUtil.INLINE_MARKER_BEFORE_METHOD_NAME ||
-               insn.name == InlineCodegenUtil.INLINE_MARKER_AFTER_METHOD_NAME
-           )
 }
 
 private fun process(methodNode: MethodNode, frames: Array<Frame<BasicValue>?>) {
@@ -89,7 +76,7 @@ private fun process(methodNode: MethodNode, frames: Array<Frame<BasicValue>?>) {
     var currentStoredValuesCount = 0
 
     for ((insn, frame) in insns.zip(frames)) {
-        if (isBeforeInlineMarker(insn)) {
+        if (InlineCodegenUtil.isBeforeInlineMarker(insn)) {
             frame ?: throw AssertionError("process method shouldn't be called if frame is null before inline marker")
 
             val desc = storeStackValues(methodNode, frame, insn, firstAvailableVarIndex, currentStoredValuesCount)
@@ -98,7 +85,7 @@ private fun process(methodNode: MethodNode, frames: Array<Frame<BasicValue>?>) {
             currentStoredValuesCount += desc.storedValuesCount
             storedValuesDescriptorsStack.push(desc)
         }
-        else if (isAfterInlineMarker(insn)) {
+        else if (InlineCodegenUtil.isAfterInlineMarker(insn)) {
             frame ?: throw AssertionError("process method shouldn't be called if frame is null before inline marker")
 
             val desc = storedValuesDescriptorsStack.pop() ?:
@@ -109,7 +96,7 @@ private fun process(methodNode: MethodNode, frames: Array<Frame<BasicValue>?>) {
             currentStoredValuesCount -= desc.storedValuesCount
         }
 
-        if (isInlineMarker(insn)) {
+        if (InlineCodegenUtil.isInlineMarker(insn)) {
             methodNode.instructions.remove(insn)
         }
     }
@@ -129,7 +116,7 @@ private class StoredStackValuesDescriptor(
 
 private fun removeInlineMarkers(node: MethodNode) {
     for (insn in node.instructions.toArray()) {
-        if (isInlineMarker(insn)) {
+        if (InlineCodegenUtil.isInlineMarker(insn)) {
             node.instructions.remove(insn)
         }
     }
@@ -211,9 +198,6 @@ private fun loadStackValues(
         )
     }
 }
-
-private fun <V : BasicValue> Frame<V>.getStackValuesStartingFrom(from: Int): List<V> =
-        IntRange(from, getStackSize() - 1).map { getStack(it) }.requireNoNulls()
 
 private fun MethodNode.updateMaxLocals(newMaxLocals: Int) {
     maxLocals = Math.max(maxLocals, newMaxLocals)

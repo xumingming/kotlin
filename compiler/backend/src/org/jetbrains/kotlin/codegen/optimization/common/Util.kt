@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.codegen.optimization.common
 
 import org.jetbrains.org.objectweb.asm.tree.AbstractInsnNode
 import org.jetbrains.org.objectweb.asm.Opcodes
+import org.jetbrains.org.objectweb.asm.tree.InsnList
 import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
 import org.jetbrains.org.objectweb.asm.tree.MethodNode
@@ -28,7 +29,10 @@ val AbstractInsnNode.isMeaningful : Boolean get() =
         else -> true
     }
 
-class InsnSequence(val from: AbstractInsnNode, val to: AbstractInsnNode?) : Sequence<AbstractInsnNode> {
+public class InsnSequence(val from: AbstractInsnNode, val to: AbstractInsnNode?) : Sequence<AbstractInsnNode> {
+    public constructor(insnList: InsnList) : this(insnList.getFirst(), null) {
+    }
+
     override fun iterator(): Iterator<AbstractInsnNode> {
         return object : Iterator<AbstractInsnNode> {
             var current: AbstractInsnNode? = from
@@ -77,3 +81,6 @@ abstract class BasicValueWrapper(val wrappedValue: BasicValue?) : BasicValue(wra
         return super.equals(other) && this.javaClass == other?.javaClass
     }
 }
+
+public fun <V : BasicValue> Frame<V>.getStackValuesStartingFrom(from: Int): List<V> =
+        IntRange(from, getStackSize() - 1).map { getStack(it) }.requireNoNulls()

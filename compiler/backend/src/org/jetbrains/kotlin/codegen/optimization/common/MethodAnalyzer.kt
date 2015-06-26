@@ -44,7 +44,11 @@ public open class MethodAnalyzer<V : Value>(
 
     protected open fun newFrame(nLocals: Int, nStack: Int): Frame<V> = Frame(nLocals, nStack)
 
-    protected open fun newFrame(src: Frame<out V>): Frame<V> = Frame(src)
+    protected open fun newFrame(src: Frame<out V>): Frame<V> {
+        val frame = newFrame(src.getLocals(), src.getMaxStackSize())
+        frame.init(src)
+        return frame
+    }
 
     protected open fun visitControlFlowEdge(insn: Int, successor: Int): Boolean = true
 
@@ -94,12 +98,12 @@ public open class MethodAnalyzer<V : Value>(
                 }
 
                 handlers[insn]?.forEach { tcb ->
-                    val type = Type.getObjectType(tcb.type?:"java/lang/Throwable")
+                    val exnType = Type.getObjectType(tcb.type?:"java/lang/Throwable")
                     val jump = instructions.indexOf(tcb.handler)
                     if (visitControlFlowExceptionEdge(insn, tcb)) {
                         handler.init(f)
                         handler.clearStack()
-                        handler.push(interpreter.newValue(type))
+                        handler.push(interpreter.newValue(exnType))
                         mergeControlFlowEdge(jump, handler)
                     }
                 }
