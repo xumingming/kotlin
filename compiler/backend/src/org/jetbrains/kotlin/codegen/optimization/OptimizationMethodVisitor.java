@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.codegen.inline.InlineCodegenUtil;
 import org.jetbrains.kotlin.codegen.optimization.boxing.RedundantBoxingMethodTransformer;
 import org.jetbrains.kotlin.codegen.optimization.boxing.RedundantNullCheckMethodTransformer;
 import org.jetbrains.kotlin.codegen.optimization.common.CommonPackage;
+import org.jetbrains.kotlin.codegen.optimization.fixStack.FixStackTransformer;
 import org.jetbrains.kotlin.codegen.optimization.transformer.MethodTransformer;
 import org.jetbrains.org.objectweb.asm.MethodVisitor;
 import org.jetbrains.org.objectweb.asm.Opcodes;
@@ -37,15 +38,15 @@ public class OptimizationMethodVisitor extends MethodVisitor {
     private static final int MEMORY_LIMIT_BY_METHOD_MB = 50;
 
     private static final MethodTransformer[] MANDATORY_TRANSFORMERS = new MethodTransformer[] {
-            new FixStackBeforeJumpTransformer()
+            new LabelNormalizationTransformer(),
+            new FixStackTransformer()
     };
 
     private static final MethodTransformer[] OPTIMIZATION_TRANSFORMERS = new MethodTransformer[] {
             new RedundantNullCheckMethodTransformer(),
             new RedundantBoxingMethodTransformer(),
             new DeadCodeEliminationMethodTransformer(),
-            new RedundantGotoMethodTransformer(),
-            new StoreStackBeforeInlineMethodTransformer()
+            new RedundantGotoMethodTransformer()
     };
 
     private final MethodNode methodNode;
