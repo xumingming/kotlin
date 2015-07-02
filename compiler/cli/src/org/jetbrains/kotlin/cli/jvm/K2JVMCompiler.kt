@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.cli.common.ExitCode.INTERNAL_ERROR
 import org.jetbrains.kotlin.cli.common.ExitCode.OK
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.*
+import org.jetbrains.kotlin.cli.common.messages.MessageCollectorUtil.reportProgress
 import org.jetbrains.kotlin.cli.jvm.compiler.*
 import org.jetbrains.kotlin.cli.jvm.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoot
@@ -61,7 +62,7 @@ public open class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
         else
             PathUtil.getKotlinPathsForCompiler()
 
-        messageSeverityCollector.report(CompilerMessageSeverity.PROGRESS, "Using Kotlin home directory " + paths.getHomePath(), CompilerMessageLocation.NO_LOCATION)
+        messageSeverityCollector.report(CompilerMessageSeverity.OUTPUT, "Using Kotlin home directory " + paths.getHomePath(), CompilerMessageLocation.NO_LOCATION)
         PerformanceCounter.setTimeCounterEnabled(arguments.reportPerf);
 
         val configuration = CompilerConfiguration()
@@ -139,8 +140,8 @@ public open class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
 
         putAdvancedOptions(configuration, arguments)
 
-        messageSeverityCollector.report(CompilerMessageSeverity.PROGRESS, "Configuring the compilation environment", CompilerMessageLocation.NO_LOCATION)
         try {
+            reportProgress(messageSeverityCollector, "Configuring the compilation environment")
             configureEnvironment(configuration, arguments)
 
             val destination = arguments.destination
