@@ -32,6 +32,7 @@ import org.jetbrains.jps.incremental.fs.CompilationRound
 import org.jetbrains.jps.incremental.java.JavaBuilder
 import org.jetbrains.jps.incremental.messages.BuildMessage
 import org.jetbrains.jps.incremental.messages.CompilerMessage
+import org.jetbrains.jps.incremental.messages.ProgressMessage
 import org.jetbrains.jps.model.JpsProject
 import org.jetbrains.jps.model.JpsSimpleElement
 import org.jetbrains.jps.model.ex.JpsElementChildRoleBase
@@ -100,7 +101,7 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
             dirtyFilesHolder: DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget>,
             outputConsumer: ModuleLevelBuilder.OutputConsumer
     ): ModuleLevelBuilder.ExitCode {
-        val messageCollector = MessageCollectorAdapter(context)
+        val messageCollector = MessageCollectorAdapter(context, chunk)
         try {
             return doBuild(chunk, context, dirtyFilesHolder, messageCollector, outputConsumer)
         }
@@ -552,21 +553,29 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
         return outputItemCollector
     }
 
-    public class MessageCollectorAdapter(private val context: CompileContext) : MessageCollector {
+    public class MessageCollectorAdapter(private val context: CompileContext, private val chunk: ModuleChunk) : MessageCollector {
 
         override fun report(severity: CompilerMessageSeverity, message: String, location: CompilerMessageLocation) {
             var prefix = ""
             if (severity == EXCEPTION) {
                 prefix = INTERNAL_ERROR_PREFIX
             }
-            context.processMessage(CompilerMessage(
-                    CompilerRunnerConstants.KOTLIN_COMPILER_NAME,
-                    kind(severity),
-                    prefix + message + renderLocationIfNeeded(location),
-                    location.path,
-                    -1, -1, -1,
-                    location.line.toLong(), location.column.toLong()
-            ))
+
+            val buildMessage = when (severity) {
+                PROGRESS ->
+                    ProgressMessage(message + " [${chunk.getName()}]")
+                else ->
+                    CompilerMessage(
+                        CompilerRunnerConstants.KOTLIN_COMPILER_NAME,
+                        kind(severity),
+                        prefix + message + renderLocationIfNeeded(location),
+                        location.path,
+                        -1, -1, -1,
+                        location.line.toLong(), location.column.toLong()
+                    )
+            }
+
+            context.processMessage(buildMessage)
         }
 
         private fun renderLocationIfNeeded(location: CompilerMessageLocation): String {
