@@ -562,6 +562,10 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
             }
 
             val buildMessage = when (severity) {
+                DEBUG -> {
+                    LOG.debug(message)
+                    return
+                }
                 PROGRESS ->
                     ProgressMessage(message + " [${chunk.getName()}]")
                 else ->
