@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.descriptors.ScriptDescriptor
 import org.jetbrains.kotlin.diagnostics.DiagnosticSink
 import org.jetbrains.kotlin.load.kotlin.incremental.components.IncrementalCompilationComponents
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.progress.Progress
 import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetScript
