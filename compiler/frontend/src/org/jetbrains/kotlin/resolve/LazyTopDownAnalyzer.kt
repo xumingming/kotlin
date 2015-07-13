@@ -28,12 +28,13 @@ import org.jetbrains.kotlin.diagnostics.Errors.UNSUPPORTED
 import org.jetbrains.kotlin.incremental.KotlinLookupLocation
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.progress.Progress
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
 import org.jetbrains.kotlin.resolve.lazy.*
 import org.jetbrains.kotlin.resolve.lazy.descriptors.LazyClassDescriptor
 import org.jetbrains.kotlin.resolve.varianceChecker.VarianceChecker
-import java.util.ArrayList
+import java.util.*
 
 public class LazyTopDownAnalyzer(
         private val trace: BindingTrace,
@@ -46,7 +47,8 @@ public class LazyTopDownAnalyzer(
         private val bodyResolver: BodyResolver,
         private val topLevelDescriptorProvider: TopLevelDescriptorProvider,
         private val fileScopeProvider: FileScopeProvider,
-        private val declarationScopeProvider: DeclarationScopeProvider
+        private val declarationScopeProvider: DeclarationScopeProvider,
+        private val progress: Progress
 ) {
     public fun analyzeDeclarations(topDownAnalysisMode: TopDownAnalysisMode, declarations: Collection<PsiElement>, outerDataFlowInfo: DataFlowInfo): TopDownAnalysisContext {
         val c = TopDownAnalysisContext(topDownAnalysisMode, outerDataFlowInfo, declarationScopeProvider)
@@ -70,6 +72,7 @@ public class LazyTopDownAnalyzer(
                 }
 
                 override fun visitJetFile(file: JetFile) {
+                    progress.reportProgress("Analyzing file: ${file.getName()}")
                     if (file.isScript()) {
                         val script = file.getScript() ?: throw AssertionError("getScript() is null for file: $file")
 

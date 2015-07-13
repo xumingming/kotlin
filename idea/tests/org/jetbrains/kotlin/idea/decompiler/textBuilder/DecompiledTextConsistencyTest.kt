@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinder
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.progress.Progress
 import org.jetbrains.kotlin.resolve.BindingTraceContext
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.lazy.JvmResolveUtil
@@ -51,7 +52,8 @@ public class DecompiledTextConsistencyTest : TextConsistencyBaseTest() {
             TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegrationWithCustomContext(
                     TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, JvmResolveUtil.TEST_MODULE_NAME),
                     listOf(), BindingTraceContext(), null, null,
-                    IDEPackagePartProvider(GlobalSearchScope.allScope(project))
+                    IDEPackagePartProvider(GlobalSearchScope.allScope(project)),
+                    Progress.DEAF
             ).moduleDescriptor
 
     override fun getProjectDescriptor() =

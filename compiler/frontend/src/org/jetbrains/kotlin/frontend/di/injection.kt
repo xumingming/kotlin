@@ -19,15 +19,17 @@ package org.jetbrains.kotlin.frontend.di
 import org.jetbrains.kotlin.container.*
 import org.jetbrains.kotlin.context.LazyResolveToken
 import org.jetbrains.kotlin.context.ModuleContext
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.incremental.components.LookupTracker
+import org.jetbrains.kotlin.progress.Progress
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.lazy.FileScopeProvider
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.NoTopLevelDescriptorProvider
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
-import org.jetbrains.kotlin.types.expressions.*
+import org.jetbrains.kotlin.types.expressions.DeclarationScopeProviderForLocalClassifierAnalyzer
+import org.jetbrains.kotlin.types.expressions.LocalClassDescriptorHolder
+import org.jetbrains.kotlin.types.expressions.LocalLazyDeclarationResolver
 
 public fun StorageComponentContainer.configureModule(
         moduleContext: ModuleContext, platform: TargetPlatform
@@ -62,6 +64,7 @@ public fun createContainerForBodyResolve(
     useInstance(BodyResolveCache.ThrowException)
 
     useImpl<BodyResolver>()
+    useInstance(Progress.DEAF)
 }
 
 public fun createContainerForLazyBodyResolve(
@@ -75,6 +78,7 @@ public fun createContainerForLazyBodyResolve(
     useInstance(kotlinCodeAnalyzer.getFileScopeProvider())
     useInstance(bodyResolveCache)
     useImpl<LazyTopDownAnalyzerForTopLevel>()
+    useInstance(Progress.DEAF)
 }
 
 public fun createContainerForLazyLocalClassifierAnalyzer(
@@ -97,6 +101,7 @@ public fun createContainerForLazyLocalClassifierAnalyzer(
 
     useImpl<DeclarationScopeProviderForLocalClassifierAnalyzer>()
     useImpl<LocalLazyDeclarationResolver>()
+    useInstance(Progress.DEAF)
 }
 
 public fun createContainerForLazyResolve(

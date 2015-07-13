@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmPackagePartProvider;
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment;
 import org.jetbrains.kotlin.context.ModuleContext;
+import org.jetbrains.kotlin.progress.Progress;
 import org.jetbrains.kotlin.descriptors.PackagePartProvider;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
@@ -112,6 +113,7 @@ public class JvmResolveUtil {
         BindingTrace trace = new CliLightClassGenerationSupport.CliBindingTrace();
 
         return TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegrationWithCustomContext(moduleContext, files, trace, null, null,
-                                                                                            packagePartProvider);
+                                                                                            packagePartProvider,
+                                                                                            Progress.DEAF);
     }
 }

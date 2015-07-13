@@ -21,18 +21,19 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.container.*
 import org.jetbrains.kotlin.context.LazyResolveToken
 import org.jetbrains.kotlin.context.ModuleContext
+import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.frontend.di.configureModule
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.JavaClassFinderImpl
 import org.jetbrains.kotlin.load.java.JavaFlexibleTypeCapabilitiesProvider
 import org.jetbrains.kotlin.load.java.components.*
 import org.jetbrains.kotlin.load.java.lazy.ModuleClassResolver
-import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
 import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl
 import org.jetbrains.kotlin.load.java.structure.impl.JavaPropertyInitializerEvaluatorImpl
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
+import org.jetbrains.kotlin.progress.Progress
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.jvm.JavaClassFinderPostConstruct
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
@@ -88,6 +89,7 @@ public fun createContainerForLazyResolveWithJava(
 
     useImpl<FileScopeProviderImpl>()
     useImpl<LazyResolveToken>()
+    useInstance(Progress.DEAF)
 }.apply {
     javaAnalysisInit()
 }
@@ -99,7 +101,8 @@ public fun createContainerForTopDownAnalyzerForJvm(
         declarationProviderFactory: DeclarationProviderFactory,
         moduleContentScope: GlobalSearchScope,
         lookupTracker: LookupTracker,
-        packagePartProvider: PackagePartProvider
+        packagePartProvider: PackagePartProvider,
+        progress: Progress
 ): ContainerForTopDownAnalyzerForJvm = createContainer("TopDownAnalyzerForJvm") {
     useInstance(packagePartProvider)
 
@@ -112,6 +115,7 @@ public fun createContainerForTopDownAnalyzerForJvm(
 
     useImpl<SingleModuleClassResolver>()
     useImpl<FileScopeProviderImpl>()
+    useInstance(progress)
 }.let {
     it.javaAnalysisInit()
 
