@@ -1727,6 +1727,63 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                     doTest(fileName);
                 }
             }
+
+            @TestMetadata("compiler/testData/diagnostics/tests/callableReference/resolve")
+            @TestDataPath("$PROJECT_ROOT")
+            @RunWith(JUnit3RunnerWithInners.class)
+            public static class Resolve extends AbstractJetDiagnosticsTest {
+                public void testAllFilesPresentInResolve() throws Exception {
+                    JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/callableReference/resolve"), Pattern.compile("^(.+)\\.kt$"), true);
+                }
+
+                @TestMetadata("byArgType.kt")
+                public void testByArgType() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/byArgType.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("byGenericArgType.kt")
+                public void testByGenericArgType() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/byGenericArgType.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("byValType.kt")
+                public void testByValType() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/byValType.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("constructor.kt")
+                public void testConstructor() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/constructor.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("valVsFun.kt")
+                public void testValVsFun() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/valVsFun.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("withGenericFun.kt")
+                public void testWithGenericFun() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/withGenericFun.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("withPlaceholderTypes.kt")
+                public void testWithPlaceholderTypes() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/withPlaceholderTypes.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("withVararg.kt")
+                public void testWithVararg() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/resolve/withVararg.kt");
+                    doTest(fileName);
+                }
+            }
         }
 
         @TestMetadata("compiler/testData/diagnostics/tests/cast")

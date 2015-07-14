@@ -16,7 +16,7 @@
 
 package org.jetbrains.kotlin.resolve.calls.context;
 
-public enum CheckValueArgumentsMode {
-    ENABLED,
-    DISABLED
+public enum CheckArgumentTypesMode {
+    CHECK_VALUE_ARGUMENTS,
+    CHECK_CALLABLE_TYPE
 }

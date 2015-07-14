@@ -561,6 +561,12 @@ public class BlackBoxWithStdlibCodegenTestGenerated extends AbstractBlackBoxCode
                 doTestWithStdlib(fileName);
             }
 
+            @TestMetadata("overloaded.kt")
+            public void testOverloaded() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithStdlib/callableReference/function/overloaded.kt");
+                doTestWithStdlib(fileName);
+            }
+
             @TestMetadata("privateClassMember.kt")
             public void testPrivateClassMember() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithStdlib/callableReference/function/privateClassMember.kt");
