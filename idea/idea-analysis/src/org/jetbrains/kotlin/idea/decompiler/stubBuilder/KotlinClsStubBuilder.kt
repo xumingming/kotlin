@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.idea.decompiler.textBuilder.LoggingErrorReporter
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.header.isCompatibleClassKind
+import org.jetbrains.kotlin.load.kotlin.header.isCompatibleFileFacadeKind
 import org.jetbrains.kotlin.load.kotlin.header.isCompatiblePackageFacadeKind
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.JetFile
@@ -68,6 +69,11 @@ public open class KotlinClsStubBuilder : ClsStubBuilder() {
                 val packageData = JvmProtoBufUtil.readPackageDataFrom(annotationData)
                 val context = components.createContext(packageData.getNameResolver(), packageFqName)
                 createPackageFacadeFileStub(packageData.getPackageProto(), packageFqName, context)
+            }
+            header.isCompatibleFileFacadeKind() -> {
+                val filePartData = JvmProtoBufUtil.readPackageDataFrom(annotationData)
+                val context = components.createContext(filePartData.nameResolver, packageFqName)
+                createFileFacadeClassStub(classId, filePartData.packageProto, context)
             }
             header.isCompatibleClassKind() -> {
                 if (header.classKind != JvmAnnotationNames.KotlinClass.Kind.CLASS) return null

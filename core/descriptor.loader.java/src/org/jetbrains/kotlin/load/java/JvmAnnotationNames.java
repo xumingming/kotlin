@@ -30,6 +30,7 @@ import java.util.Set;
 public final class JvmAnnotationNames {
     public static final FqName KOTLIN_CLASS = KotlinClass.CLASS_NAME.getFqNameForClassNameWithoutDollars();
     public static final FqName KOTLIN_PACKAGE = new FqName("kotlin.jvm.internal.KotlinPackage");
+    public static final FqName KOTLIN_FILE_FACADE = new FqName("kotlin.jvm.internal.KotlinFileFacade");
 
     public static final FqName KOTLIN_SIGNATURE = new FqName("kotlin.jvm.KotlinSignature");
     public static final FqName OLD_KOTLIN_SIGNATURE = new FqName("jet.runtime.typeinfo.KotlinSignature");
@@ -123,7 +124,7 @@ public final class JvmAnnotationNames {
     private static final Set<JvmClassName> NULLABILITY_ANNOTATIONS = new HashSet<JvmClassName>();
     private static final Set<JvmClassName> SPECIAL_META_ANNOTATIONS = new HashSet<JvmClassName>();
     static {
-        for (FqName fqName : Arrays.asList(KOTLIN_CLASS, KOTLIN_PACKAGE, KOTLIN_SIGNATURE)) {
+        for (FqName fqName : Arrays.asList(KOTLIN_CLASS, KOTLIN_PACKAGE, KOTLIN_FILE_FACADE, KOTLIN_SIGNATURE)) {
             SPECIAL_ANNOTATIONS.add(JvmClassName.byFqNameWithoutInnerClasses(fqName));
         }
         SPECIAL_ANNOTATIONS.add(KotlinSyntheticClass.CLASS_NAME);

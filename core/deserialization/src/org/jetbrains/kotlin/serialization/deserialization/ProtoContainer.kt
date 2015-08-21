@@ -16,17 +16,29 @@
 
 package org.jetbrains.kotlin.serialization.deserialization
 
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.serialization.ProtoBuf
 
-public data class ProtoContainer(val classProto: ProtoBuf.Class?, val packageFqName: FqName?) {
+public data class ProtoContainer private constructor(
+        val classProto: ProtoBuf.Class?,
+        val packageFqName: FqName?,
+        val fileFacadeClassId: ClassId?) {
     init {
-        assert((classProto != null) xor (packageFqName != null))
+        assert((classProto != null && packageFqName == null && fileFacadeClassId == null) ||
+               (classProto == null && packageFqName != null && fileFacadeClassId == null) ||
+               (classProto == null && packageFqName == null && fileFacadeClassId != null))
     }
 
     fun getFqName(nameResolver: NameResolver): FqName {
         if (packageFqName != null) return packageFqName
 
         return nameResolver.getClassId(classProto!!.getFqName()).asSingleFqName()
+    }
+
+    companion object {
+        fun forClassProto(classProto: ProtoBuf.Class): ProtoContainer = ProtoContainer(classProto, null, null)
+        fun forPackageFacade(packageFqName: FqName): ProtoContainer = ProtoContainer(null, packageFqName, null)
+        fun forFileFacade(fileFacadeClassId: ClassId): ProtoContainer = ProtoContainer(null, null, fileFacadeClassId)
     }
 }

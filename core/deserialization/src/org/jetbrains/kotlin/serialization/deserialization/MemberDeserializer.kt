@@ -206,8 +206,8 @@ public class MemberDeserializer(private val c: DeserializationContext) {
     }
 
     private fun DeclarationDescriptor.asProtoContainer(): ProtoContainer = when(this) {
-        is PackageFragmentDescriptor -> ProtoContainer(null, fqName)
-        is DeserializedClassDescriptor -> ProtoContainer(classProto, null)
+        is PackageFragmentDescriptor -> ProtoContainer.forPackageFacade(fqName)
+        is DeserializedClassDescriptor -> ProtoContainer.forClassProto(classProto)
         else -> error("Only members in classes or package fragments should be serialized: $this")
     }
 }

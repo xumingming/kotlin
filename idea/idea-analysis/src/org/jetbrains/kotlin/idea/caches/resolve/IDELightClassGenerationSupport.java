@@ -26,7 +26,6 @@ import com.intellij.psi.ClassFileViewProvider;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.impl.PsiManagerImpl;
 import com.intellij.psi.impl.compiled.ClsClassImpl;
 import com.intellij.psi.impl.compiled.ClsFileImpl;
 import com.intellij.psi.impl.java.stubs.PsiJavaFileStub;
@@ -292,6 +291,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
         List<KotlinLightFacadeClassInfo> packageClassesInfos = findPackageClassesInfos(packageFqName, scope);
         for (KotlinLightFacadeClassInfo info : packageClassesInfos) {
             List<JetFile> files = PackagePartClassUtils.getFilesWithCallables(info.getFiles());
+
             if (files.isEmpty()) continue;
 
             IdeaModuleInfo moduleInfo = info.getModuleInfo();
@@ -309,7 +309,8 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
                 }
             }
             else {
-                PsiClass clsClass = getLightClassForDecompiledFacade(packageFqName, files);
+                List<JetFile> packageFacadeFiles = PackagePartClassUtils.getPackageFacadeFiles(files);
+                PsiClass clsClass = getLightClassForDecompiledFacade(packageFqName, packageFacadeFiles);
                 if (clsClass != null) {
                     result.add(clsClass);
                 }
@@ -373,7 +374,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
         JetFile firstFile = filesWithCallables.iterator().next();
         if (firstFile.isCompiled()) {
             if (filesWithCallables.size() > 1) {
-                LOG.error("Several files with callables for facade: " + facadeFqName);
+                LOG.error("Several files with callables for facade " + facadeFqName + ": " + filesWithCallables);
             }
             return createLightClassForDecompiledKotlinFile(firstFile);
         }
@@ -440,7 +441,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
             return null;
         }
         PsiManager manager = PsiManager.getInstance(decompiledKotlinFile.getProject());
-        ClsFileImpl fakeFile = new ClsFileImpl((PsiManagerImpl) manager, new ClassFileViewProvider(manager, virtualFile)) {
+        ClsFileImpl fakeFile = new ClsFileImpl(new ClassFileViewProvider(manager, virtualFile)) {
             @NotNull
             @Override
             public PsiElement getNavigationElement() {

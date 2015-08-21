@@ -143,7 +143,7 @@ public abstract class AbstractJvmRuntimeDescriptorLoaderTest : TestCaseWithTmpdi
             val klass = classLoader.loadClass(className).sure { "Couldn't load class $className" }
             val header = ReflectKotlinClass.create(klass)?.getClassHeader()
 
-            if (header?.kind == KotlinClassHeader.Kind.PACKAGE_FACADE) {
+            if (header?.kind == KotlinClassHeader.Kind.PACKAGE_FACADE || header?.kind == KotlinClassHeader.Kind.FILE_FACADE) {
                 val packageView = module.getPackage(LoadDescriptorUtil.TEST_PACKAGE_FQNAME)
                 packageScopes.add(packageView.memberScope)
             }

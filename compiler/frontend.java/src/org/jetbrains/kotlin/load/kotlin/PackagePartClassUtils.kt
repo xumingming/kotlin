@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.load.kotlin
 
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.PathUtil
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor
 import org.jetbrains.kotlin.name.FqName
@@ -55,8 +56,8 @@ public object PackagePartClassUtils {
                 "_$this"
 
     @TestOnly
-    public @platformStatic fun getDefaultPartFqName(facadeClassFqName: FqName, file: VirtualFile): FqName =
-            getDefaultPartFqNameForFilePath(facadeClassFqName.parent(), file.name)
+    public @platformStatic fun getDefaultPartFqName(facadeClassFqName: FqName, vFile: VirtualFile): FqName =
+            getDefaultPartFqNameForFilePath(facadeClassFqName.parent(), PathUtil.getFileName(vFile.name))
 
     private @platformStatic fun getDefaultPartFqNameForFilePath(packageFqName: FqName, fileName: String): FqName {
         val nameWithoutExtension = FileUtil.getNameWithoutExtension(fileName)
@@ -90,6 +91,15 @@ public object PackagePartClassUtils {
             file.declarations.any { it is JetProperty || it is JetNamedFunction }
 
     public @platformStatic fun getFilesForPart(partFqName: FqName, files: Collection<JetFile>): List<JetFile> =
-            getFilesWithCallables(files).filter { getPackagePartFqName(it) == partFqName }
+            files.filter {
+                fileHasTopLevelCallables(it) &&
+                getPackagePartFqName(it) == partFqName
+            }
+
+    // TODO move to PackageClassUtils (which is placed in an unrelated module for some reason...)
+    public @platformStatic fun getPackageFacadeFiles(files: Collection<JetFile>): List<JetFile> =
+            files.filter {
+                PackageClassUtils.isPackageClass(it.packageFqName, FileUtil.getNameWithoutExtension(it.name))
+            }
 
 }

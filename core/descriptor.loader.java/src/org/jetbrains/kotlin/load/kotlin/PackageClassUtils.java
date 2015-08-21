@@ -17,10 +17,10 @@
 package org.jetbrains.kotlin.load.kotlin;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.resolve.jvm.JvmClassName;
 
 public final class PackageClassUtils {
     public static final String PACKAGE_CLASS_NAME_SUFFIX = "Package";
@@ -60,5 +60,9 @@ public final class PackageClassUtils {
 
     public static boolean isPackageClassFqName(@NotNull FqName fqName) {
         return !fqName.isRoot() && getPackageClassFqName(fqName.parent()).equals(fqName);
+    }
+
+    public static boolean isPackageClass(@NotNull FqName packageFqName, @NotNull String name) {
+        return name.equals(getPackageClassName(packageFqName));
     }
 }

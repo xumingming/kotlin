@@ -47,8 +47,17 @@ fun createPackageFacadeFileStub(
         c: ClsStubBuilderContext
 ): KotlinFileStubImpl {
     val fileStub = createFileStub(packageFqName)
-    val container = ProtoContainer(null, packageFqName)
+    val container = ProtoContainer.forPackageFacade(packageFqName)
     for (callableProto in packageProto.getMemberList()) {
+        createCallableStub(fileStub, callableProto, c, container)
+    }
+    return fileStub
+}
+
+fun createFileFacadeClassStub(classId: ClassId, filePartProto: ProtoBuf.Package, c: ClsStubBuilderContext): KotlinFileStubImpl {
+    val fileStub = createFileStub(classId.packageFqName)
+    val container = ProtoContainer.forFileFacade(classId)
+    for (callableProto in filePartProto.memberList) {
         createCallableStub(fileStub, callableProto, c, container)
     }
     return fileStub

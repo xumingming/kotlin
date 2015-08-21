@@ -163,6 +163,12 @@ public abstract class AbstractBinaryClassAnnotationAndConstantLoader<A : Any, C 
         if (packageFqName != null) {
             return findPackagePartClass(packageFqName, proto, nameResolver)
         }
+
+        val fileFacadeClassId = container.fileFacadeClassId
+        if (fileFacadeClassId != null) {
+            return kotlinClassFinder.findKotlinClass(fileFacadeClassId)
+        }
+
         val classProto = container.classProto!!
         val classKind = Flags.CLASS_KIND[classProto.getFlags()]
         val classId = nameResolver.getClassId(classProto.getFqName())
@@ -189,7 +195,9 @@ public abstract class AbstractBinaryClassAnnotationAndConstantLoader<A : Any, C 
             nameResolver: NameResolver
     ): KotlinJvmBinaryClass? {
         if (proto.hasExtension(implClassName)) {
-            return kotlinClassFinder.findKotlinClass(ClassId(packageFqName, nameResolver.getName(proto.getExtension(implClassName))))
+            val name = nameResolver.getName(proto.getExtension(implClassName))
+            val classId = ClassId(packageFqName, name)
+            return kotlinClassFinder.findKotlinClass(classId)
         }
         return null
     }
