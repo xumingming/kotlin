@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptor
 import org.jetbrains.kotlin.psi.JetNamedFunction
 
 
-public class KotlinRunLineMarkerProvider : RunLineMarkerContributor() {
+public class KotlinRunLineMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement?): RunLineMarkerContributor.Info? {
         val function = element?.parent as? JetNamedFunction
         if (function == null) return null
