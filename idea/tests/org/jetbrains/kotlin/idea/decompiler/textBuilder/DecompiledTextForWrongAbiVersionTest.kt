@@ -36,7 +36,8 @@ public class DecompiledTextForWrongAbiVersionTest : AbstractInternalCompiledClas
         return JetJdkAndLibraryProjectDescriptor(File(JetTestUtils.getTestDataPathBase() + "/cli/jvm/wrongAbiVersionLib/bin"))
     }
 
-    fun testPackagePartIsInvisibleWrongAbiVersion() = doTestNoPsiFilesAreBuiltForSyntheticClass(PACKAGE_PART)
+    //TODO add test for package part
+    //fun testPackagePartIsInvisibleWrongAbiVersion() = doTestNoPsiFilesAreBuiltForSyntheticClass(PACKAGE_PART)
 
     fun testTraitImplClassIsVisibleAsJavaClassWrongAbiVersion() = doTestTraitImplClassIsVisibleAsJavaClass()
 
