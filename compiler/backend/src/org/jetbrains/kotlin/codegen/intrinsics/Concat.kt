@@ -81,3 +81,12 @@ public class Concat : IntrinsicMethod() {
                 }
             }
 }
+
+
+
+fun main(args: Array<String>) {
+    val a = intArray(1)
+    //Breakpoint!
+    a.withIndex()
+    val b = 1
+}
