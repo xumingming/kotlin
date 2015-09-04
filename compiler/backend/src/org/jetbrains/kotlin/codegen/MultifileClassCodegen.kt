@@ -149,9 +149,10 @@ public class MultifileClassCodegen(
         val av = classBuilder.newAnnotation(AsmUtil.asmDescByFqNameWithoutInnerClasses(JvmAnnotationNames.KOTLIN_MULTIFILE_CLASS), true)
         av.visit(JvmAnnotationNames.ABI_VERSION_FIELD_NAME, JvmAbi.VERSION)
 
+        val shortNames = partFqNames.map { it.shortName().asString() }.sorted()
         val filePartClassNamesArray = av.visitArray(JvmAnnotationNames.FILE_PART_CLASS_NAMES)
-        for (partFqName in partFqNames) {
-            filePartClassNamesArray.visit(null, partFqName.shortName().asString())
+        for (shortName in shortNames) {
+            filePartClassNamesArray.visit(null, shortName)
         }
         filePartClassNamesArray.visitEnd()
 
@@ -234,6 +235,10 @@ public class MultifileClassCodegen(
                 override fun generateBody() = throw UnsupportedOperationException()
                 override fun generateKotlinAnnotation() = throw UnsupportedOperationException()
             }
+
+    public fun done() {
+        classBuilder.done()
+    }
 
     companion object {
         private val FACADE_CLASS_ATTRIBUTES = Opcodes.ACC_PUBLIC or Opcodes.ACC_FINAL

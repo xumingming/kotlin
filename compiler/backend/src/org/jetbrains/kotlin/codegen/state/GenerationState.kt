@@ -49,7 +49,7 @@ public class GenerationState jvmOverloads constructor(
         public val generateDeclaredClassFilter: GenerationState.GenerateClassFilter = GenerationState.GenerateClassFilter.GENERATE_ALL,
         disableInline: Boolean = false,
         disableOptimization: Boolean = false,
-        packageFacadesAsMultifileFacades: Boolean = false,
+        public val packageFacadesAsMultifileFacades: Boolean = false,
         public val diagnostics: DiagnosticSink = DiagnosticSink.DO_NOTHING,
         public val packagesWithObsoleteParts: Collection<FqName> = emptySet(),
         // for PackageCodegen in incremental compilation mode

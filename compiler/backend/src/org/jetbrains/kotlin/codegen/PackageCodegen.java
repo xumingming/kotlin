@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils;
+import org.jetbrains.kotlin.fileClasses.JvmFileClassInfo;
 import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
@@ -316,10 +317,12 @@ public class PackageCodegen {
 
     @Nullable
     private ClassBuilder generate(@NotNull JetFile file, @NotNull Map<CallableMemberDescriptor, Runnable> generateCallableMemberTasks) {
-        boolean generatePackagePart = false;
-        Type packagePartType = state.getFileClassesManager().getFileClassType(file);
+        JvmFileClassInfo fileClassInfo = state.getFileClassesManager().getFileClassInfo(file);
+        Type packagePartType = AsmUtil.asmTypeByFqNameWithoutInnerClasses(fileClassInfo.getFileClassFqName());
+        boolean generateDelegatesToPackagePart = !fileClassInfo.getIsWithJvmName();
         PackageContext packagePartContext = CodegenContext.STATIC.intoPackagePart(packageFragment, packagePartType);
 
+        boolean generatePackagePart = false;
         for (JetDeclaration declaration : file.getDeclarations()) {
             if (declaration instanceof JetProperty || declaration instanceof JetNamedFunction) {
                 generatePackagePart = true;
@@ -340,7 +343,6 @@ public class PackageCodegen {
             }
         }
 
-
         if (!generatePackagePart || !state.getGenerateDeclaredClassFilter().shouldGeneratePackagePart(file)) return null;
 
         String name = packagePartType.getInternalName();
@@ -349,6 +351,9 @@ public class PackageCodegen {
         ClassBuilder builder = state.getFactory().newVisitor(PackagePart(file, packageFragment), packagePartType, file);
 
         new PackagePartCodegen(builder, file, packagePartType, packagePartContext, state).generate();
+
+        // If file has 'jvmName' annotation, generate the class,
+        //if (!generateDelegatesToPackagePart) return null;
 
         FieldOwnerContext packageFacade = CodegenContext.STATIC.intoPackageFacade(packagePartType, packageFragment);
 

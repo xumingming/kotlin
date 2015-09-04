@@ -40,13 +40,13 @@ public object JvmFileClassUtil {
 
     public @jvmStatic fun getFileClassInfoForAnnotation(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations): JvmFileClassInfo =
             if (jvmFileClassAnnotations.multipleFiles)
-                JvmMultifileFacadePartInfo(getHiddenPartFqName(file, jvmFileClassAnnotations),
-                                           getFacadeFqName(file, jvmFileClassAnnotations))
+                JvmMultifileClassPartInfo(getHiddenPartFqName(file, jvmFileClassAnnotations),
+                                          getFacadeFqName(file, jvmFileClassAnnotations))
             else
-                JvmFileFacadeInfo(getFacadeFqName(file, jvmFileClassAnnotations))
+                JvmSimpleFileClassInfo(getFacadeFqName(file, jvmFileClassAnnotations), true)
 
     public @jvmStatic fun getDefaultFileClassInfo(file: JetFile): JvmFileClassInfo =
-            JvmFileFacadeInfo(PackagePartClassUtils.getPackagePartFqName(file.packageFqName, file.name))
+            JvmSimpleFileClassInfo(PackagePartClassUtils.getPackagePartFqName(file.packageFqName, file.name), false)
 
     public @jvmStatic fun getFacadeFqName(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations): FqName =
             file.packageFqName.child(Name.identifier(jvmFileClassAnnotations.name))

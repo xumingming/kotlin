@@ -18,8 +18,11 @@ package org.jetbrains.kotlin.codegen;
 
 import com.google.common.collect.Sets;
 import com.intellij.util.containers.MultiMap;
+import com.intellij.util.containers.hash.LinkedHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
+import org.jetbrains.kotlin.fileClasses.JvmFileClassInfo;
+import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -29,6 +32,7 @@ import org.jetbrains.org.objectweb.asm.Type;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.jetbrains.kotlin.codegen.binding.CodegenBinding.registerClassNameForScript;
@@ -62,15 +66,31 @@ public class KotlinCodegenFacade {
         ProgressIndicatorAndCompilationCanceledStatus.checkCanceled();
 
         MultiMap<FqName, JetFile> packageFqNameToFiles = new MultiMap<FqName, JetFile>();
+        MultiMap<FqName, JetFile> multifileClassFqNameToFiles = new MultiMap<FqName, JetFile>();
+
         for (JetFile file : state.getFiles()) {
             if (file == null) throw new IllegalArgumentException("A null file given for compilation");
-            packageFqNameToFiles.putValue(file.getPackageFqName(), file);
+            JvmFileClassInfo fileClassInfo = state.getFileClassesManager().getFileClassInfo(file);
+            if (fileClassInfo.getIsMultifileClass()) {
+                multifileClassFqNameToFiles.putValue(fileClassInfo.getFacadeClassFqName(), file);
+            }
+            else if (state.getPackageFacadesAsMultifileFacades()) {
+                multifileClassFqNameToFiles.putValue(PackageClassUtils.getPackageClassFqName(file.getPackageFqName()), file);
+            }
+            else {
+                packageFqNameToFiles.putValue(file.getPackageFqName(), file);
+            }
         }
 
         Set<FqName> packagesWithObsoleteParts = new HashSet<FqName>(state.getPackagesWithObsoleteParts());
-        for (FqName fqName : Sets.union(packagesWithObsoleteParts, packageFqNameToFiles.keySet())) {
+        for (FqName packageFqName : Sets.union(packagesWithObsoleteParts, packageFqNameToFiles.keySet())) {
             ProgressIndicatorAndCompilationCanceledStatus.checkCanceled();
-            generatePackage(state, fqName, packageFqNameToFiles.get(fqName), errorHandler);
+            generatePackage(state, packageFqName, packageFqNameToFiles.get(packageFqName), errorHandler);
+        }
+
+        for (FqName multifileClassFqName : multifileClassFqNameToFiles.keySet()) {
+            ProgressIndicatorAndCompilationCanceledStatus.checkCanceled();
+            generateMultifileClass(state, multifileClassFqName, multifileClassFqNameToFiles.get(multifileClassFqName), errorHandler);
         }
 
         ProgressIndicatorAndCompilationCanceledStatus.checkCanceled();
@@ -79,12 +99,22 @@ public class KotlinCodegenFacade {
 
     public static void generatePackage(
             @NotNull GenerationState state,
-            @NotNull FqName fqName,
+            @NotNull FqName packageFqName,
             @NotNull Collection<JetFile> jetFiles,
             @NotNull CompilationErrorHandler errorHandler
     ) {
-        PackageCodegen codegen = state.getFactory().forPackage(fqName, jetFiles);
+        PackageCodegen codegen = state.getFactory().forPackage(packageFqName, jetFiles);
         codegen.generate(errorHandler);
+    }
+
+    private static void generateMultifileClass(
+            @NotNull GenerationState state,
+            @NotNull FqName multifileClassFqName,
+            @NotNull Collection<JetFile> files,
+            @NotNull CompilationErrorHandler handler
+    ) {
+        MultifileClassCodegen codegen = state.getFactory().forMultifileClass(multifileClassFqName, files);
+        codegen.generate(handler);
     }
 
     private KotlinCodegenFacade() {}
