@@ -1,4 +1,4 @@
-@file:JvmClassName("Foo")
+@file:jvmName("Foo")
 package test
 
 public fun foo() {}

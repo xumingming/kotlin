@@ -1,2 +1,2 @@
-@file:JvmClassName("Foo")
+@file:jvmName("Foo")
 public fun foo(): String = "OK"

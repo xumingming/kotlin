@@ -24,100 +24,65 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.constants.BooleanValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
 
 public object JvmFileClassUtil {
-    public val JVM_CLASS_NAME: FqName = FqName("kotlin.jvm.JvmClassName")
-    public val JVM_CLASS_NAME_SHORT_NAME: String = JVM_CLASS_NAME.shortName().asString()
+    public val JVM_NAME: FqName = FqName("kotlin.jvm.jvmName")
+    public val JVM_NAME_SHORT: String = JVM_NAME.shortName().asString()
 
-    private val JVM_CLASS_NAME_PARAM_NAME: String = "name"
-    private val JVM_CLASS_NAME_PARAM_NAME_INDEX: Int = 0
-    private val JVM_CLASS_NAME_PARAM_MULTIPLE_FILES: String = "multipleFiles"
-    private val JVM_CLASS_NAME_PARAM_MULTIPLE_FILES_INDEX: Int = 1
+    // TODO @JvmMultifileClass
 
-    public @jvmStatic fun getFileClassInfo(file: JetFile, jvmClassNameAnnotation: ParsedJmvClassNameAnnotation?): JvmFileClassInfo =
-            if (jvmClassNameAnnotation != null)
-                getFileClassInfoForAnnotation(file, jvmClassNameAnnotation)
+    public @jvmStatic fun getFileClassInfo(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations?): JvmFileClassInfo =
+            if (jvmFileClassAnnotations != null)
+                getFileClassInfoForAnnotation(file, jvmFileClassAnnotations)
             else
                 getDefaultFileClassInfo(file)
 
-    public @jvmStatic fun getFileClassInfoForAnnotation(file: JetFile, jvmClassNameAnnotation: ParsedJmvClassNameAnnotation): JvmFileClassInfo =
-            if (jvmClassNameAnnotation.multipleFiles)
-                JvmMultifileFacadePartInfo(getHiddenPartFqName(file, jvmClassNameAnnotation),
-                                           getFacadeFqName(file, jvmClassNameAnnotation))
+    public @jvmStatic fun getFileClassInfoForAnnotation(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations): JvmFileClassInfo =
+            if (jvmFileClassAnnotations.multipleFiles)
+                JvmMultifileFacadePartInfo(getHiddenPartFqName(file, jvmFileClassAnnotations),
+                                           getFacadeFqName(file, jvmFileClassAnnotations))
             else
-                JvmFileFacadeInfo(getFacadeFqName(file, jvmClassNameAnnotation))
+                JvmFileFacadeInfo(getFacadeFqName(file, jvmFileClassAnnotations))
 
     public @jvmStatic fun getDefaultFileClassInfo(file: JetFile): JvmFileClassInfo =
             JvmFileFacadeInfo(PackagePartClassUtils.getPackagePartFqName(file.packageFqName, file.name))
 
-    public @jvmStatic fun getFacadeFqName(file: JetFile, jvmClassNameAnnotation: ParsedJmvClassNameAnnotation): FqName =
-            file.packageFqName.child(Name.identifier(jvmClassNameAnnotation.name))
+    public @jvmStatic fun getFacadeFqName(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations): FqName =
+            file.packageFqName.child(Name.identifier(jvmFileClassAnnotations.name))
 
-    public @jvmStatic fun getHiddenPartFqName(file: JetFile, jvmClassNameAnnotation: ParsedJmvClassNameAnnotation): FqName =
-            file.packageFqName.child(Name.identifier(manglePartName(jvmClassNameAnnotation.name, file.name)))
+    public @jvmStatic fun getHiddenPartFqName(file: JetFile, jvmFileClassAnnotations: ParsedJmvFileClassAnnotations): FqName =
+            file.packageFqName.child(Name.identifier(manglePartName(jvmFileClassAnnotations.name, file.name)))
 
     public @jvmStatic fun manglePartName(facadeName: String, fileName: String): String =
             "${facadeName}__${PackagePartClassUtils.getFilePartShortName(fileName)}"
 
-    public @jvmStatic fun parseJvmClassName(annotations: Annotations): ParsedJmvClassNameAnnotation? =
-            annotations.findAnnotation(JVM_CLASS_NAME)?.let { parseJvmClassName(it) }
+    public @jvmStatic fun parseJvmFileClass(annotations: Annotations): ParsedJmvFileClassAnnotations? {
+        val jvmName = annotations.findAnnotation(JVM_NAME)
+        // TODO @JvmMultifileClass
+        return if (jvmName != null) parseJvmFileClass(jvmName) else null
+    }
 
-    public @jvmStatic fun parseJvmClassName(annotation: AnnotationDescriptor): ParsedJmvClassNameAnnotation {
-        var name: String? = null
-        var multipleFiles: Boolean = false
-        for ((parameter, value) in annotation.allValueArguments.entrySet()) {
-            when (parameter.name.asString()) {
-                JVM_CLASS_NAME_PARAM_NAME ->
-                    name = (value as? StringValue)?.value
-                JVM_CLASS_NAME_PARAM_MULTIPLE_FILES ->
-                    multipleFiles = (value as? BooleanValue)?.value ?: false
-            }
-        }
-        return ParsedJmvClassNameAnnotation(name!!, multipleFiles)
+    public @jvmStatic fun parseJvmFileClass(jvmName: AnnotationDescriptor): ParsedJmvFileClassAnnotations {
+        val name = jvmName.allValueArguments.values().firstOrNull()?.let { (it as? StringValue)?.value }
+        return ParsedJmvFileClassAnnotations(name!!, false)
     }
 
     public @jvmStatic fun getFileClassInfoNoResolve(file: JetFile): JvmFileClassInfo =
-            getFileClassInfo(file, parseJvmClassNameNoResolve(file))
+            getFileClassInfo(file, parseJvmNameOnFileNoResolve(file))
 
-    public @jvmStatic fun parseJvmClassNameNoResolve(file: JetFile): ParsedJmvClassNameAnnotation? =
-            findJvmClassNameAnnotationNoResolve(file)?.let { parseJvmClassNameNoResolve(it) }
+    public @jvmStatic fun parseJvmNameOnFileNoResolve(file: JetFile): ParsedJmvFileClassAnnotations? =
+            findJvmNameOnFileNoResolve(file)?.let { parseJvmNameOnFileNoResolve(it) }
 
-    public @jvmStatic fun findJvmClassNameAnnotationNoResolve(file: JetFile): JetAnnotationEntry? =
+    public @jvmStatic fun findJvmNameOnFileNoResolve(file: JetFile): JetAnnotationEntry? =
             file.fileAnnotationList?.annotationEntries?.firstOrNull {
-                it.calleeExpression?.constructorReferenceExpression?.getReferencedName() == JVM_CLASS_NAME_SHORT_NAME
+                it.calleeExpression?.constructorReferenceExpression?.getReferencedName() == JVM_NAME_SHORT
             }
 
-    public @jvmStatic fun parseJvmClassNameNoResolve(annotationEntry: JetAnnotationEntry): ParsedJmvClassNameAnnotation? {
-        var name: String? = null
-        var multipleFiles: Boolean = false
-        var argumentIndex = 0
-        var hasErrors: Boolean = false
-        for (valueArgument in annotationEntry.valueArguments) {
-            val mappedArgumentIndex = if (valueArgument.isNamed()) {
-                when (valueArgument.getArgumentName()?.asName?.asString()) {
-                    JVM_CLASS_NAME_PARAM_NAME ->
-                        JVM_CLASS_NAME_PARAM_NAME_INDEX
-                    JVM_CLASS_NAME_PARAM_MULTIPLE_FILES ->
-                        JVM_CLASS_NAME_PARAM_MULTIPLE_FILES_INDEX
-                    else -> -1
-                }
-            }
-            else argumentIndex
-
-            when (mappedArgumentIndex) {
-                JVM_CLASS_NAME_PARAM_NAME_INDEX ->
-                    name = getLiteralStringFromRestrictedConstExpression(valueArgument.getArgumentExpression())
-                JVM_CLASS_NAME_PARAM_MULTIPLE_FILES_INDEX ->
-                    multipleFiles = getLiteralBooleanFromRestrictedConstExpression(valueArgument.getArgumentExpression())
-                else ->
-                    hasErrors = true
-            }
-            ++argumentIndex
-        }
-        hasErrors = hasErrors || argumentIndex >= 2
-        return if (hasErrors) null else name?.let { ParsedJmvClassNameAnnotation(it, multipleFiles) }
+    public @jvmStatic fun parseJvmNameOnFileNoResolve(annotationEntry: JetAnnotationEntry): ParsedJmvFileClassAnnotations? {
+        val nameExpr = annotationEntry.valueArguments.firstOrNull()?.getArgumentExpression() ?: return null
+        val name = getLiteralStringFromRestrictedConstExpression(nameExpr)
+        return name?.let { ParsedJmvFileClassAnnotations(it, false) }
     }
 
     private @jvmStatic fun getLiteralStringFromRestrictedConstExpression(argumentExpression: JetExpression?): String? {
@@ -127,9 +92,6 @@ public object JvmFileClassUtil {
         val singleEntry = stringTemplateEntries[0] as? JetLiteralStringTemplateEntry ?: return null
         return singleEntry.text
     }
-
-    private @jvmStatic fun getLiteralBooleanFromRestrictedConstExpression(argumentExpression: JetExpression?): Boolean =
-            (argumentExpression as? JetConstantExpression)?.text == "true"
 
     public @jvmStatic fun collectFileAnnotations(file: JetFile, bindingContext: BindingContext): Annotations {
         val fileAnnotationsList = file.fileAnnotationList ?: return Annotations.EMPTY
@@ -141,4 +103,4 @@ public object JvmFileClassUtil {
     }
 }
 
-public class ParsedJmvClassNameAnnotation(public val name: String, public val multipleFiles: Boolean)
+public class ParsedJmvFileClassAnnotations(public val name: String, public val multipleFiles: Boolean)

@@ -35,7 +35,7 @@ public class CodegenFileClassesProvider private constructor(private val bindingC
 
     private fun createFileClassInfo(file: JetFile): JvmFileClassInfo {
         val fileAnnotations = JvmFileClassUtil.collectFileAnnotations(file, bindingContext)
-        val jvmClassNameAnnotation = JvmFileClassUtil.parseJvmClassName(fileAnnotations)
+        val jvmClassNameAnnotation = JvmFileClassUtil.parseJvmFileClass(fileAnnotations)
         return JvmFileClassUtil.getFileClassInfo(file, jvmClassNameAnnotation)
     }
 

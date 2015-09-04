@@ -1,4 +1,4 @@
-@file:JvmClassName("Util")
+@file:jvmName("Util")
 package test
 
 fun foo(): String = bar()
