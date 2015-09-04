@@ -49,6 +49,12 @@ public class KotlincExecutableTestGenerated extends AbstractKotlincExecutableTes
             doJvmTest(fileName);
         }
 
+        @TestMetadata("classAndOtherFileClassClash.args")
+        public void testClassAndOtherFileClassClash() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/classAndOtherFileClassClash.args");
+            doJvmTest(fileName);
+        }
+
         @TestMetadata("classAndPartClash.args")
         public void testClassAndPartClash() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/classAndPartClash.args");
@@ -100,6 +106,24 @@ public class KotlincExecutableTestGenerated extends AbstractKotlincExecutableTes
         @TestMetadata("extraHelp.args")
         public void testExtraHelp() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/extraHelp.args");
+            doJvmTest(fileName);
+        }
+
+        @TestMetadata("fileClassAndFacadeClash.args")
+        public void testFileClassAndFacadeClash() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/fileClassAndFacadeClash.args");
+            doJvmTest(fileName);
+        }
+
+        @TestMetadata("fileClassAndTImplClash.args")
+        public void testFileClassAndTImplClash() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/fileClassAndTImplClash.args");
+            doJvmTest(fileName);
+        }
+
+        @TestMetadata("fileClassClashMultipleFiles.args")
+        public void testFileClassClashMultipleFiles() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cli/jvm/fileClassClashMultipleFiles.args");
             doJvmTest(fileName);
         }
 
