@@ -71,5 +71,12 @@ public class KotlinFileStubImpl(
                                    facadeSimpleName = StringRef.fromString(facadeFqName.shortName().asString())!!,
                                    partSimpleName = StringRef.fromString(facadeFqName.shortName().asString())!!,
                                    isScript = isScript)
+
+        public fun forMultifileFacade(facadeFqName: FqName, isScript: Boolean): KotlinFileStubImpl =
+                KotlinFileStubImpl(jetFile = null,
+                                   packageName = StringRef.fromString(facadeFqName.parent().asString())!!,
+                                   facadeSimpleName = StringRef.fromString(facadeFqName.shortName().asString())!!,
+                                   partSimpleName = null,
+                                   isScript = isScript)
     }
 }

@@ -8,7 +8,7 @@
 
 @java.lang.annotation.Retention @kotlin.jvm.internal.KotlinClass Ann
 
-@kotlin.jvm.internal.KotlinFileFacade OnReceiverKt {
+@kotlin.jvm.internal.KotlinFileClass OnReceiverKt {
     @org.jetbrains.annotations.NotNull method topLevelF(@Ann p0: java.lang.String): java.lang.String
     @org.jetbrains.annotations.NotNull method getTopLevelP(@Ann p0: java.lang.String): java.lang.String
 }

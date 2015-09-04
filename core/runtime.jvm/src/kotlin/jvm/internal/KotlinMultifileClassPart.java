@@ -20,8 +20,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface KotlinFileFacade {
+public @interface KotlinMultifileClassPart {
     int abiVersion();
 
+    String multifileClassName();
     String[] data();
 }

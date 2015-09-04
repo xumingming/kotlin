@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.codegen.binding.MutableClosure;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.descriptors.*;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.storage.LockBasedStorageManager;
@@ -152,6 +153,16 @@ public abstract class CodegenContext<T extends DeclarationDescriptor> {
     @NotNull
     public FieldOwnerContext intoPackageFacade(@NotNull Type delegateTo, @NotNull PackageFragmentDescriptor descriptor) {
         return new PackageFacadeContext(descriptor, this, delegateTo);
+    }
+
+    @NotNull
+    public PackageContext intoMultifileFacadePart(@NotNull PackageFragmentDescriptor descriptor, @NotNull Type facadeType, @NotNull Type partType) {
+        return new MultifileFacadePartContext(descriptor, this, facadeType, partType);
+    }
+
+    @NotNull
+    public FieldOwnerContext intoMultifileFacade(@NotNull PackageFragmentDescriptor descriptor, @NotNull Type facadeType, @NotNull Type partType) {
+        return new MultifileFacadeContext(descriptor, this, facadeType, partType);
     }
 
     @NotNull

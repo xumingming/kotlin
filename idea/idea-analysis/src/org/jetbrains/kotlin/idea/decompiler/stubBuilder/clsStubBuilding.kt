@@ -20,7 +20,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.StubElement
 import com.intellij.util.io.StringRef
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.lexer.JetModifierKeywordToken
 import org.jetbrains.kotlin.lexer.JetTokens
 import org.jetbrains.kotlin.name.ClassId
@@ -35,6 +34,7 @@ import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.ProtoBuf.Callable.CallableKind
 import org.jetbrains.kotlin.serialization.deserialization.AnnotatedCallableKind
 import org.jetbrains.kotlin.serialization.deserialization.ProtoContainer
+import java.util.*
 
 fun createTopLevelClassStub(classId: ClassId, classProto: ProtoBuf.Class, context: ClsStubBuilderContext): KotlinFileStubImpl {
     val fileStub = createFileStub(classId.getPackageFqName())
@@ -56,7 +56,7 @@ fun createPackageFacadeStub(
     return fileStub
 }
 
-fun createFileFacadeStub(
+fun createFileClassStub(
         packageProto: ProtoBuf.Package,
         facadeFqName: FqName,
         c: ClsStubBuilderContext
@@ -64,8 +64,23 @@ fun createFileFacadeStub(
     val packageFqName = facadeFqName.parent()
     val fileStub = KotlinFileStubImpl.forFileFacadeStub(facadeFqName, packageFqName.isRoot)
     setupFileStub(fileStub, packageFqName)
-    val container = ProtoContainer(null, facadeFqName.parent())
-    for (callableProto in packageProto.getMemberList()) {
+    val container = ProtoContainer(null, packageFqName)
+    for (callableProto in packageProto.memberList) {
+        createCallableStub(fileStub, callableProto, c, container)
+    }
+    return fileStub
+}
+
+fun createMultifileClassStub(
+        partMembers: ArrayList<ProtoBuf.Callable>,
+        facadeFqName: FqName,
+        c: ClsStubBuilderContext
+): KotlinFileStubImpl {
+    val packageFqName = facadeFqName.parent()
+    val fileStub = KotlinFileStubImpl.forMultifileFacade(facadeFqName, packageFqName.isRoot)
+    setupFileStub(fileStub, packageFqName)
+    val container = ProtoContainer(null, packageFqName)
+    for (callableProto in partMembers) {
         createCallableStub(fileStub, callableProto, c, container)
     }
     return fileStub

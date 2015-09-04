@@ -25,7 +25,9 @@ public class KotlinClassHeader(
         public val version: Int,
         public val annotationData: Array<String>?,
         public val classKind: KotlinClass.Kind?,
-        public val syntheticClassKind: KotlinSyntheticClass.Kind?
+        public val syntheticClassKind: KotlinSyntheticClass.Kind?,
+        public val multifileClassName: String?,
+        public val multifileClassPartNames: Array<String>?
 ) {
     public val isCompatibleAbiVersion: Boolean get() = AbiVersionUtil.isAbiVersionCompatible(version)
 
@@ -46,7 +48,9 @@ public class KotlinClassHeader(
     public enum class Kind {
         CLASS,
         PACKAGE_FACADE,
-        FILE_FACADE,
+        FILE_CLASS,
+        MULTIFILE_CLASS,
+        MULTIFILE_CLASS_PART,
         SYNTHETIC_CLASS
     }
 
@@ -60,12 +64,16 @@ public class KotlinClassHeader(
         private fun shouldHaveAnnotationData(kind: Kind, syntheticClassKind: KotlinSyntheticClass.Kind?): Boolean =
                 kind == Kind.CLASS ||
                 kind == Kind.PACKAGE_FACADE ||
-                kind == Kind.FILE_FACADE ||
+                kind == Kind.FILE_CLASS ||
+                kind == Kind.MULTIFILE_CLASS ||
+                kind == Kind.MULTIFILE_CLASS_PART ||
                 syntheticClassKind == KotlinSyntheticClass.Kind.PACKAGE_PART
     }
 }
 
 public fun KotlinClassHeader.isCompatibleClassKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.CLASS
 public fun KotlinClassHeader.isCompatiblePackageFacadeKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.PACKAGE_FACADE
-public fun KotlinClassHeader.isCompatibleFileFacadeKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.FILE_FACADE
+public fun KotlinClassHeader.isCompatibleFileClassKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.FILE_CLASS
+public fun KotlinClassHeader.isCompatibleMultifileClassKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.MULTIFILE_CLASS
+public fun KotlinClassHeader.isCompatibleMultifileClassPartKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.MULTIFILE_CLASS_PART
 public fun KotlinClassHeader.isCompatibleSyntheticClassKind(): Boolean = isCompatibleAbiVersion && kind == KotlinClassHeader.Kind.SYNTHETIC_CLASS

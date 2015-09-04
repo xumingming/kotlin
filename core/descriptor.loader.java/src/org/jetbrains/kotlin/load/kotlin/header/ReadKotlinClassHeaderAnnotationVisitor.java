@@ -38,11 +38,12 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
     private static final Map<JvmClassName, KotlinClassHeader.Kind> HEADER_KINDS = new HashMap<JvmClassName, KotlinClassHeader.Kind>();
     private static final Map<JvmClassName, KotlinClassHeader.Kind> OLD_DEPRECATED_ANNOTATIONS_KINDS = new HashMap<JvmClassName, KotlinClassHeader.Kind>();
 
-    private int version = AbiVersionUtil.INVALID_VERSION;
     static {
         HEADER_KINDS.put(KotlinClass.CLASS_NAME, CLASS);
         HEADER_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_PACKAGE), PACKAGE_FACADE);
-        HEADER_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_FILE_FACADE), FILE_FACADE);
+        HEADER_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_FILE_CLASS), FILE_CLASS);
+        HEADER_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_MULTIFILE_CLASS), MULTIFILE_CLASS);
+        HEADER_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_MULTIFILE_CLASS_PART), MULTIFILE_CLASS_PART);
         HEADER_KINDS.put(KotlinSyntheticClass.CLASS_NAME, SYNTHETIC_CLASS);
 
         initOldAnnotations();
@@ -59,7 +60,10 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         OLD_DEPRECATED_ANNOTATIONS_KINDS.put(JvmClassName.byFqNameWithoutInnerClasses(OLD_KOTLIN_TRAIT_IMPL), SYNTHETIC_CLASS);
     }
 
+    private int version = AbiVersionUtil.INVALID_VERSION;
     private String[] annotationData = null;
+    private String multifileClassName = null;
+    private String[] partNames = null;
     private KotlinClassHeader.Kind headerKind = null;
     private KotlinClass.Kind classKind = null;
     private KotlinSyntheticClass.Kind syntheticClassKind = null;
@@ -76,16 +80,36 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         }
 
         if (!AbiVersionUtil.isAbiVersionCompatible(version)) {
-            return new KotlinClassHeader(headerKind, version, null, classKind, syntheticClassKind);
+            return new KotlinClassHeader(headerKind, version, null, classKind, syntheticClassKind, multifileClassName, partNames);
         }
 
-        if ((headerKind == CLASS || headerKind == PACKAGE_FACADE || headerKind == FILE_FACADE) && annotationData == null) {
+        if (shouldHaveAnnotationData() && annotationData == null) {
             // This means that the annotation is found and its ABI version is compatible, but there's no "data" string array in it.
-            // We tell the outside world that there's really no annotation at all
+            // We tell the outside world that there's really no annotation at all.
             return null;
         }
 
-        return new KotlinClassHeader(headerKind, version, annotationData, classKind, syntheticClassKind);
+        if (headerKind == MULTIFILE_CLASS && partNames == null) {
+            // Proper KotlinMultifileClass should have partNames.
+            // We tell the outside world that there's really no annotation at all.
+            return null;
+        }
+
+        if (headerKind == MULTIFILE_CLASS_PART && multifileClassName == null) {
+            // Proper KotlinMultifileClassPart should have multifileClassName.
+            // We tell the outside world that there's really no annotation at all.
+            return null;
+        }
+
+        return new KotlinClassHeader(headerKind, version, annotationData, classKind, syntheticClassKind, multifileClassName, partNames);
+    }
+
+    private boolean shouldHaveAnnotationData() {
+        return headerKind == CLASS ||
+               headerKind == PACKAGE_FACADE ||
+               headerKind == FILE_CLASS ||
+               headerKind == MULTIFILE_CLASS ||
+               headerKind == MULTIFILE_CLASS_PART;
     }
 
     @Nullable
@@ -107,8 +131,12 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
                     return new ClassHeaderReader();
                 case PACKAGE_FACADE:
                     return new PackageHeaderReader();
-                case FILE_FACADE:
-                    return new FileFacadeHeaderReader();
+                case FILE_CLASS:
+                    return new FileClassHeaderReader();
+                case MULTIFILE_CLASS:
+                    return new MultifileClassHeaderReader();
+                case MULTIFILE_CLASS_PART:
+                    return new MultifileClassPartHeaderReader();
                 case SYNTHETIC_CLASS:
                     return new SyntheticClassHeaderReader();
                 default:
@@ -137,8 +165,16 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
 
         @Override
         public void visit(@Nullable Name name, @Nullable Object value) {
-            if (name != null && name.asString().equals(ABI_VERSION_FIELD_NAME)) {
-                version = value == null ? AbiVersionUtil.INVALID_VERSION : (Integer) value;
+            if (name != null) {
+                if (name.asString().equals(ABI_VERSION_FIELD_NAME)) {
+                    version = value == null ? AbiVersionUtil.INVALID_VERSION : (Integer) value;
+                }
+                else if (name.asString().equals(MULTIFILE_CLASS_NAME)) {
+                    multifileClassName = value == null ? null : (String) value;
+                }
+                else {
+                    unexpectedArgument(name);
+                }
             }
             else {
                 unexpectedArgument(name);
@@ -149,7 +185,10 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         @Nullable
         public AnnotationArrayArgumentVisitor visitArray(@NotNull Name name) {
             if (name.asString().equals(DATA_FIELD_NAME)) {
-                return stringArrayVisitor();
+                return dataFieldVisitor();
+            }
+            else if (name.asString().equals(FILE_PART_CLASS_NAMES)) {
+                return partNamesFieldVisitor();
             }
             else if (isAbiVersionCompatible(version)) {
                 throw new IllegalStateException("Unexpected array argument " + name + " for annotation " + annotationClassName);
@@ -165,27 +204,21 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         }
 
         @NotNull
-        private AnnotationArrayArgumentVisitor stringArrayVisitor() {
-            final List<String> strings = new ArrayList<String>(1);
-            return new AnnotationArrayArgumentVisitor() {
+        private AnnotationArrayArgumentVisitor dataFieldVisitor() {
+            return new StringArrayElementsCollector() {
                 @Override
-                public void visit(@Nullable Object value) {
-                    if (!(value instanceof String)) {
-                        throw new IllegalStateException("Unexpected argument value: " + value);
-                    }
-
-                    strings.add((String) value);
+                protected void visitEnd(String[] collected) {
+                    annotationData = collected;
                 }
+            };
+        }
 
+        @NotNull
+        private AnnotationArrayArgumentVisitor partNamesFieldVisitor() {
+            return new StringArrayElementsCollector() {
                 @Override
-                public void visitEnum(@NotNull ClassId enumClassId, @NotNull Name enumEntryName) {
-                    unexpectedArgument(null);
-                }
-
-                @Override
-                public void visitEnd() {
-                    //noinspection SSBasedInspection
-                    annotationData = strings.toArray(new String[strings.size()]);
+                protected void visitEnd(String[] collected) {
+                    partNames = collected;
                 }
             };
         }
@@ -208,6 +241,31 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         @Override
         public void visitEnd() {
         }
+    }
+
+    private abstract static class StringArrayElementsCollector implements AnnotationArrayArgumentVisitor {
+        private final List<String> strings = new ArrayList<String>(1);
+
+        @Override
+        public void visit(@Nullable Object value) {
+            if (!(value instanceof String)) {
+                throw new IllegalStateException("Unexpected argument value: " + value);
+            }
+            strings.add((String) value);
+        }
+
+        @Override
+        public void visitEnum(@NotNull ClassId enumClassId, @NotNull Name enumEntryName) {
+            throw new IllegalStateException("Unexpected enum value in String[]");
+        }
+
+        @Override
+        public void visitEnd() {
+            //noinspection SSBasedInspection
+            visitEnd(strings.toArray(new String[strings.size()]));
+        }
+
+        protected abstract void visitEnd(String[] collected);
     }
 
     private class ClassHeaderReader extends HeaderAnnotationArgumentVisitor {
@@ -236,9 +294,31 @@ public class ReadKotlinClassHeaderAnnotationVisitor implements AnnotationVisitor
         }
     }
 
-    private class FileFacadeHeaderReader extends HeaderAnnotationArgumentVisitor {
-        public FileFacadeHeaderReader() {
-            super(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_FILE_FACADE));
+    private class FileClassHeaderReader extends HeaderAnnotationArgumentVisitor {
+        public FileClassHeaderReader() {
+            super(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_FILE_CLASS));
+        }
+
+        @Override
+        public void visitEnum(@NotNull Name name, @NotNull ClassId enumClassId, @NotNull Name enumEntryName) {
+            unexpectedEnumArgument(name, enumClassId, enumEntryName);
+        }
+    }
+
+    private class MultifileClassHeaderReader extends HeaderAnnotationArgumentVisitor {
+        public MultifileClassHeaderReader() {
+            super(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_MULTIFILE_CLASS));
+        }
+
+        @Override
+        public void visitEnum(@NotNull Name name, @NotNull ClassId enumClassId, @NotNull Name enumEntryName) {
+            unexpectedEnumArgument(name, enumClassId, enumEntryName);
+        }
+    }
+
+    private class MultifileClassPartHeaderReader extends HeaderAnnotationArgumentVisitor {
+        public MultifileClassPartHeaderReader() {
+            super(JvmClassName.byFqNameWithoutInnerClasses(KOTLIN_MULTIFILE_CLASS_PART));
         }
 
         @Override

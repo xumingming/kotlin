@@ -45,7 +45,7 @@ public object KotlinAbiVersionIndex : KotlinAbiVersionIndexBase<KotlinAbiVersion
             OLD_KOTLIN_PACKAGE,
             KOTLIN_CLASS,
             KOTLIN_PACKAGE,
-            KOTLIN_FILE_FACADE)
+            KOTLIN_FILE_CLASS)
             .map { asmDescByFqNameWithoutInnerClasses(it) }
 
     private val INDEXER = DataIndexer<Int, Void, FileContent>() { inputData: FileContent ->

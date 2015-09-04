@@ -72,6 +72,9 @@ public class K2JVMCompilerArguments extends CommonCompilerArguments {
     @Argument(value = "Xreport-perf", description = "Report detailed performance statistics")
     public boolean reportPerf;
 
+    @Argument(value = "Xpackage-facades-as-file-facades", description = "Generate package facade classes as multi-file facade classes")
+    public boolean packageFacadesAsFileFacades;
+
     @Override
     @NotNull
     public String executableScriptFileName() {

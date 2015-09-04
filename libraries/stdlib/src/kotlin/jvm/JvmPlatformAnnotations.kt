@@ -45,19 +45,15 @@ target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTa
 public annotation(retention = AnnotationRetention.RUNTIME, mustBeDocumented = true) class jvmName(public val name: String)
 
 /**
+ * Instructs the Kotlin compiler to generate a multifile class from the top-level functions and properties declared in this file
+ * and other files with the same `jvmName`.
+ * @see jvmName
+ */
+target(AnnotationTarget.FILE)
+public annotation(retention = AnnotationRetention.RUNTIME, mustBeDocumented = true) class JvmMultifileClass
+
+/**
  * Instructs the Kotlin compiler to generate a public backing field for this property.
  */
 target(AnnotationTarget.FIELD)
 public annotation(retention = AnnotationRetention.SOURCE, mustBeDocumented = true) class publicField
-
-/**
- * Specifies the name of the Java class to be generated for the top-level functions and properties in the given file.
- * See the [Kotlin language documentation](http://kotlinlang.org/docs/reference/java-interop.html) for more information.
- * @property name the name of the Java class
- * @property multipleFiles true it the corresponding Java class can possibly contain members from multiple source files
- */
-target(AnnotationTarget.FILE)
-public annotation(retention = AnnotationRetention.BINARY, mustBeDocumented = true) class JvmClassName(
-        public val name: String,
-        public val multipleFiles: Boolean = false
-)

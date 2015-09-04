@@ -28,19 +28,21 @@ import org.jetbrains.kotlin.idea.decompiler.textBuilder.DirectoryBasedDataFinder
 import org.jetbrains.kotlin.idea.decompiler.textBuilder.LoggingErrorReporter
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
-import org.jetbrains.kotlin.load.kotlin.header.isCompatibleClassKind
-import org.jetbrains.kotlin.load.kotlin.header.isCompatibleFileFacadeKind
-import org.jetbrains.kotlin.load.kotlin.header.isCompatiblePackageFacadeKind
-import org.jetbrains.kotlin.load.kotlin.header.isCompatibleSyntheticClassKind
+import org.jetbrains.kotlin.load.kotlin.header.*
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.serialization.PackageData
+import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBufUtil
+import java.util.*
 
 public open class KotlinClsStubBuilder : ClsStubBuilder() {
     override fun getStubVersion() = ClassFileStubBuilder.STUB_VERSION + 1
 
     override fun buildFileStub(content: FileContent): PsiFileStub<*>? {
-        val file = content.getFile()
+        val file = content.file
 
         if (isKotlinInternalCompiledFile(file)) {
             return null
@@ -51,9 +53,9 @@ public open class KotlinClsStubBuilder : ClsStubBuilder() {
 
     fun doBuildFileStub(file: VirtualFile): PsiFileStub<JetFile>? {
         val kotlinBinaryClass = KotlinBinaryClassCache.getKotlinBinaryClass(file)!!
-        val header = kotlinBinaryClass.getClassHeader()
-        val classId = kotlinBinaryClass.getClassId()
-        val packageFqName = classId.getPackageFqName()
+        val header = kotlinBinaryClass.classHeader
+        val classId = kotlinBinaryClass.classId
+        val packageFqName = classId.packageFqName
         if (!header.isCompatibleAbiVersion) {
             return createIncompatibleAbiVersionFileStub()
         }
@@ -61,38 +63,66 @@ public open class KotlinClsStubBuilder : ClsStubBuilder() {
         val components = createStubBuilderComponents(file, packageFqName)
         val annotationData = header.annotationData
         if (annotationData == null) {
-            LOG.error("Corrupted kotlin header for file ${file.getName()}")
+            LOG.error("Corrupted kotlin header for file ${file.name}")
             return null
         }
         return when {
             header.isCompatiblePackageFacadeKind() -> {
                 val packageData = JvmProtoBufUtil.readPackageDataFrom(annotationData)
-                val context = components.createContext(packageData.getNameResolver(), packageFqName)
-                createPackageFacadeStub(packageData.getPackageProto(), packageFqName, context)
+                val context = components.createContext(packageData.nameResolver, packageFqName)
+                createPackageFacadeStub(packageData.packageProto, packageFqName, context)
             }
             header.isCompatibleClassKind() -> {
                 if (header.classKind != JvmAnnotationNames.KotlinClass.Kind.CLASS) return null
                 val classData = JvmProtoBufUtil.readClassDataFrom(annotationData)
-                val context = components.createContext(classData.getNameResolver(), packageFqName)
-                createTopLevelClassStub(classId, classData.getClassProto(), context)
+                val context = components.createContext(classData.nameResolver, packageFqName)
+                createTopLevelClassStub(classId, classData.classProto, context)
             }
-            header.isCompatibleFileFacadeKind() -> {
+            header.isCompatibleFileClassKind() -> {
                 val packageData = JvmProtoBufUtil.readPackageDataFrom(annotationData)
-                val context = components.createContext(packageData.getNameResolver(), packageFqName)
-                createFileFacadeStub(packageData.getPackageProto(), classId.asSingleFqName(), context)
+                val context = components.createContext(packageData.nameResolver, packageFqName)
+                createFileClassStub(packageData.packageProto, classId.asSingleFqName(), context)
             }
-            else -> throw IllegalStateException("Should have processed " + file.getPath() + " with header $header")
+            header.isCompatibleMultifileClassKind() -> {
+                val packageData = JvmProtoBufUtil.readPackageDataFrom(annotationData)
+                val context = components.createContext(packageData.nameResolver, packageFqName)
+                val partMembers = collectMultifileClassPartMembers(file, classId, header, packageFqName)
+                partMembers?.let { createMultifileClassStub(it, classId.asSingleFqName(), context) }
+            }
+            else -> throw IllegalStateException("Should have processed " + file.path + " with header $header")
         }
     }
 
+    private fun collectMultifileClassPartMembers(
+            file: VirtualFile,
+            classId: ClassId,
+            header: KotlinClassHeader,
+            packageFqName: FqName
+    ): ArrayList<ProtoBuf.Callable>? {
+        val partMembers = arrayListOf<ProtoBuf.Callable>()
+        val partClassFinder = DirectoryBasedClassFinder(file.parent!!, packageFqName)
+        val partNames = header.multifileClassPartNames
+        if (partNames == null) {
+            LOG.error("Corrupted kotlin header for file ${file.name}: no partNames for multifile class")
+            return null
+        }
+        for (partName in partNames) {
+            val partClass = partClassFinder.findKotlinClass(ClassId.topLevel(packageFqName.child(Name.identifier(partName))))
+            val partData = partClass?.classHeader?.annotationData ?: continue
+            val partMembersData = JvmProtoBufUtil.readPackageDataFrom(partData)
+            partMembers.addAll(partMembersData.packageProto.memberList)
+        }
+        return partMembers
+    }
+
     private fun createStubBuilderComponents(file: VirtualFile, packageFqName: FqName): ClsStubBuilderComponents {
-        val classFinder = DirectoryBasedClassFinder(file.getParent()!!, packageFqName)
+        val classFinder = DirectoryBasedClassFinder(file.parent!!, packageFqName)
         val classDataFinder = DirectoryBasedDataFinder(classFinder, LOG)
         val annotationLoader = AnnotationLoaderForStubBuilder(classFinder, LoggingErrorReporter(LOG))
         return ClsStubBuilderComponents(classDataFinder, annotationLoader)
     }
 
     companion object {
-        val LOG = Logger.getInstance(javaClass<KotlinClsStubBuilder>())
+        val LOG = Logger.getInstance(KotlinClsStubBuilder::class.java)
     }
 }

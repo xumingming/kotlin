@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.fileClasses
+package kotlin.jvm.internal;
 
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName
-import org.jetbrains.org.objectweb.asm.Type
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public abstract class JvmFileClassesProvider {
-    public abstract fun getFileClassFqName(file: JetFile): FqName
+@Retention(RetentionPolicy.RUNTIME)
+public @interface KotlinMultifileClass {
+    int abiVersion();
 
-    public fun getFileClassInternalName(file: JetFile): String =
-            JvmClassName.byFqNameWithoutInnerClasses(getFileClassFqName(file)).internalName
+    String[] partNames();
 
-    public fun getFileClassType(file: JetFile): Type =
-            Type.getObjectType(getFileClassInternalName(file))
+    String[] data();
 }

@@ -46,7 +46,6 @@ import java.util.List;
 
 import static org.jetbrains.kotlin.codegen.AsmUtil.asmDescByFqNameWithoutInnerClasses;
 import static org.jetbrains.kotlin.load.java.JvmAnnotationNames.ABI_VERSION_FIELD_NAME;
-import static org.jetbrains.kotlin.load.java.JvmAnnotationNames.KotlinSyntheticClass;
 import static org.jetbrains.org.objectweb.asm.Opcodes.*;
 
 public class PackagePartCodegen extends MemberCodegen<JetFile> {
@@ -133,7 +132,7 @@ public class PackagePartCodegen extends MemberCodegen<JetFile> {
         NameResolver nameResolver = new NameResolver(strings.serializeSimpleNames(), strings.serializeQualifiedNames());
         PackageData data = new PackageData(nameResolver, packageProto);
 
-        AnnotationVisitor av = v.newAnnotation(asmDescByFqNameWithoutInnerClasses(JvmAnnotationNames.KOTLIN_FILE_FACADE), true);
+        AnnotationVisitor av = v.newAnnotation(asmDescByFqNameWithoutInnerClasses(JvmAnnotationNames.KOTLIN_FILE_CLASS), true);
         av.visit(ABI_VERSION_FIELD_NAME, JvmAbi.VERSION);
         AnnotationVisitor array = av.visitArray(JvmAnnotationNames.DATA_FIELD_NAME);
         for (String string : BitEncoding.encodeBytes(SerializationUtil.serializePackageData(data))) {
@@ -143,3 +142,5 @@ public class PackagePartCodegen extends MemberCodegen<JetFile> {
         av.visitEnd();
     }
 }
+
+// TODO refactor: create a common superclass for MultifileClassPartCodegen and FileClassCodegen.

@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.fileClasses
+package org.jetbrains.kotlin.codegen.context
 
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName
+import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor
 import org.jetbrains.org.objectweb.asm.Type
 
-public abstract class JvmFileClassesProvider {
-    public abstract fun getFileClassFqName(file: JetFile): FqName
 
-    public fun getFileClassInternalName(file: JetFile): String =
-            JvmClassName.byFqNameWithoutInnerClasses(getFileClassFqName(file)).internalName
-
-    public fun getFileClassType(file: JetFile): Type =
-            Type.getObjectType(getFileClassInternalName(file))
+public class MultifileFacadePartContext(
+        packageFragmentDescriptor: PackageFragmentDescriptor,
+        parent: CodegenContext<*>,
+        public val multifileFacadeType: Type,
+        public val partType: Type
+) : PackageContext(packageFragmentDescriptor, parent, partType) {
+    override fun toString(): String =
+            "MultifileFacadePart: ${multifileFacadeType.internalName} / ${partType.internalName}"
 }
