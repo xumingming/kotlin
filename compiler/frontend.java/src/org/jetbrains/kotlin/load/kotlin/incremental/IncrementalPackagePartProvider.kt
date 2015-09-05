@@ -27,7 +27,7 @@ internal class IncrementalPackagePartProvider private constructor(
         sourceFiles: Collection<JetFile>,
         incrementalCaches: List<IncrementalCache>
 ) : PackagePartProvider {
-    private val moduleMappings by lazy { incrementalCaches.map { ModuleMapping(it.getModuleMappingData()) } }
+    private val moduleMappings by lazy { incrementalCaches.map { ModuleMapping.create(it.getModuleMappingData()) } }
     private val fqNamesToIgnore =
             incrementalCaches.flatMap { IncrementalPackageFragmentProvider.fqNamesToLoad(it.getObsoletePackageParts(), sourceFiles).map { it.asString() } }
 

@@ -21,6 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.io.DataOutputStream;
 import kotlin.KotlinPackage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.TestOnly;
 import org.jetbrains.kotlin.backend.common.output.OutputFile;
 import org.jetbrains.kotlin.backend.common.output.OutputFileCollection;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
+import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackageParts;
 import org.jetbrains.kotlin.name.FqName;
@@ -115,8 +117,11 @@ public class ClassFileFactory implements OutputFileCollection {
                 @Override
                 public byte[] asBytes(ClassBuilderFactory factory) {
                     try {
-                        ByteArrayOutputStream moduleMapping = new ByteArrayOutputStream(1024);
-                        builder.build().writeTo(moduleMapping);
+                        ByteArrayOutputStream moduleMapping = new ByteArrayOutputStream(4*1024);
+                        DataOutputStream dataOutStream = new DataOutputStream(moduleMapping);
+                        dataOutStream.writeUTF(String.valueOf(JvmAbi.VERSION));
+                        builder.build().writeTo(dataOutStream);
+                        dataOutStream.flush();
                         return moduleMapping.toByteArray();
                     }
                     catch (UnsupportedEncodingException e) {
