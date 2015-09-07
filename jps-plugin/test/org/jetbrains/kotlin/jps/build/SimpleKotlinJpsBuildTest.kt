@@ -17,10 +17,11 @@
 package org.jetbrains.kotlin.jps.build
 
 import com.intellij.util.PathUtil
-import org.jetbrains.jps.builders.BuildResult
 import org.jetbrains.jps.incremental.messages.BuildMessage
 import org.jetbrains.jps.model.java.JpsJavaExtensionService
 import org.jetbrains.kotlin.test.JetTestUtils
+
+import com.intellij.testFramework.UsefulTestCase.assertContainsOrdered
 
 public class SimpleKotlinJpsBuildTest : AbstractKotlinJpsBuildTestCase() {
 
