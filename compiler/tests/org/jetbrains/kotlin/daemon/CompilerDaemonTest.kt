@@ -55,7 +55,7 @@ public class CompilerDaemonTest : KotlinIntegrationTestBase() {
             TestCase.assertEquals("first compilation failed:\n${res1.out}", 0, res1.resultCode)
             val res2 = compileOnDaemon(arguments)
             TestCase.assertEquals("second compilation failed:\n${res2.out}", 0, res2.resultCode)
-            TestCase.assertEquals("build results differ", CliBaseTest.removePerfOutput(res1.out), CliBaseTest.removePerfOutput(res2.out))
+            TestCase.assertEquals("build results differ", CliBaseTest.removeInfoOrPerfOutput(res1.out), CliBaseTest.removeInfoOrPerfOutput(res2.out))
             // TODO: add performance comparison assert
         }
         finally {
