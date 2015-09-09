@@ -2,7 +2,6 @@ package test.io
 
 import java.io.*
 import org.junit.Test as test
-import kotlin.test.assertEquals
 import java.util.NoSuchElementException
 import java.util.HashSet
 import java.util.ArrayList
@@ -573,6 +572,22 @@ class FilesTest {
         val file11 = File("foo")
         assertEquals("bar", file10.relativeTo(file11))
         assertEquals("..", file11.relativeTo(file10))
+    }
+
+    @test fun relativeToFails() {
+        val absolute = File("/foo/bar/baz")
+        val relative = File("foo/bar")
+        val networkShare1 = File("//my.host/share1/folder")
+        val networkShare2 = File("//my.host/share2/folder")
+
+        val allFiles = listOf(absolute, relative, networkShare1, networkShare2)
+        for (file in allFiles) {
+            for (base in allFiles) {
+                if (file != base) {
+                    assertFailsWith<IllegalArgumentException>("file: $file, base: $base") { file.relativeTo(base) }
+                }
+            }
+        }
     }
 
     @test fun relativeTo() {
