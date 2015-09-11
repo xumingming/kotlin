@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.utils.Printer
  * Introduces a simple wrapper for internal scope.
  */
 public abstract class AbstractScopeAdapter : JetScope {
-    protected abstract val workerScope: JetScope
+    public abstract val workerScope: JetScope
 
     override fun getImplicitReceiversHierarchy(): List<ReceiverParameterDescriptor> {
         return workerScope.getImplicitReceiversHierarchy()
