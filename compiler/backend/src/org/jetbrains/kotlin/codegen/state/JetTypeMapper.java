@@ -20,6 +20,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.builtins.BuiltinsPackageFragment;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.builtins.PrimitiveType;
 import org.jetbrains.kotlin.builtins.functions.FunctionClassDescriptor;
@@ -36,6 +37,7 @@ import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.java.descriptors.JavaCallableMemberDescriptor;
 import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor;
 import org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaPackageScope;
+import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.*;
 import org.jetbrains.kotlin.platform.JavaToKotlinClassMap;
 import org.jetbrains.kotlin.psi.JetExpression;
@@ -56,8 +58,8 @@ import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodParameterKind;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodParameterSignature;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodSignature;
 import org.jetbrains.kotlin.resolve.scopes.AbstractScopeAdapter;
-import org.jetbrains.kotlin.serialization.deserialization.DeserializedType;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
+import org.jetbrains.kotlin.serialization.deserialization.DeserializedType;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope;
 import org.jetbrains.kotlin.types.*;
@@ -160,7 +162,7 @@ public class JetTypeMapper {
         JetFile file = DescriptorToSourceUtils.getContainingFile(descriptor);
         if (file != null) {
             Visibility visibility = descriptor.getVisibility();
-            if (Visibilities.isPrivate(visibility)) {
+            if (descriptor instanceof PropertyDescriptor || Visibilities.isPrivate(visibility)) {
                 return fileClassesProvider.getFileClassInternalName(file);
             }
             else {
@@ -171,33 +173,55 @@ public class JetTypeMapper {
         CallableMemberDescriptor directMember = getDirectMember(descriptor);
 
         if (directMember instanceof DeserializedCallableMemberDescriptor) {
-            Name implClassName = JvmFileClassUtil.getImplClassName((DeserializedCallableMemberDescriptor) directMember);
-            DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
-            if (containingDeclaration instanceof PackageFragmentDescriptor) {
-                PackageFragmentDescriptor packageFragmentDescriptor = (PackageFragmentDescriptor) containingDeclaration;
-                JetScope scope = packageFragmentDescriptor.getMemberScope();
-                if (scope instanceof AbstractScopeAdapter) {
-                    scope = ((AbstractScopeAdapter) scope).getActualScope();
-                }
-                if (scope instanceof LazyJavaPackageScope) {
-                    String facadeShortName = ((LazyJavaPackageScope) scope).getFacadeSimpleNameForPartSimpleName(implClassName.asString());
-                    if (facadeShortName != null) {
-                        FqName facadeFqName = packageFragmentDescriptor.getFqName().child(Name.identifier(facadeShortName));
-                        return internalNameByFqNameWithoutInnerClasses(facadeFqName);
-                    }
-                }
-                else if (scope instanceof DeserializedPackageMemberScope) {
-                    FqName implClassFqName = packageFragmentDescriptor.getFqName().child(implClassName);
-                    return internalNameByFqNameWithoutInnerClasses(implClassFqName);
-                }
-                else {
-                    throw new AssertionError("Unexpected member scope for deserialized callable: " + scope);
-                }
-            }
+            String facadeFqName = getFacadeInternalName((DeserializedCallableMemberDescriptor) directMember);
+            if (facadeFqName != null) return facadeFqName;
         }
 
         throw new RuntimeException("Unreachable state");
         //return PackageClassUtils.getPackageClassInternalName(packageFragment.getFqName());
+    }
+
+    @Nullable
+    private static String getFacadeInternalName(@NotNull DeserializedCallableMemberDescriptor descriptor) {
+        DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
+        assert containingDeclaration instanceof PackageFragmentDescriptor : "Not a top-level member: " + descriptor;
+        PackageFragmentDescriptor packageFragmentDescriptor = (PackageFragmentDescriptor) containingDeclaration;
+
+        String facadeShortName = getFacadeShortName(descriptor);
+        if (facadeShortName == null) {
+            return null;
+        }
+
+        FqName facadeFqName = packageFragmentDescriptor.getFqName().child(Name.identifier(facadeShortName));
+        return internalNameByFqNameWithoutInnerClasses(facadeFqName);
+    }
+
+    @Nullable
+    private static String getFacadeShortName(@NotNull DeserializedCallableMemberDescriptor descriptor) {
+        DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
+        if (containingDeclaration instanceof PackageFragmentDescriptor) {
+            PackageFragmentDescriptor packageFragmentDescriptor = (PackageFragmentDescriptor) containingDeclaration;
+            JetScope scope = packageFragmentDescriptor.getMemberScope();
+            if (scope instanceof AbstractScopeAdapter) {
+                scope = ((AbstractScopeAdapter) scope).getActualScope();
+            }
+            if (scope instanceof LazyJavaPackageScope) {
+                Name implClassName = JvmFileClassUtil.getImplClassName(descriptor);
+                return ((LazyJavaPackageScope) scope).getFacadeSimpleNameForPartSimpleName(implClassName.asString());
+            }
+            else if (packageFragmentDescriptor instanceof BuiltinsPackageFragment) {
+                return PackageClassUtils.getPackageClassFqName(packageFragmentDescriptor.getFqName()).shortName().asString();
+            }
+            else if (scope instanceof DeserializedPackageMemberScope) {
+                // XXX IncrementalPackageScope
+                Name implClassName = JvmFileClassUtil.getImplClassName(descriptor);
+                return implClassName.asString();
+            }
+            else {
+                throw new AssertionError("Unexpected member scope for deserialized callable: " + scope);
+            }
+        }
+        return null;
     }
 
     @NotNull
