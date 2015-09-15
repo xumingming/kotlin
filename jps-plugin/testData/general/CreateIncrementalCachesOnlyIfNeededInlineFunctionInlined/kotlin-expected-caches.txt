@@ -1,0 +1,6 @@
+class-to-sources.tab
+inline-functions.tab
+inlined-to.tab
+package-parts.tab
+proto.tab
+source-to-classes.tab

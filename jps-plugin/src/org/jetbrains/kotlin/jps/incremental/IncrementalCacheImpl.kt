@@ -63,6 +63,9 @@ val INLINE_ANNOTATION_DESC = "Lkotlin/inline;"
 
 private val CACHE_DIRECTORY_NAME = "kotlin"
 
+TestOnly
+public fun getCacheDirectoryName(): String =
+        CACHE_DIRECTORY_NAME
 
 class CacheFormatVersion(targetDataRoot: File) {
     companion object {

@@ -32,6 +32,7 @@ import org.jetbrains.jps.builders.CompileScopeTestBuilder
 import org.jetbrains.jps.builders.JpsBuildTestCase
 import org.jetbrains.jps.builders.TestProjectBuilderLogger
 import org.jetbrains.jps.builders.impl.BuildDataPathsImpl
+import org.jetbrains.jps.builders.java.JavaModuleBuildTargetType
 import org.jetbrains.jps.builders.logging.BuildLoggingManager
 import org.jetbrains.jps.incremental.BuilderRegistry
 import org.jetbrains.jps.incremental.IncProjectBuilder
@@ -42,6 +43,7 @@ import org.jetbrains.jps.model.module.JpsModule
 import org.jetbrains.jps.util.JpsPathUtil
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.JvmCodegenUtil
+import org.jetbrains.kotlin.jps.incremental.getCacheDirectoryName
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.test.MockLibraryUtil
@@ -181,8 +183,7 @@ public class KotlinJpsBuildTest : AbstractKotlinJpsBuildTestCase() {
 
     override fun setUp() {
         super.setUp()
-        val sourceFilesRoot = File(AbstractKotlinJpsBuildTestCase.TEST_DATA_PATH + "general/" + getTestName(false))
-        workDir = AbstractKotlinJpsBuildTestCase.copyTestDataToTmpDir(sourceFilesRoot)
+        workDir = AbstractKotlinJpsBuildTestCase.copyTestDataToTmpDir(getSourceFilesRoot())
         getOrCreateProjectDir()
     }
 
@@ -192,6 +193,9 @@ public class KotlinJpsBuildTest : AbstractKotlinJpsBuildTestCase() {
     }
 
     override fun doGetProjectDir(): File = workDir
+
+    private fun getSourceFilesRoot(): File =
+            File(AbstractKotlinJpsBuildTestCase.TEST_DATA_PATH + "general/" + getTestName(false))
 
     private fun initProject() {
         addJdk(JDK_NAME)
@@ -619,9 +623,8 @@ public class KotlinJpsBuildTest : AbstractKotlinJpsBuildTestCase() {
         initProject()
         makeAll().assertSuccessful()
 
-        val storageRoot = BuildDataPathsImpl(myDataStorageRoot).dataStorageRoot
-        assertTrue(File(storageRoot, "targets/java-test/kotlinProject/kotlin").exists())
-        assertFalse(File(storageRoot, "targets/java-production/kotlinProject/kotlin").exists())
+        assertTrue(KotlinCachesDirTest("kotlinProject").exists())
+        assertFalse(KotlinCachesDirProd("kotlinProject").exists())
     }
 
     public fun testDoNotCreateUselessKotlinIncrementalCachesForDependentTargets() {
@@ -630,9 +633,86 @@ public class KotlinJpsBuildTest : AbstractKotlinJpsBuildTestCase() {
 
         checkWhen(touch("src/utils.kt"), null, packageClasses("kotlinProject", "src/utils.kt", "_DefaultPackage"))
 
+        assertTrue(KotlinCachesDirProd("kotlinProject").exists())
+        assertFalse(KotlinCachesDirProd("module2").exists())
+    }
+
+    public fun testCreateIncrementalCachesOnlyIfNeededNoKotlin() {
+        initProject()
+        makeAll().assertSuccessful()
+
+        checkWhen(touch("src/A.java"), null, arrayOf(klass("kotlinProject", "A")))
+        checkCreatedCaches("kotlinProject")
+    }
+
+    public fun testCreateIncrementalCachesOnlyIfNeededKotlinClass() {
+        initProject()
+        makeAll().assertSuccessful()
+
+        checkWhen(touch("src/A.kt"), null, arrayOf(klass("kotlinProject", "A")))
+        checkCreatedCaches("kotlinProject")
+    }
+
+    public fun testCreateIncrementalCachesOnlyIfNeededFunction() {
+        initProject()
+        makeAll().assertSuccessful()
+
+        checkWhen(touch("src/utils.kt"), null, packageClasses("kotlinProject", "src/utils.kt", "_DefaultPackage"))
+        checkCreatedCaches("kotlinProject")
+    }
+
+    public fun testCreateIncrementalCachesOnlyIfNeededInlineFunctionDeclared() {
+        initProject()
+        makeAll().assertSuccessful()
+
+        checkWhen(touch("src/inline.kt"), null, packageClasses("kotlinProject", "src/inline.kt", "inline.InlinePackage"))
+        checkCreatedCaches("kotlinProject")
+    }
+
+    public fun testCreateIncrementalCachesOnlyIfNeededInlineFunctionInlined() {
+        initProject()
+        makeAll().assertSuccessful()
+
+        checkWhen(touch("src/inline.kt"), null, packageClasses("kotlinProject", "src/inline.kt", "inline.InlinePackage"))
+        checkCreatedCaches("kotlinProject")
+    }
+
+    private fun checkCreatedCaches(module: String) {
+        val cachesDir = KotlinCachesDirProd("kotlinProject")
+        val caches = arrayListOf<String>()
+
+        if (cachesDir.exists()) {
+            assert(cachesDir.isDirectory) { "Kotlin cache directory path is not a directory: $cachesDir" }
+
+            val files = cachesDir.list().map { File(cachesDir, it) }.filter { it.isFile && it.extension == "tab" }
+            caches.addAll(files.map { it.name })
+        }
+
+        val cachesListText = if (caches.isNotEmpty()) {
+            caches.sorted().join(System.getProperty("line.separator"))
+        }
+        else {
+            "NO KOTLIN CACHES"
+        }
+
+        val expectedFile = File(getSourceFilesRoot(), "kotlin-expected-caches.txt")
+        if (!expectedFile.exists()) {
+            FileUtil.writeToFile(expectedFile, cachesListText)
+            throw AssertionError("File with expected kotlin incremental caches for module '$module' did not exist, created: ${expectedFile.absolutePath}")
+        }
+
+        UsefulTestCase.assertSameLinesWithFile(expectedFile.canonicalPath, cachesListText)
+    }
+
+    private fun KotlinCachesDirProd(module: String): File =
+            KotlinCachesDir(module, JavaModuleBuildTargetType.PRODUCTION.typeId)
+
+    private fun KotlinCachesDirTest(module: String): File =
+            KotlinCachesDir(module, JavaModuleBuildTargetType.TEST.typeId)
+
+    private fun KotlinCachesDir(module: String, targetTypeId: String): File {
         val storageRoot = BuildDataPathsImpl(myDataStorageRoot).dataStorageRoot
-        assertTrue(File(storageRoot, "targets/java-production/kotlinProject/kotlin").exists())
-        assertFalse(File(storageRoot, "targets/java-production/module2/kotlin").exists())
+        return File(storageRoot, "targets/$targetTypeId/$module/${getCacheDirectoryName()}")
     }
 
     private fun buildCustom(canceledStatus: CanceledStatus, logger: TestProjectBuilderLogger,buildResult: BuildResult) {
