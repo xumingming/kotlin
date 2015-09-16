@@ -409,7 +409,7 @@ public class ErrorUtils {
             JetScope memberScope = createErrorScope(getName().asString());
             errorConstructor.setReturnType(
                     new ErrorTypeImpl(
-                            createErrorTypeConstructorWithCustomDebugName(name, this),
+                            createErrorTypeConstructorWithCustomDebugName("<ERROR>", this),
                             memberScope
                     )
             );
