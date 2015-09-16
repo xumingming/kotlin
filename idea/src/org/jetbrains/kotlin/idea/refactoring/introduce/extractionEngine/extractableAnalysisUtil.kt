@@ -82,6 +82,7 @@ import org.jetbrains.kotlin.resolve.scopes.utils.asJetScope
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.checker.JetTypeChecker
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
+import org.jetbrains.kotlin.types.typeUtil.builtIns
 import org.jetbrains.kotlin.types.typeUtil.makeNullable
 import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.DFS.CollectingNodeHandler
@@ -765,7 +766,7 @@ private fun ExtractionData.inferParametersInfo(
                     val instruction = pseudocode.getElementValue(callElement)?.createdAt as? InstructionWithReceivers
                     val receiverValue = instruction?.receiverValues?.entrySet()?.singleOrNull { it.getValue() == receiverToExtract }?.getKey()
                     if (receiverValue != null) {
-                        parameter.addTypePredicate(getExpectedTypePredicate(receiverValue, bindingContext))
+                        parameter.addTypePredicate(getExpectedTypePredicate(receiverValue, bindingContext, parameterType.builtIns))
                     }
                 }
                 else if (extractFunctionRef) {
@@ -773,7 +774,7 @@ private fun ExtractionData.inferParametersInfo(
                 }
                 else {
                     pseudocode.getElementValuesRecursively(originalRef).forEach {
-                        parameter.addTypePredicate(getExpectedTypePredicate(it, bindingContext))
+                        parameter.addTypePredicate(getExpectedTypePredicate(it, bindingContext, parameterType.builtIns))
                     }
                 }
 
