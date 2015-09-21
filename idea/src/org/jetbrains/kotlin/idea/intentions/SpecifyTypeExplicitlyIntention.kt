@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.JetType
 import org.jetbrains.kotlin.types.TypeUtils
+import org.jetbrains.kotlin.types.typeUtil.builtIns
 import java.util.ArrayList
 
 public class SpecifyTypeExplicitlyIntention : JetSelfTargetingIntention<JetCallableDeclaration>(javaClass(), "Specify type explicitly"), LowPriorityAction {
@@ -85,7 +86,7 @@ public class SpecifyTypeExplicitlyIntention : JetSelfTargetingIntention<JetCalla
                 addTypeAnnotationWithTemplate(editor, declaration, exprType)
             }
             else {
-                declaration.setType(KotlinBuiltIns.getInstance().getAnyType())
+                declaration.setType(exprType.builtIns.anyType)
             }
         }
 
@@ -106,7 +107,7 @@ public class SpecifyTypeExplicitlyIntention : JetSelfTargetingIntention<JetCalla
             val project = declaration.getProject()
             val expression = createTypeExpressionForTemplate(exprType)
 
-            declaration.setType(KotlinBuiltIns.getInstance().getAnyType())
+            declaration.setType(exprType.builtIns.anyType)
 
             PsiDocumentManager.getInstance(project).commitAllDocuments()
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument())

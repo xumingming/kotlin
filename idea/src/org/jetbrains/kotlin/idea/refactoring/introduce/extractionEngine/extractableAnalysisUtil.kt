@@ -617,13 +617,14 @@ private fun ExtractionData.inferParametersInfo(
             resolvedCall: ResolvedCall<*>?,
             useSmartCastsIfPossible: Boolean
     ): JetType {
+        val builtIns = originalDescriptor.builtIns
         return when {
                    extractFunctionRef -> {
                        originalDescriptor as FunctionDescriptor
-                       KotlinBuiltIns.getInstance().getFunctionType(Annotations.EMPTY,
-                                                                    originalDescriptor.getExtensionReceiverParameter()?.getType(),
-                                                                    originalDescriptor.getValueParameters().map { it.getType() },
-                                                                    originalDescriptor.getReturnType() ?: originalDescriptor.builtIns.defaultReturnType)
+                       builtIns.getFunctionType(Annotations.EMPTY,
+                                                originalDescriptor.getExtensionReceiverParameter()?.getType(),
+                                                originalDescriptor.getValueParameters().map { it.getType() },
+                                                originalDescriptor.getReturnType() ?: builtIns.defaultReturnType)
                    }
                    parameterExpression != null ->
                        (if (useSmartCastsIfPossible) bindingContext[BindingContext.SMARTCAST, parameterExpression] else null)
@@ -644,7 +645,7 @@ private fun ExtractionData.inferParametersInfo(
                    }
                    receiverToExtract.exists() -> receiverToExtract.getType()
                    else -> null
-               } ?: originalDescriptor.builtIns.defaultParameterType
+               } ?: builtIns.defaultParameterType
     }
 
     for (refInfo in getBrokenReferencesInfo(createTemporaryCodeBlock())) {
