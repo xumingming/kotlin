@@ -358,6 +358,28 @@ class CodegenAnnotatingVisitor extends JetVisitorVoid {
     }
 
     @Override
+    public void visitPropertyAccessor(@NotNull JetPropertyAccessor accessor) {
+        DeclarationDescriptor descriptor = bindingContext.get(DECLARATION_TO_DESCRIPTOR, accessor);
+        if (descriptor == null || !(descriptor instanceof PropertyAccessorDescriptor)) return;
+        PropertyAccessorDescriptor accessorDescriptor = (PropertyAccessorDescriptor) descriptor;
+
+        // Replace property name on top of the stack with accessor name,
+        // since accessor can be renamed with @JvmName (and property cannot).
+        String propertyName = nameStack.pop();
+        String nameForClassOrPackageMember = getNameForClassOrPackageMember(descriptor);
+        if (nameForClassOrPackageMember != null) {
+            nameStack.push(nameForClassOrPackageMember);
+        }
+        else {
+            PropertyDescriptor correspondingProperty = accessorDescriptor.getCorrespondingProperty();
+            nameStack.push(peekFromStack(nameStack) + '$' + safeIdentifier(correspondingProperty.getName()).asString());
+        }
+        super.visitPropertyAccessor(accessor);
+        nameStack.pop();
+        nameStack.push(propertyName);
+    }
+
+    @Override
     public void visitNamedFunction(@NotNull JetNamedFunction function) {
         FunctionDescriptor functionDescriptor = (FunctionDescriptor) bindingContext.get(DECLARATION_TO_DESCRIPTOR, function);
         // working around a problem with shallow analysis
@@ -388,7 +410,10 @@ class CodegenAnnotatingVisitor extends JetVisitorVoid {
         DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
 
         String peek = peekFromStack(nameStack);
-        String name = safeIdentifier(descriptor.getName()).asString();
+        String name = DescriptorUtils.getJvmName(descriptor);
+        if (name == null) {
+            name = safeIdentifier(descriptor.getName()).asString();
+        }
         if (containingDeclaration instanceof ClassDescriptor || containingDeclaration instanceof ScriptDescriptor) {
             return peek + '$' + name;
         }
