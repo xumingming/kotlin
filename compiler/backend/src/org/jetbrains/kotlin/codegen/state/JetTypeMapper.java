@@ -60,9 +60,11 @@ import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodSignature;
 import org.jetbrains.kotlin.resolve.scopes.AbstractScopeAdapter;
 import org.jetbrains.kotlin.resolve.scopes.ChainedScope;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
+import org.jetbrains.kotlin.serialization.ProtoBuf;
 import org.jetbrains.kotlin.serialization.deserialization.DeserializedType;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope;
+import org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf;
 import org.jetbrains.kotlin.types.*;
 import org.jetbrains.kotlin.types.expressions.OperatorConventions;
 import org.jetbrains.org.objectweb.asm.Type;
@@ -731,21 +733,7 @@ public class JetTypeMapper {
         }
 
         if (descriptor instanceof PropertyAccessorDescriptor) {
-            PropertyDescriptor property = ((PropertyAccessorDescriptor) descriptor).getCorrespondingProperty();
-            if (isAnnotationClass(property.getContainingDeclaration())) {
-                return property.getName().asString();
-            }
-
-            boolean isAccessor = property instanceof AccessorForPropertyDescriptor;
-            String propertyName = isAccessor
-                                  ? ((AccessorForPropertyDescriptor) property).getIndexedAccessorSuffix()
-                                  : property.getName().asString();
-
-            String accessorName = descriptor instanceof PropertyGetterDescriptor
-                                  ? JvmAbi.getterName(propertyName)
-                                  : JvmAbi.setterName(propertyName);
-
-            return isAccessor ? "access$" + accessorName : accessorName;
+            return getPropertyAccessorName((PropertyAccessorDescriptor) descriptor);
         }
         else if (isFunctionLiteral(descriptor)) {
             PsiElement element = DescriptorToSourceUtils.getSourceFromDescriptor(descriptor);
@@ -767,6 +755,37 @@ public class JetTypeMapper {
         else {
             return descriptor.getName().asString();
         }
+    }
+
+    @NotNull
+    private static String getPropertyAccessorName(@NotNull PropertyAccessorDescriptor descriptor) {
+        PropertyDescriptor property = descriptor.getCorrespondingProperty();
+        if (isAnnotationClass(property.getContainingDeclaration())) {
+            return property.getName().asString();
+        }
+
+        boolean isGetter = descriptor instanceof PropertyGetterDescriptor;
+        boolean isAccessor = property instanceof AccessorForPropertyDescriptor;
+        String propertyName = isAccessor
+                              ? ((AccessorForPropertyDescriptor) property).getIndexedAccessorSuffix()
+                              : property.getName().asString();
+        String accessorName = isGetter
+                              ? JvmAbi.getterName(propertyName)
+                              : JvmAbi.setterName(propertyName);
+
+        if (property instanceof DeserializedCallableMemberDescriptor) {
+            DeserializedCallableMemberDescriptor deserializedProperty = (DeserializedCallableMemberDescriptor) property;
+            ProtoBuf.Callable proto = deserializedProperty.getProto();
+            if (proto.hasExtension(JvmProtoBuf.propertySignature)) {
+                JvmProtoBuf.JvmPropertySignature jvmPropertySignature = proto.getExtension(JvmProtoBuf.propertySignature);
+                JvmProtoBuf.JvmMethodSignature accessorSignature = isGetter
+                                                                   ? jvmPropertySignature.getGetter()
+                                                                   : jvmPropertySignature.getSetter();
+                accessorName = deserializedProperty.getNameResolver().getString(accessorSignature.getName());
+            }
+        }
+
+        return isAccessor ? "access$" + accessorName : accessorName;
     }
 
     @NotNull
