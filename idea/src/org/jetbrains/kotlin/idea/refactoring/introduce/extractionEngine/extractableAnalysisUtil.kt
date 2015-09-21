@@ -90,8 +90,8 @@ import org.jetbrains.kotlin.utils.DFS.Neighbors
 import org.jetbrains.kotlin.utils.DFS.VisitedWithSet
 import java.util.*
 
-private val DEFAULT_RETURN_TYPE = KotlinBuiltIns.getInstance().getUnitType()
-private val DEFAULT_PARAMETER_TYPE = KotlinBuiltIns.getInstance().getNullableAnyType()
+internal val KotlinBuiltIns.defaultReturnType: JetType get() = unitType
+internal val KotlinBuiltIns.defaultParameterType: JetType get() = nullableAnyType
 
 private fun DeclarationDescriptor.renderForMessage(): String =
         IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.render(this)
@@ -148,7 +148,8 @@ private fun List<Instruction>.getExitPoints(): List<Instruction> =
 private fun List<Instruction>.getResultTypeAndExpressions(
         bindingContext: BindingContext,
         targetScope: LexicalScope?,
-        options: ExtractionOptions
+        options: ExtractionOptions,
+        module: ModuleDescriptor
 ): Pair<JetType, List<JetExpression>> {
     fun instructionToExpression(instruction: Instruction, unwrapReturn: Boolean): JetExpression? {
         return when (instruction) {
@@ -173,7 +174,7 @@ private fun List<Instruction>.getResultTypeAndExpressions(
     }
 
     val resultTypes = map(::instructionToType).filterNotNull()
-    var commonSupertype = if (resultTypes.isNotEmpty()) CommonSupertypes.commonSupertype(resultTypes) else DEFAULT_RETURN_TYPE
+    var commonSupertype = if (resultTypes.isNotEmpty()) CommonSupertypes.commonSupertype(resultTypes) else module.builtIns.defaultReturnType
     val resultType = if (options.allowSpecialClassNames) commonSupertype else commonSupertype.approximateWithResolvableType(targetScope, false)
 
     val expressions = map { instructionToExpression(it, false) }.filterNotNull()
@@ -297,8 +298,8 @@ private fun ExtractionData.analyzeControlFlow(
     val nonLocallyUsedDeclarations = getLocalDeclarationsWithNonLocalUsages(pseudocode, localInstructions, bindingContext)
     val (declarationsToCopy, declarationsToReport) = nonLocallyUsedDeclarations.partition { it is JetProperty && it.isLocal() }
 
-    val (typeOfDefaultFlow, defaultResultExpressions) = defaultExits.getResultTypeAndExpressions(bindingContext, targetScope, options)
-    val (returnValueType, valuedReturnExpressions) = valuedReturnExits.getResultTypeAndExpressions(bindingContext, targetScope, options)
+    val (typeOfDefaultFlow, defaultResultExpressions) = defaultExits.getResultTypeAndExpressions(bindingContext, targetScope, options, module)
+    val (returnValueType, valuedReturnExpressions) = valuedReturnExits.getResultTypeAndExpressions(bindingContext, targetScope, options, module)
 
     val emptyControlFlow =
             ControlFlow(Collections.emptyList(), { OutputValueBoxer.AsTuple(it, module) }, declarationsToCopy)
@@ -342,7 +343,7 @@ private fun ExtractionData.analyzeControlFlow(
             if (valuedReturnExits.size() != 1) return multipleExitsError
 
             val element = valuedReturnExits.first().element as JetExpression
-            return controlFlow.copy(outputValues = Collections.singletonList(Jump(listOf(element), element, true))) to null
+            return controlFlow.copy(outputValues = Collections.singletonList(Jump(listOf(element), element, true, module.builtIns))) to null
         }
 
         if (getCommonNonTrivialSuccessorIfAny(valuedReturnExits) == null) return multipleExitsError
@@ -351,7 +352,7 @@ private fun ExtractionData.analyzeControlFlow(
 
     outDeclarations.mapTo(outputValues) {
         val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, it] as? CallableDescriptor
-        Initializer(it as JetProperty, descriptor?.getReturnType() ?: DEFAULT_PARAMETER_TYPE)
+        Initializer(it as JetProperty, descriptor?.getReturnType() ?: module.builtIns.defaultParameterType)
     }
     outParameters.mapTo(outputValues) { ParameterUpdate(it, modifiedVarDescriptors[it.originalDescriptor]!!) }
 
@@ -383,7 +384,7 @@ private fun ExtractionData.analyzeControlFlow(
         val conditional = !singleExit && defaultExits.isNotEmpty()
         val elements = jumpExits.map { it.element as JetExpression }
         val elementToInsertAfterCall = if (singleExit) null else elements.first()
-        return controlFlow.copy(outputValues = Collections.singletonList(Jump(elements, elementToInsertAfterCall, conditional))) to null
+        return controlFlow.copy(outputValues = Collections.singletonList(Jump(elements, elementToInsertAfterCall, conditional, module.builtIns))) to null
     }
 
     return controlFlow to null
@@ -622,7 +623,7 @@ private fun ExtractionData.inferParametersInfo(
                        KotlinBuiltIns.getInstance().getFunctionType(Annotations.EMPTY,
                                                                     originalDescriptor.getExtensionReceiverParameter()?.getType(),
                                                                     originalDescriptor.getValueParameters().map { it.getType() },
-                                                                    originalDescriptor.getReturnType() ?: DEFAULT_RETURN_TYPE)
+                                                                    originalDescriptor.getReturnType() ?: originalDescriptor.builtIns.defaultReturnType)
                    }
                    parameterExpression != null ->
                        (if (useSmartCastsIfPossible) bindingContext[BindingContext.SMARTCAST, parameterExpression] else null)
@@ -643,7 +644,7 @@ private fun ExtractionData.inferParametersInfo(
                    }
                    receiverToExtract.exists() -> receiverToExtract.getType()
                    else -> null
-               } ?: DEFAULT_PARAMETER_TYPE
+               } ?: originalDescriptor.builtIns.defaultParameterType
     }
 
     for (refInfo in getBrokenReferencesInfo(createTemporaryCodeBlock())) {
