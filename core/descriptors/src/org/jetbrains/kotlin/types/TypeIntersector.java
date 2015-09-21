@@ -37,36 +37,22 @@ import static org.jetbrains.kotlin.resolve.calls.inference.constraintPosition.Co
 
 public class TypeIntersector {
 
-    private final KotlinBuiltIns builtIns;
-
-    public TypeIntersector(@NotNull KotlinBuiltIns builtIns) {
-        this.builtIns = builtIns;
+    public static boolean isIntersectionEmpty(@NotNull JetType typeA, @NotNull JetType typeB) {
+        return intersectTypes(JetTypeChecker.DEFAULT, new LinkedHashSet<JetType>(Arrays.asList(typeA, typeB))) == null;
     }
 
-    public boolean isIntersectionEmpty(@NotNull JetType typeA, @NotNull JetType typeB) {
-        return intersect(JetTypeChecker.DEFAULT, new LinkedHashSet<JetType>(Arrays.asList(typeA, typeB))) == null;
-    }
-
-    //TODO: usages of this method should be removed
     @Nullable
     public static JetType intersectTypes(
-            @NotNull KotlinBuiltIns builtIns,
             @NotNull JetTypeChecker typeChecker,
             @NotNull Set<JetType> types
     ) {
-        return new TypeIntersector(builtIns).intersect(typeChecker, types);
-    }
-
-    @Nullable
-    public JetType intersect(@NotNull JetTypeChecker typeChecker, @NotNull Set<JetType> types) {
-        if (types.isEmpty()) {
-            return builtIns.getNullableAnyType();
-        }
+        assert (!types.isEmpty()) : "Attempting to intersect empty set of types, this case should be dealt with on the call site.";
 
         if (types.size() == 1) {
             return types.iterator().next();
         }
 
+        KotlinBuiltIns builtIns = types.iterator().next().getConstructor().getBuiltIns();
         // Intersection of T1..Tn is an intersection of their non-null versions,
         //   made nullable is they all were nullable
         boolean allNullable = true;
