@@ -54,8 +54,8 @@ public class DeserializerForClassfileDecompiler(
 
     override val deserializationComponents: DeserializationComponents = DeserializationComponents(
             storageManager, moduleDescriptor, classDataFinder, annotationAndConstantLoader, packageFragmentProvider,
-            ResolveEverythingToKotlinAnyLocalClassResolver, errorReporter, JavaFlexibleTypeCapabilitiesDeserializer,
-            ClassDescriptorFactory.EMPTY
+            ResolveEverythingToKotlinAnyLocalClassResolver(targetPlatform.builtIns), errorReporter,
+            JavaFlexibleTypeCapabilitiesDeserializer, ClassDescriptorFactory.EMPTY
     )
 
     override fun resolveDeclarationsInFacade(facadeFqName: FqName): Collection<DeclarationDescriptor> {

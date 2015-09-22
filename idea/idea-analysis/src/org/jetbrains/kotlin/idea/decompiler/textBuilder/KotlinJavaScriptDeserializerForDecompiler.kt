@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.idea.decompiler.navigation.JsMetaFileUtils
 import org.jetbrains.kotlin.js.resolve.JsPlatform
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.serialization.deserialization.*
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope
 import org.jetbrains.kotlin.serialization.js.KotlinJavascriptAnnotationAndConstantLoader
@@ -53,8 +52,8 @@ public class KotlinJavaScriptDeserializerForDecompiler(
 
     override val deserializationComponents = DeserializationComponents(
             storageManager, moduleDescriptor, classDataFinder, annotationAndConstantLoader, packageFragmentProvider,
-            ResolveEverythingToKotlinAnyLocalClassResolver, ErrorReporter.DO_NOTHING, FlexibleTypeCapabilitiesDeserializer.Dynamic,
-            ClassDescriptorFactory.EMPTY
+            ResolveEverythingToKotlinAnyLocalClassResolver(targetPlatform.builtIns), ErrorReporter.DO_NOTHING,
+            FlexibleTypeCapabilitiesDeserializer.Dynamic, ClassDescriptorFactory.EMPTY
     )
 
     override fun resolveDeclarationsInFacade(facadeFqName: FqName): Collection<DeclarationDescriptor> {
