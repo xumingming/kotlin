@@ -50,6 +50,7 @@ import org.jetbrains.kotlin.idea.test.PluginTestCaseBase;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.dataClassUtils.DataClassUtilsPackage;
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode;
 import org.jetbrains.kotlin.test.InTextDirectivesUtils;
 
@@ -58,7 +59,7 @@ import java.util.*;
 
 public class JetChangeSignatureTest extends KotlinCodeInsightTestCase {
 
-    private static final KotlinBuiltIns BUILT_INS = KotlinBuiltIns.getInstance();
+    private static final KotlinBuiltIns BUILT_INS = JvmPlatform.INSTANCE$.getBuiltIns();
 
     public void testBadSelection() throws Exception {
         configureByFile(getTestName(false) + "Before.kt");
@@ -93,6 +94,7 @@ public class JetChangeSignatureTest extends KotlinCodeInsightTestCase {
 
     public void testChangeConstructorVisibility() throws Exception {
         JetChangeInfo changeInfo = getChangeInfo();
+
         changeInfo.setNewVisibility(Visibilities.PROTECTED);
         doTest(changeInfo);
     }
