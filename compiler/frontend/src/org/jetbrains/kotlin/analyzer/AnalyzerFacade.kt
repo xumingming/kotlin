@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.analyzer
 
 import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
@@ -150,7 +149,7 @@ public abstract class AnalyzerFacade<in P : PlatformAnalysisParameters> {
                 resolverForProject.descriptorForModule(dependencyInfo as M)
             }
 
-            val builtinsModule = KotlinBuiltIns.getInstance().getBuiltInsModule()
+            val builtinsModule = targetPlatform.builtIns.builtInsModule
             module.dependencyOnBuiltins().adjustDependencies(builtinsModule, dependenciesDescriptors)
             return dependenciesDescriptors
         }
