@@ -61,7 +61,7 @@ import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.jvm.JvmClassName;
-import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
@@ -243,7 +243,7 @@ public class JetSourceNavigationHelper {
         MutableModuleContext newModuleContext = ContextPackage.ContextForNewModule(
                 project, Name.special("<library module>"),
                 ModuleParameters(
-                        TopDownAnalyzerFacadeForJVM.DEFAULT_IMPORTS,
+                        JvmPlatform.defaultModuleParameters.getDefaultImports(),
                         PlatformToKotlinClassMap.EMPTY
                 ),
                 KotlinBuiltIns.getInstance()
