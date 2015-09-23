@@ -75,7 +75,7 @@ public abstract class AbstractJetDiagnosticsTestWithJsStdLib extends AbstractJet
     @NotNull
     @Override
     protected ModuleDescriptorImpl createModule(@NotNull String moduleName, @NotNull StorageManager storageManager) {
-        return new ModuleDescriptorImpl(Name.special(moduleName), storageManager, TopDownAnalyzerFacadeForJS.JS_MODULE_PARAMETERS);
+        return new ModuleDescriptorImpl(Name.special(moduleName), storageManager, TopDownAnalyzerFacadeForJS.JS_MODULE_PARAMETERS, JsPlatform.INSTANCE$.getBuiltIns());
     }
 
     @NotNull

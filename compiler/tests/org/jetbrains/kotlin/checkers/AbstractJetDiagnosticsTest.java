@@ -362,7 +362,8 @@ public abstract class AbstractJetDiagnosticsTest extends BaseDiagnosticsTest {
     protected ModuleDescriptorImpl createModule(@NotNull String moduleName, @NotNull StorageManager storageManager) {
         return new ModuleDescriptorImpl(Name.special(moduleName),
                                         storageManager,
-                                        TopDownAnalyzerFacadeForJVM.JVM_MODULE_PARAMETERS);
+                                        TopDownAnalyzerFacadeForJVM.JVM_MODULE_PARAMETERS,
+                                        JvmPlatform.INSTANCE$.getBuiltIns());
     }
 
     @NotNull

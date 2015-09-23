@@ -16,10 +16,21 @@
 
 package org.jetbrains.kotlin.resolve.jvm.platform
 
+import org.jetbrains.kotlin.descriptors.ModuleParameters
+import org.jetbrains.kotlin.platform.JavaToKotlinClassMap
+import org.jetbrains.kotlin.platform.PlatformToKotlinClassMap
+import org.jetbrains.kotlin.resolve.ImportPath
 import org.jetbrains.kotlin.resolve.PlatformConfigurator
 import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.types.DynamicTypesSettings
+import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 
 public object JvmPlatform : TargetPlatform("JVM") {
+    override val defaultModuleParameters = object : ModuleParameters {
+        override val platformToKotlinClassMap: PlatformToKotlinClassMap
+            get() = JavaToKotlinClassMap.INSTANCE
+        override val defaultImports: List<ImportPath>
+            get() = TopDownAnalyzerFacadeForJVM.DEFAULT_IMPORTS
+    }
+
     override val platformConfigurator: PlatformConfigurator = JvmPlatformConfigurator
 }

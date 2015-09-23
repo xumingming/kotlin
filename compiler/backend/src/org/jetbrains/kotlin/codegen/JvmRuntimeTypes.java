@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.descriptors.impl.MutablePackageFragmentDescriptor;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.storage.LockBasedStorageManager;
 import org.jetbrains.kotlin.types.JetType;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils;
@@ -42,7 +43,8 @@ public class JvmRuntimeTypes {
         ModuleDescriptorImpl module = new ModuleDescriptorImpl(
                 Name.special("<jvm functions impl>"),
                 LockBasedStorageManager.NO_LOCKS,
-                TopDownAnalyzerFacadeForJVM.JVM_MODULE_PARAMETERS
+                TopDownAnalyzerFacadeForJVM.JVM_MODULE_PARAMETERS,
+                JvmPlatform.INSTANCE$.getBuiltIns()
         );
         PackageFragmentDescriptor kotlinJvmInternal = new MutablePackageFragmentDescriptor(module, new FqName("kotlin.jvm.internal"));
 

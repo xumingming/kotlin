@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.jetbrains.kotlin.asJava.LightClassUtil;
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor;
 import org.jetbrains.kotlin.context.ContextPackage;
 import org.jetbrains.kotlin.context.MutableModuleContext;
@@ -244,7 +245,8 @@ public class JetSourceNavigationHelper {
                 ModuleParameters(
                         TopDownAnalyzerFacadeForJVM.DEFAULT_IMPORTS,
                         PlatformToKotlinClassMap.EMPTY
-                )
+                ),
+                KotlinBuiltIns.getInstance()
         );
 
         newModuleContext.setDependencies(newModuleContext.getModule(), platform.getBuiltIns().getBuiltInsModule());
