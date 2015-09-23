@@ -23,18 +23,18 @@ import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.context.withModule
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.descriptors.ModuleParameters
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
+import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.descriptors.impl.LazyModuleDependencies
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
-import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.resolve.TargetEnvironment
-import java.util.ArrayList
-import java.util.HashMap
+import org.jetbrains.kotlin.resolve.TargetPlatform
+import org.jetbrains.kotlin.resolve.createModule
+import java.util.*
 
 public class ResolverForModule(
     public val packageFragmentProvider: PackageFragmentProvider,
@@ -137,7 +137,7 @@ public abstract class AnalyzerFacade<in P : PlatformAnalysisParameters> {
             val descriptorByModule = HashMap<M, ModuleDescriptorImpl>()
             modules.forEach {
                 module ->
-                descriptorByModule[module] = ModuleDescriptorImpl(module.name, storageManager, moduleParameters)
+                descriptorByModule[module] = targetPlatform.createModule(module.name, storageManager)
             }
             return ResolverForProjectImpl(descriptorByModule, delegateResolver)
         }
@@ -211,7 +211,7 @@ public abstract class AnalyzerFacade<in P : PlatformAnalysisParameters> {
             packagePartProvider: PackagePartProvider
     ): ResolverForModule
 
-    public abstract val moduleParameters: ModuleParameters
+    public abstract val targetPlatform: TargetPlatform
 }
 
 //NOTE: relies on delegate to be lazily computed and cached
