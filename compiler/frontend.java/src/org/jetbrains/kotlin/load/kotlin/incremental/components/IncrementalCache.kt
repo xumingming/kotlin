@@ -19,7 +19,13 @@ package org.jetbrains.kotlin.load.kotlin.incremental.components
 public interface IncrementalCache {
     public fun getObsoletePackageParts(): Collection<String>
 
-    public fun getPackagePartData(fqName: String): ByteArray?
+    public fun getObsoleteMultifileClasses(): Collection<String>
+
+    public fun getStableMultifileFacadeParts(facadeInternalName: String): Collection<String>?
+
+    public fun getMultifileFacade(partInternalName: String): String?
+
+    public fun getPackagePartData(internalName: String): ByteArray?
 
     public fun getModuleMappingData(): ByteArray?
 
