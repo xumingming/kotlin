@@ -186,7 +186,12 @@ public abstract class CodegenContext<T extends DeclarationDescriptor> {
 
     @NotNull
     public FieldOwnerContext intoPackageFacade(@NotNull Type delegateTo, @NotNull PackageFragmentDescriptor descriptor) {
-        return new PackageFacadeContext(descriptor, this, delegateTo);
+        return new PackageFacadeContext(descriptor, this, delegateTo, delegateTo);
+    }
+
+    @NotNull
+    public FieldOwnerContext intoPackageFacade(@NotNull Type delegateTo, @NotNull PackageFragmentDescriptor descriptor, @NotNull Type publicFacadeType) {
+        return new PackageFacadeContext(descriptor, this, delegateTo, publicFacadeType);
     }
 
     @NotNull
