@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.load.kotlin.JavaFlexibleTypeCapabilitiesDeserializer
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.serialization.deserialization.ClassDescriptorFactory
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationComponents
@@ -41,7 +42,7 @@ public class DeserializerForClassfileDecompiler(
         packageDirectory: VirtualFile,
         directoryPackageFqName: FqName
 ) : DeserializerForDecompilerBase(packageDirectory, directoryPackageFqName) {
-    override val targetPlatform = JvmPlatform
+    override val targetPlatform: TargetPlatform get() = JvmPlatform
 
     private val classFinder = DirectoryBasedClassFinder(packageDirectory, directoryPackageFqName)
 
