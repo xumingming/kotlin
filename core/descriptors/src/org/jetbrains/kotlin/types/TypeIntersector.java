@@ -52,31 +52,28 @@ public class TypeIntersector {
             return types.iterator().next();
         }
 
-        KotlinBuiltIns builtIns = null;
         // Intersection of T1..Tn is an intersection of their non-null versions,
         //   made nullable is they all were nullable
+        JetType nothingOrNullableNothing = null;
         boolean allNullable = true;
-        boolean nothingTypePresent = false;
         List<JetType> nullabilityStripped = new ArrayList<JetType>(types.size());
         for (JetType type : types) {
             if (type.isError()) continue;
 
-            if (builtIns == null) {
-                builtIns = type.getConstructor().getBuiltIns();
+            if (KotlinBuiltIns.isNothingOrNullableNothing(type)) {
+                nothingOrNullableNothing = type;
             }
-
-            nothingTypePresent |= KotlinBuiltIns.isNothingOrNullableNothing(type);
             allNullable &= type.isMarkedNullable();
             nullabilityStripped.add(TypeUtils.makeNotNullable(type));
+        }
+
+        if (nothingOrNullableNothing != null) {
+            return TypeUtils.makeNullableAsSpecified(nothingOrNullableNothing, allNullable);
         }
 
         if (nullabilityStripped.isEmpty()) {
             // All types were errors
             return ErrorUtils.createErrorType("Intersection of errors types: " + types);
-        }
-
-        if (nothingTypePresent) {
-            return allNullable ? builtIns.getNullableNothingType() : builtIns.getNothingType();
         }
 
         // Now we remove types that have subtypes in the list
