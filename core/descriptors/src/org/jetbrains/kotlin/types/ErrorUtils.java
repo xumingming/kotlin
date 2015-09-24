@@ -772,6 +772,7 @@ public class ErrorUtils {
         return type != null && type.getConstructor() instanceof FunctionPlaceholderTypeConstructor;
     }
 
+    //TODO: pass real builtIns
     @NotNull
     public static JetType createFunctionPlaceholderType(@NotNull List<JetType> argumentTypes, boolean hasDeclaredArguments) {
         return new ErrorTypeImpl(
@@ -784,7 +785,7 @@ public class ErrorUtils {
         private final List<JetType> argumentTypes;
         private final boolean hasDeclaredArguments;
 
-        private FunctionPlaceholderTypeConstructor(@NotNull List<JetType> argumentTypes, boolean hasDeclaredArguments) {
+        FunctionPlaceholderTypeConstructor(@NotNull List<JetType> argumentTypes, boolean hasDeclaredArguments) {
             errorTypeConstructor = createErrorTypeConstructorWithCustomDebugName("PLACEHOLDER_FUNCTION_TYPE" + argumentTypes);
             this.argumentTypes = argumentTypes;
             this.hasDeclaredArguments = hasDeclaredArguments;
