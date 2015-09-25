@@ -567,7 +567,7 @@ public class ErrorUtils {
             @NotNull
             @Override
             public KotlinBuiltIns getBuiltIns() {
-                throw new IllegalStateException("Should not be called");
+                return DefaultBuiltIns.getInstance();
             }
 
             @NotNull
