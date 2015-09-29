@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.codegen.context.FieldOwnerContext;
 import org.jetbrains.kotlin.codegen.context.MethodContext;
 import org.jetbrains.kotlin.codegen.context.PackageContext;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
+import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.config.IncrementalCompilation;
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
@@ -40,21 +41,16 @@ import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils;
 import org.jetbrains.kotlin.fileClasses.FileClassesPackage;
 import org.jetbrains.kotlin.fileClasses.JvmFileClassInfo;
-import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil;
 import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackageParts;
 import org.jetbrains.kotlin.load.kotlin.incremental.IncrementalPackageFragmentProvider;
-import org.jetbrains.kotlin.load.kotlin.incremental.components.IncrementalCache;
-import org.jetbrains.kotlin.load.kotlin.incremental.components.IncrementalCompilationComponents;
-import org.jetbrains.kotlin.modules.TargetId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.MemberComparator;
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodSignature;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
@@ -176,12 +172,12 @@ public class PackageCodegen {
 
     private void generateDelegationsToPreviouslyCompiled(@NotNull @Mutable Map<CallableMemberDescriptor, Runnable> generateCallableMemberTasks) {
         for (final DeserializedCallableMemberDescriptor member : previouslyCompiledCallables) {
-            final FqName delegateToFqName = JvmFileClassUtil.getPartFqNameForDeserializedCallable(member);
+            final JetTypeMapper.ContainingClassesInfo containingClasses = state.getTypeMapper().getContainingClassesForDeserializedCallable(member);
 
             generateCallableMemberTasks.put(member, new Runnable() {
                 @Override
                 public void run() {
-                    FieldOwnerContext context = getPackageFacadeContextForPreviouslyCompiled(delegateToFqName);
+                    FieldOwnerContext context = getPackageFacadeContextForPreviouslyCompiled(containingClasses);
 
                     MemberCodegen<?> memberCodegen = createCodegenForPartOfPackageFacade(context);
 
@@ -220,28 +216,10 @@ public class PackageCodegen {
     }
 
     @NotNull
-    private FieldOwnerContext getPackageFacadeContextForPreviouslyCompiled(@NotNull FqName delegateToFqName) {
-        Type delegateToType = AsmUtil.asmTypeByFqNameWithoutInnerClasses(delegateToFqName);
-        String partInternalName = JvmClassName.byFqNameWithoutInnerClasses(delegateToFqName).getInternalName();
-        TargetId targetId = state.getTargetId();
-        assert targetId != null
-                : "targetId is required for incremental compilation of " + packageClassType;
-        IncrementalCompilationComponents incrementalCompilationComponents = state.getIncrementalCompilationComponents();
-        assert incrementalCompilationComponents != null
-                : "incrementalCompilationComponents is required for incremental compilation of " + packageClassType;
-        IncrementalCache incrementalCache = incrementalCompilationComponents.getIncrementalCache(targetId);
-        String facadeInternalName = incrementalCache.getMultifileFacade(partInternalName);
-
-        Type publicFacadeType;
-        if (facadeInternalName != null) {
-            FqName facadeFqName = JvmClassName.byInternalName(facadeInternalName).getFqNameForClassNameWithoutDollars();
-            publicFacadeType = AsmUtil.asmTypeByFqNameWithoutInnerClasses(facadeFqName);
-        }
-        else {
-            publicFacadeType = delegateToType;
-        }
-
-        return state.getRootContext().intoPackageFacade(delegateToType, compiledPackageFragment, publicFacadeType);
+    private FieldOwnerContext getPackageFacadeContextForPreviouslyCompiled(@NotNull JetTypeMapper.ContainingClassesInfo containingClassesInfo) {
+        Type facadeType = AsmUtil.asmTypeByFqNameWithoutInnerClasses(containingClassesInfo.getFacadeClassId().asSingleFqName());
+        Type partType = AsmUtil.asmTypeByFqNameWithoutInnerClasses(containingClassesInfo.getImplClassId().asSingleFqName());
+        return state.getRootContext().intoPackageFacade(partType, compiledPackageFragment, facadeType);
     }
 
     public void generate(@NotNull CompilationErrorHandler errorHandler) {
