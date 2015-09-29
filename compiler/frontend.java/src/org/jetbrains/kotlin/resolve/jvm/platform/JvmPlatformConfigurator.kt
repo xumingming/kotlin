@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.resolve.jvm.platform
 
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns.isArray
 import org.jetbrains.kotlin.cfg.WhenChecker
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.useImpl
@@ -96,7 +95,7 @@ public object JvmPlatformConfigurator : PlatformConfigurator(
 
         additionalAnnotationCheckers = listOf(
                 RepeatableAnnotationChecker,
-                FileClassAnnotationsChecker
+                FileAnnotationsChecker
         )
 ) {
 
@@ -131,9 +130,12 @@ public object RepeatableAnnotationChecker: AdditionalAnnotationChecker {
     }
 }
 
-public object FileClassAnnotationsChecker: AdditionalAnnotationChecker {
+public object FileAnnotationsChecker : AdditionalAnnotationChecker {
     // JvmName & JvmMultifileClass annotations are applicable to multi-file class parts regardless of their retention.
     private val ALWAYS_APPLICABLE = hashSetOf(JvmFileClassUtil.JVM_NAME, JvmFileClassUtil.JVM_MULTIFILE_CLASS)
+
+    private val NAME_SHOULD_DENOTE = hashMapOf(JvmFileClassUtil.JVM_NAME_SHORT to JvmFileClassUtil.JVM_NAME,
+                                               JvmFileClassUtil.JVM_MULTIFILE_CLASS_SHORT to JvmFileClassUtil.JVM_MULTIFILE_CLASS)
 
     override fun checkEntries(entries: List<JetAnnotationEntry>, actualTargets: List<KotlinTarget>, trace: BindingTrace) {
         val fileAnnotationsToCheck = arrayListOf<Pair<JetAnnotationEntry, ClassDescriptor>>()
@@ -147,6 +149,22 @@ public object FileClassAnnotationsChecker: AdditionalAnnotationChecker {
             fileAnnotationsToCheck.add(Pair(entry, classDescriptor))
         }
 
+        checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck, trace)
+        checkFileClassAnnotationsApplicability(fileAnnotationsToCheck, trace)
+    }
+
+    private fun checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck: List<Pair<JetAnnotationEntry, ClassDescriptor>>, trace: BindingTrace) {
+        for ((entry, classDescriptor) in fileAnnotationsToCheck) {
+            val name = entry.calleeExpression?.constructorReferenceExpression?.getReferencedName() ?: continue
+            val shouldDenoteToFqName = NAME_SHOULD_DENOTE[name] ?: continue
+            val resolvedToFqName = classDescriptor.classId.asSingleFqName()
+            if (resolvedToFqName != shouldDenoteToFqName) {
+                trace.report(ErrorsJvm.SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY.on(entry, name, shouldDenoteToFqName))
+            }
+        }
+    }
+
+    private fun checkFileClassAnnotationsApplicability(fileAnnotationsToCheck: List<Pair<JetAnnotationEntry, ClassDescriptor>>, trace: BindingTrace) {
         if (!fileAnnotationsToCheck.any { it.second.classId.asSingleFqName() == JvmFileClassUtil.JVM_MULTIFILE_CLASS }) return
 
         for ((entry, classDescriptor) in fileAnnotationsToCheck) {
