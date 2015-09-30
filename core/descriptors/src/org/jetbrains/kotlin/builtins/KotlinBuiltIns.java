@@ -648,6 +648,10 @@ public abstract class KotlinBuiltIns {
         return primitiveJetTypeToJetArrayType.get(jetType);
     }
 
+    public static boolean isPrimitiveArray(@NotNull FqNameUnsafe arrayFqName) {
+        return getPrimitiveTypeByArrayClassFqName(arrayFqName) != null;
+    }
+
     @Nullable
     public static PrimitiveType getPrimitiveTypeByFqName(@NotNull FqNameUnsafe primitiveClassFqName) {
         return FQ_NAMES.fqNameToPrimitiveType.get(primitiveClassFqName);

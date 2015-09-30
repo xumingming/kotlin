@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.load.kotlin
 
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
@@ -67,7 +68,11 @@ class BuiltInClassesAreSerializableOnJvm(
     }
 
     private fun isSerializableInJava(classFqName: FqName): Boolean {
-        val javaClassId = JavaToKotlinClassMap.INSTANCE.mapKotlinToJava(classFqName.toUnsafe()) ?: return false
+        val fqNameUnsafe = classFqName.toUnsafe()
+        if (fqNameUnsafe == KotlinBuiltIns.FQ_NAMES.array || KotlinBuiltIns.isPrimitiveArray(fqNameUnsafe)) {
+            return true
+        }
+        val javaClassId = JavaToKotlinClassMap.INSTANCE.mapKotlinToJava(fqNameUnsafe) ?: return false
         val classViaReflection = try {
             Class.forName(javaClassId.asSingleFqName().asString())
         }
