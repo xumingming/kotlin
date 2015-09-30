@@ -1,5 +1,5 @@
-<!SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY!>@file:JvmName<!>
-<!SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY!>@file:JvmMultifileClass<!>
+<!SPECIAL_ANNOTATION_NAME_SHOULD_DENOTE!>@file:JvmName<!>
+<!SPECIAL_ANNOTATION_NAME_SHOULD_DENOTE!>@file:JvmMultifileClass<!>
 package test
 
 @Target(AnnotationTarget.FILE, AnnotationTarget.CLASS)

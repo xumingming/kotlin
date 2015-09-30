@@ -62,7 +62,9 @@ public class DefaultErrorMessagesJvm implements DefaultErrorMessages.Extension {
         MAP.put(ErrorsJvm.DEPRECATED_JAVA_ANNOTATION, "This annotation is deprecated in Kotlin. Use ''{0}'' instead", Renderers.TO_STRING);
         MAP.put(ErrorsJvm.NON_SOURCE_REPEATED_ANNOTATION, "Only annotations with SOURCE retention can be repeated on JVM version before 1.8");
         MAP.put(ErrorsJvm.ANNOTATION_IS_NOT_APPLICABLE_TO_MULTIFILE_CLASSES, "Annotation {0} is not applicable to the multi-file classes", Renderers.TO_STRING);
-        MAP.put(ErrorsJvm.SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY, "Special file annotation name ''{0}'' should denote ''{1}''",
+        MAP.put(ErrorsJvm.SPECIAL_ANNOTATION_NAME_SHOULD_DENOTE, "Special annotation name ''{0}'' should denote ''{1}''",
+                Renderers.TO_STRING, Renderers.TO_STRING);
+        MAP.put(ErrorsJvm.SPECIAL_ANNOTATION_NAME_SHOULD_BE_DENOTED_BY, "Special annotation ''{0}'' should be denote by name ''{1}''",
                 Renderers.TO_STRING, Renderers.TO_STRING);
         MAP.put(ErrorsJvm.JVM_MULTIFILE_CLASS_WITHOUT_JVM_NAME, "JvmMultifileClass annotation should accompany JvmName annotation");
 

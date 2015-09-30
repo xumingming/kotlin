@@ -181,6 +181,12 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
             doTestWithJava(fileName);
         }
 
+        @TestMetadata("simpleUsingSpecialAnnotationFqName")
+        public void testSimpleUsingSpecialAnnotationFqName() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/fileClasses/simpleUsingSpecialAnnotationFqName/");
+            doTestWithJava(fileName);
+        }
+
         @TestMetadata("withPackageFacade")
         public void testWithPackageFacade() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/fileClasses/withPackageFacade/");

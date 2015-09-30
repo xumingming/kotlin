@@ -60,7 +60,9 @@ public interface ErrorsJvm {
     DiagnosticFactory1<JetAnnotationEntry, FqName> DEPRECATED_JAVA_ANNOTATION = DiagnosticFactory1.create(WARNING);
     DiagnosticFactory0<JetAnnotationEntry> NON_SOURCE_REPEATED_ANNOTATION = DiagnosticFactory0.create(ERROR);
     DiagnosticFactory1<JetAnnotationEntry, FqName> ANNOTATION_IS_NOT_APPLICABLE_TO_MULTIFILE_CLASSES = DiagnosticFactory1.create(ERROR);
-    DiagnosticFactory2<JetAnnotationEntry, String, FqName> SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY = DiagnosticFactory2.create(ERROR);
+    DiagnosticFactory2<JetAnnotationEntry, String, FqName> SPECIAL_ANNOTATION_NAME_SHOULD_DENOTE = DiagnosticFactory2.create(ERROR);
+    DiagnosticFactory2<JetAnnotationEntry, FqName, String> SPECIAL_ANNOTATION_NAME_SHOULD_BE_DENOTED_BY = DiagnosticFactory2.create(ERROR);
+
     DiagnosticFactory0<JetAnnotationEntry> JVM_MULTIFILE_CLASS_WITHOUT_JVM_NAME = DiagnosticFactory0.create(ERROR);
 
     DiagnosticFactory0<JetElement> TRAIT_CANT_CALL_DEFAULT_METHOD_VIA_SUPER = DiagnosticFactory0.create(ERROR);

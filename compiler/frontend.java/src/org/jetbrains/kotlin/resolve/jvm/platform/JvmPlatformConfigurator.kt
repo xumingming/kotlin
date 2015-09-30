@@ -136,8 +136,19 @@ public object FileAnnotationsChecker : AdditionalAnnotationChecker {
     // JvmName & JvmMultifileClass annotations are applicable to multi-file class parts regardless of their retention.
     private val ALWAYS_APPLICABLE = hashSetOf(JvmFileClassUtil.JVM_NAME, JvmFileClassUtil.JVM_MULTIFILE_CLASS)
 
-    private val NAME_SHOULD_DENOTE = hashMapOf(JvmFileClassUtil.JVM_NAME_SHORT to JvmFileClassUtil.JVM_NAME,
-                                               JvmFileClassUtil.JVM_MULTIFILE_CLASS_SHORT to JvmFileClassUtil.JVM_MULTIFILE_CLASS)
+    private val NAME_SHOULD_DENOTE = HashMap<String, FqName>()
+    private val FQNAME_SHOULD_BE_DENOTED_BY = HashMap<FqName, String>()
+
+    private fun registerSpecialAnnotation(fqName: FqName) {
+        val name = fqName.shortName().asString()
+        NAME_SHOULD_DENOTE[name] = fqName
+        FQNAME_SHOULD_BE_DENOTED_BY[fqName] = name
+    }
+
+    init {
+        registerSpecialAnnotation(JvmFileClassUtil.JVM_NAME)
+        registerSpecialAnnotation(JvmFileClassUtil.JVM_MULTIFILE_CLASS)
+    }
 
     override fun checkEntries(entries: List<JetAnnotationEntry>, actualTargets: List<KotlinTarget>, trace: BindingTrace) {
         val fileAnnotationsToCheck = collectResolvedFileAnnotations(entries, trace)
@@ -176,11 +187,16 @@ public object FileAnnotationsChecker : AdditionalAnnotationChecker {
     private fun checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck: List<Pair<JetAnnotationEntry, ClassDescriptor>>, trace: BindingTrace) {
         for ((entry, classDescriptor) in fileAnnotationsToCheck) {
             val name = entry.calleeExpression?.constructorReferenceExpression?.getReferencedName() ?: continue
-            val shouldDenoteToFqName = NAME_SHOULD_DENOTE[name] ?: continue
+            val shouldDenoteFqName = NAME_SHOULD_DENOTE[name]
             val resolvedToFqName = classDescriptor.classId.asSingleFqName()
-            if (resolvedToFqName != shouldDenoteToFqName) {
-                trace.report(ErrorsJvm.SPECIAL_FILE_ANNOTATION_NAME_USED_INCORRECTLY.on(entry, name, shouldDenoteToFqName))
+            val shouldBeDenotedByName = FQNAME_SHOULD_BE_DENOTED_BY[resolvedToFqName]
+            if (shouldDenoteFqName != null && resolvedToFqName != shouldDenoteFqName) {
+                trace.report(ErrorsJvm.SPECIAL_ANNOTATION_NAME_SHOULD_DENOTE.on(entry, name, shouldDenoteFqName))
             }
+            if (shouldBeDenotedByName != null && name != shouldBeDenotedByName) {
+                trace.report(ErrorsJvm.SPECIAL_ANNOTATION_NAME_SHOULD_BE_DENOTED_BY.on(entry, resolvedToFqName, shouldBeDenotedByName))
+            }
+
         }
     }
 

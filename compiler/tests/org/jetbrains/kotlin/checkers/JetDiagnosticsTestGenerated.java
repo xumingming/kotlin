@@ -951,6 +951,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("SpecialFileAnnotationNamesOnImportAlias.kt")
+            public void testSpecialFileAnnotationNamesOnImportAlias() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/SpecialFileAnnotationNamesOnImportAlias.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("typeAnnotations.kt")
             public void testTypeAnnotations() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/typeAnnotations.kt");
