@@ -420,6 +420,7 @@ public class JetChangeSignatureDialog(
             }
 
             val returnTypeText = if (returnTypeCodeFragment != null) returnTypeCodeFragment.getText().trim() else ""
+            //TODO return the actual type
             val returnType = if (hasTypeReference(returnTypeCodeFragment)) methodDescriptor.baseDescriptor.builtIns.anyType else null
             return JetChangeInfo(methodDescriptor.original,
                                  methodName,
