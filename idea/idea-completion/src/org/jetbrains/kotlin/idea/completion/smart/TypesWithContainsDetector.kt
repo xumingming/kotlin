@@ -19,6 +19,8 @@ package org.jetbrains.kotlin.idea.completion.smart
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.idea.completion.HeuristicSignatures
+import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
+import org.jetbrains.kotlin.idea.resolve.ideService
 import org.jetbrains.kotlin.idea.util.FuzzyType
 import org.jetbrains.kotlin.idea.util.nullability
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
@@ -27,17 +29,17 @@ import org.jetbrains.kotlin.resolve.scopes.JetScope
 import org.jetbrains.kotlin.types.JetType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.typeUtil.TypeNullability
-import org.jetbrains.kotlin.types.typeUtil.builtIns
 import java.util.*
 
 class TypesWithContainsDetector(
         private val scope: JetScope,
         private val argumentType: JetType,
-        private val heuristicSignatures: HeuristicSignatures
+        private val resolutionFacade: ResolutionFacade
 ) {
     private val cache = HashMap<FuzzyType, Boolean>()
     private val containsName = Name.identifier("contains")
-    private val booleanType = argumentType.builtIns.booleanType
+    private val booleanType = resolutionFacade.moduleDescriptor.builtIns.booleanType
+    private val heuristicSignatures = resolutionFacade.ideService<HeuristicSignatures>()
 
     private val typesWithExtensionContains: Collection<JetType> = scope.getFunctions(containsName, NoLookupLocation.FROM_IDE)
             .filter { it.getExtensionReceiverParameter() != null && isGoodContainsFunction(it, listOf()) }
