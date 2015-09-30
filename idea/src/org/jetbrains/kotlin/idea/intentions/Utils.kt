@@ -37,7 +37,7 @@ fun JetCallableDeclaration.setType(type: JetType, shortenReferences: Boolean = t
     setType(IdeDescriptorRenderers.SOURCE_CODE.renderType(type), shortenReferences)
 }
 
-fun JetCallableDeclaration.setType(typeString: String, shortenReferences: Boolean) {
+fun JetCallableDeclaration.setType(typeString: String, shortenReferences: Boolean = true) {
     val typeReference = JetPsiFactory(project).createType(typeString)
     setTypeReference(typeReference)
     if (shortenReferences) {

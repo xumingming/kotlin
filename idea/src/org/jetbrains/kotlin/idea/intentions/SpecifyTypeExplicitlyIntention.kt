@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.JetType
 import org.jetbrains.kotlin.types.TypeUtils
 import java.util.*
-import org.jetbrains.kotlin.types.typeUtil.builtIns
 
 public class SpecifyTypeExplicitlyIntention : JetSelfTargetingIntention<JetCallableDeclaration>(javaClass(), "Specify type explicitly"), LowPriorityAction {
     override fun isApplicableTo(element: JetCallableDeclaration, caretOffset: Int): Boolean {
@@ -106,7 +105,7 @@ public class SpecifyTypeExplicitlyIntention : JetSelfTargetingIntention<JetCalla
             val project = declaration.getProject()
             val expression = createTypeExpressionForTemplate(exprType)
 
-            declaration.setType(exprType.builtIns.anyType)
+            declaration.setType(KotlinBuiltIns.FQ_NAMES.any.asString())
 
             PsiDocumentManager.getInstance(project).commitAllDocuments()
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.getDocument())
