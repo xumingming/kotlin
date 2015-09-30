@@ -97,7 +97,7 @@ public class ArgumentTypeResolver {
             @NotNull JetType actualType,
             @NotNull JetType expectedType
     ) {
-        if (FunctionPlaceholdersKt.getIsFunctionPlaceholder(actualType)) {
+        if (FunctionPlaceholdersKt.isFunctionPlaceholder(actualType)) {
             JetType functionType = createTypeForFunctionPlaceholder(actualType, expectedType);
             return JetTypeChecker.DEFAULT.isSubtypeOf(functionType, expectedType);
         }
