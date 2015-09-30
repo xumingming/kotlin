@@ -152,11 +152,10 @@ fun renderCheckBinaryOperation(name: String, params: List<JetType>): String {
 }
 
 private fun JetType.isIntegerType(): Boolean {
-    val builtIns = JvmPlatform.builtIns
-    return this == builtIns.getIntType() ||
-           this == builtIns.getShortType() ||
-           this == builtIns.getByteType() ||
-           this == builtIns.getLongType()
+    return KotlinBuiltIns.isInt(this) ||
+           KotlinBuiltIns.isShort(this) ||
+           KotlinBuiltIns.isByte(this) ||
+           KotlinBuiltIns.isLong(this)
 }
 
 
