@@ -949,7 +949,7 @@ public class JetTestUtils {
     @NotNull
     public static ModuleDescriptorImpl createEmptyModule(@NotNull String name, @NotNull TargetPlatform platform) {
         return new ModuleDescriptorImpl(
-                Name.special(name), LockBasedStorageManager.NO_LOCKS, ModuleParameters.Empty.INSTANCE$, platform.getBuiltIns()
+                Name.special(name), LockBasedStorageManager.NO_LOCKS, platform.getDefaultModuleParameters(), platform.getBuiltIns()
         );
     }
 
