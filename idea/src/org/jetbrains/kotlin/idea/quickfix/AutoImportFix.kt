@@ -41,9 +41,7 @@ import org.jetbrains.kotlin.idea.core.getResolutionScope
 import org.jetbrains.kotlin.idea.core.isVisible
 import org.jetbrains.kotlin.idea.project.ProjectStructureUtil
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetPsiUtil
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.utils.CachedValueProperty
@@ -52,14 +50,21 @@ import java.util.*
 /**
  * Check possibility and perform fix for unresolved references.
  */
-public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<JetSimpleNameExpression>(element), HighPriorityAction {
+public class AutoImportFix private constructor(expression: JetExpression, type: AutoImportFix.AutoImportType): JetHintAction<JetExpression>(expression), HighPriorityAction {
+    enum class AutoImportType {
+        SIMPLE_NAME,
+        ARRAY,
+        INVOKE,
+        DELEGATE_ACCESSOR
+    }
+
     private val modificationCountOnCreate = PsiModificationTracker.SERVICE.getInstance(element.getProject()).getModificationCount()
 
     @Volatile private var anySuggestionFound: Boolean? = null
 
     private val suggestions: Collection<DeclarationDescriptor> by CachedValueProperty(
             {
-                val descriptors = computeSuggestions(element)
+                val descriptors = computeSuggestions(element, type)
                 anySuggestionFound = !descriptors.isEmpty()
                 descriptors
             },
@@ -101,11 +106,20 @@ public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<Jet
     private fun createAction(project: Project, editor: Editor) = KotlinAddImportAction(project, editor, element, suggestions)
 
     companion object : JetSingleIntentionActionFactory() {
-        override fun createAction(diagnostic: Diagnostic): JetIntentionAction<JetSimpleNameExpression>? {
+        override fun createAction(diagnostic: Diagnostic): JetIntentionAction<JetExpression>? {
             // There could be different psi elements (i.e. JetArrayAccessExpression), but we can fix only JetSimpleNameExpression case
             val psiElement = diagnostic.getPsiElement()
             if (psiElement is JetSimpleNameExpression) {
-                return AutoImportFix(psiElement)
+                return AutoImportFix(psiElement, AutoImportType.SIMPLE_NAME)
+            }
+
+            if (psiElement is JetArrayAccessExpression) {
+                return AutoImportFix(psiElement, AutoImportType.ARRAY)
+            }
+
+            val parent = psiElement.parent
+            if (parent is JetPropertyDelegate && parent.expression == psiElement) {
+                return AutoImportFix(parent.expression!!, AutoImportType.DELEGATE_ACCESSOR)
             }
 
             return null
@@ -113,10 +127,10 @@ public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<Jet
 
         override fun isApplicableForCodeFragment() = true
 
-        private val ERRORS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER)
+        private val ERRORS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER, Errors.DELEGATE_SPECIAL_FUNCTION_MISSING)
 
-        public fun computeSuggestions(element: JetSimpleNameExpression): Collection<DeclarationDescriptor> {
-            if (!element.isValid()) return emptyList()
+        public fun computeSuggestions(element: JetExpression, type: AutoImportType): Collection<DeclarationDescriptor> {
+            if (!element.isValid()) return listOf()
 
             val file = element.getContainingFile() as? JetFile ?: return emptyList()
 
@@ -126,12 +140,28 @@ public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<Jet
             fun filterByCallType(descriptor: DeclarationDescriptor)
                     = callTypeAndReceiver.callType.descriptorKindFilter.accepts(descriptor)
 
-            var referenceName = element.getReferencedName()
-            if (element.getIdentifier() == null) {
-                val conventionName = JetPsiUtil.getConventionName(element)
-                if (conventionName != null) {
-                    referenceName = conventionName.asString()
+            var referenceName : String = when (type) {
+                AutoImportType.SIMPLE_NAME -> {
+                    element as JetSimpleNameExpression
+
+                    if (element.getIdentifier() == null) {
+                        val conventionName = JetPsiUtil.getConventionName(element)
+                        if (conventionName != null) {
+                            conventionName.asString()
+                        }
+                        else {
+                            ""
+                        }
+                    }
+                    else {
+                        element.getReferencedName()
+                    }
                 }
+
+                AutoImportType.ARRAY -> "get"
+                AutoImportType.DELEGATE_ACCESSOR -> "get"
+                AutoImportType.INVOKE -> "invoke"
+                else -> ""
             }
             if (referenceName.isEmpty()) return emptyList()
 
@@ -147,7 +177,7 @@ public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<Jet
 
             fun isVisible(descriptor: DeclarationDescriptor): Boolean {
                 if (descriptor is DeclarationDescriptorWithVisibility) {
-                    return descriptor.isVisible(containingDescriptor, bindingContext, element)
+                    return descriptor.isVisible(containingDescriptor, bindingContext, element as? JetSimpleNameExpression)
                 }
 
                 return true
@@ -157,16 +187,18 @@ public class AutoImportFix(element: JetSimpleNameExpression) : JetHintAction<Jet
 
             val indicesHelper = KotlinIndicesHelper(element.getResolutionFacade(), searchScope, ::isVisible, true)
 
-            if (!element.isImportDirectiveExpression() && !JetPsiUtil.isSelectorInQualified(element)) {
-                if (ProjectStructureUtil.isJsKotlinModule(file)) {
-                    indicesHelper.getKotlinClasses({ it == referenceName }, { true }).filterTo(result, ::filterByCallType)
+            if (element is JetSimpleNameExpression) {
+                if (!element.isImportDirectiveExpression() && !JetPsiUtil.isSelectorInQualified(element)) {
+                    if (ProjectStructureUtil.isJsKotlinModule(file)) {
+                        indicesHelper.getKotlinClasses({ it == referenceName }, { true }).filterTo(result, ::filterByCallType)
 
-                }
-                else {
-                    indicesHelper.getJvmClassesByName(referenceName).filterTo(result, ::filterByCallType)
-                }
+                    }
+                    else {
+                        indicesHelper.getJvmClassesByName(referenceName).filterTo(result, ::filterByCallType)
+                    }
 
-                indicesHelper.getTopLevelCallablesByName(referenceName).filterTo(result, ::filterByCallType)
+                    indicesHelper.getTopLevelCallablesByName(referenceName).filterTo(result, ::filterByCallType)
+                }
             }
 
             result.addAll(indicesHelper.getCallableTopLevelExtensions({ it == referenceName }, callTypeAndReceiver, element, bindingContext))

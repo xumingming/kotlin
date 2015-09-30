@@ -30,10 +30,7 @@ import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.idea.util.receiverTypes
 import org.jetbrains.kotlin.idea.util.substituteExtensionIfCallable
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.JetCallableDeclaration
-import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.isAnnotatedAsHidden
 import org.jetbrains.kotlin.resolve.lazy.ResolveSessionUtils
@@ -119,6 +116,24 @@ public class KotlinIndicesHelper(
         addIfNotNull(constructor.getDeclarationDescriptor()?.getName()?.asString())
         constructor.getSupertypes().forEach { addTypeNames(it) }
     }
+
+//    private fun receiverValues(expression: JetExpression, bindingContext: BindingContext): Collection<Pair<ReceiverValue, CallType>> {
+//        val receiverData = ReferenceVariantsHelper.getExplicitReceiverData(expression)
+//        if (receiverData != null) {
+//            val (receiverExpression, callType) = receiverData
+//
+//            val expressionType = bindingContext.getType(receiverExpression)
+//            if (expressionType == null || expressionType.isError()) return emptyList()
+//
+//            val receiverValue = ExpressionReceiver(receiverExpression, expressionType)
+//
+//            return listOf(receiverValue to callType)
+//        }
+//        else {
+//            val resolutionScope = bindingContext[BindingContext.RESOLUTION_SCOPE, expression] ?: return emptyList()
+//            return resolutionScope.getImplicitReceiversWithInstance().map { it.getValue() to CallType.NORMAL }
+//        }
+//    }
 
     /**
      * Check that function or property with the given qualified name can be resolved in given scope and called on given receiver

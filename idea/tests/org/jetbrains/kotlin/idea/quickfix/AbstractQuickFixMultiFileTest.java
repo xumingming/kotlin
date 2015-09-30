@@ -29,14 +29,18 @@ import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.UIUtil;
 import junit.framework.ComparisonFailure;
+import kotlin.CollectionsKt;
 import kotlin.KotlinPackage;
+import kotlin.StringsKt;
 import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.idea.KotlinDaemonAnalyzerTestCase;
 import org.jetbrains.kotlin.idea.quickfix.utils.UtilsPackage;
 import org.jetbrains.kotlin.idea.test.ConfigLibraryUtil;
@@ -45,6 +49,7 @@ import org.jetbrains.kotlin.idea.test.PluginTestCaseBase;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.test.InTextDirectivesUtils;
 import org.jetbrains.kotlin.test.JetTestUtils;
+import org.testng.Assert;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -52,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractQuickFixMultiFileTest extends KotlinDaemonAnalyzerTestCase {
 
@@ -111,6 +117,146 @@ public abstract class AbstractQuickFixMultiFileTest extends KotlinDaemonAnalyzer
     protected void tearDown() throws Exception {
         CodeInsightSettings.getInstance().EXCLUDED_PACKAGES = ArrayUtil.EMPTY_STRING_ARRAY;
         super.tearDown();
+    }
+
+    static class TestFile {
+        public final String name;
+        public final String content;
+
+        TestFile(String name, String content) {
+            this.name = name;
+            this.content = content;
+        }
+    }
+
+    protected void doMultiFileTest(final String beforeFileName) throws Exception {
+        String multifileText = FileUtil.loadFile(new File(beforeFileName), true);
+
+        final List<TestFile> subFiles = JetTestUtils.createTestFiles(
+                "single.kt",
+                multifileText,
+                new JetTestUtils.TestFileFactoryNoModules<TestFile>() {
+                    @NotNull
+                    @Override
+                    public TestFile create(@NotNull String fileName, @NotNull String text, @NotNull Map<String, String> directives) {
+                        if (text.startsWith("// FILE")) {
+                            String firstLineDropped = StringUtil.substringAfter(text, "\n");
+                            assert firstLineDropped != null;
+
+                            text = firstLineDropped;
+                        }
+                        return new TestFile(fileName, text);
+                    }
+                });
+
+        final TestFile afterFile = CollectionsKt.find(subFiles, new Function1<TestFile, Boolean>() {
+            @Override
+            public Boolean invoke(TestFile file) {
+                return file.name.contains(".after");
+            }
+        });
+        final TestFile beforeFile = CollectionsKt.find(subFiles, new Function1<TestFile, Boolean>() {
+            @Override
+            public Boolean invoke(TestFile file) {
+                return file.name.contains(".before");
+            }
+        });
+
+        assert beforeFile != null;
+        assert afterFile != null;
+
+        subFiles.remove(afterFile);
+        subFiles.remove(beforeFile);
+
+        for (TestFile file : subFiles) {
+            configureByText(JetFileType.INSTANCE, file.content);
+        }
+
+        configureByText(JetFileType.INSTANCE, beforeFile.content);
+
+        CommandProcessor.getInstance().executeCommand(getProject(), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PsiFile psiFile = getFile();
+
+                    Pair<String, Boolean> pair = LightQuickFixTestCase.parseActionHint(psiFile, beforeFile.content);
+                    String text = pair.getFirst();
+
+                    boolean actionShouldBeAvailable = pair.getSecond();
+
+                    if (psiFile instanceof JetFile) {
+                        DirectiveBasedActionUtils.INSTANCE$.checkForUnexpectedErrors((JetFile) psiFile);
+                    }
+
+                    doActionNew(text, actionShouldBeAvailable);
+
+                    String actualText = getFile().getText();
+                    String afterText = new StringBuilder(actualText).insert(getEditor().getCaretModel().getOffset(), "<caret>").toString();
+
+                    if (!afterText.equals(afterFile.content)) {
+                        StringBuilder actualTestFile = new StringBuilder();
+                        actualTestFile.append("// FILE: ").append(beforeFile.name).append("\n").append(beforeFile.content);
+                        for (TestFile file : subFiles) {
+                            actualTestFile.append("// FILE: ").append(file.name).append("\n").append(file.content);
+                        }
+                        actualTestFile.append("// FILE: ").append(afterFile.name).append("\n").append(afterText);
+
+                        JetTestUtils.assertEqualsToFile(new File(beforeFileName), actualTestFile.toString());
+                    }
+                }
+                catch (ComparisonFailure e) {
+                    throw e;
+                }
+                catch (AssertionError e) {
+                    throw e;
+                }
+                catch (Throwable e) {
+                    e.printStackTrace();
+                    fail(getTestName(true));
+                }
+            }
+        }, "", "");
+    }
+
+    @SuppressWarnings({"HardCodedStringLiteral"})
+    public void doActionNew(String text, boolean actionShouldBeAvailable) throws Exception {
+        String testName = getTestName(false);
+
+        List<IntentionAction> availableActions = getAvailableActions();
+        IntentionAction action = LightQuickFixTestCase.findActionWithText(availableActions, text);
+
+        if (action == null) {
+            if (actionShouldBeAvailable) {
+                List<String> texts = getActionsTexts(availableActions);
+                Collection<HighlightInfo> infos = doHighlighting();
+                fail("Action with text '" + text + "' is not available in test " + testName + "\n" +
+                     "Available actions (" + texts.size() + "): " + texts + "\n" +
+                     availableActions + "\n" +
+                     "Infos:" + infos);
+            }
+            else {
+                DirectiveBasedActionUtils.INSTANCE$.checkAvailableActionsAreExpected((JetFile) getFile(), availableActions);
+            }
+        }
+        else {
+            if (!actionShouldBeAvailable) {
+                fail("Action '" + text + "' is available (but must not) in test " + testName);
+            }
+
+            ShowIntentionActionsHandler.chooseActionAndInvoke(getFile(), getEditor(), action, action.getText());
+
+            UIUtil.dispatchAllInvocationEvents();
+
+            //noinspection ConstantConditions
+            if (!shouldBeAvailableAfterExecution()) {
+                IntentionAction afterAction = LightQuickFixTestCase.findActionWithText(getAvailableActions(), text);
+
+                if (afterAction != null) {
+                    fail("Action '" + text + "' is still available after its invocation in test " + testName);
+                }
+            }
+        }
     }
 
     private void doTest(final String beforeFileName, boolean withExtraFile) throws Exception {

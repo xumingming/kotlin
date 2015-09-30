@@ -21,13 +21,12 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.idea.resolve.frontendService
 import org.jetbrains.kotlin.idea.util.*
+import org.jetbrains.kotlin.lexer.JetTokens
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.JetCodeFragment
-import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
-import org.jetbrains.kotlin.psi.JetTypeReference
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import org.jetbrains.kotlin.psi.psiUtil.getReceiverExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfo
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
@@ -332,4 +331,52 @@ public class ReferenceVariantsHelper(
         val resolutionScope = context[BindingContext.RESOLUTION_SCOPE, expression] ?: return listOf()
         return resolutionScope.getDescriptorsFiltered(DescriptorKindFilter.PACKAGES, nameFilter).filter(visibilityFilter)
     }
+
+//    companion object {
+//        public fun getExplicitReceiverData(expression: JetExpression): ExplicitReceiverData? {
+//            val receiverExpression = when {
+//                // TODO: need to say explicitly that we are locking for receiver for delegation
+//                expression is JetSimpleNameExpression -> expression.getReceiverExpression()
+//                expression is JetArrayAccessExpression -> expression.arrayExpression
+//                expression.parent is JetPropertyDelegate -> expression
+//                else -> null
+//            }
+//
+//            if (receiverExpression == null) {
+//                return null
+//            }
+//
+//            val parent = if (expression is JetArrayAccessExpression) expression else expression.getParent()
+//            val callType = when (parent) {
+//                is JetBinaryExpression -> CallType.INFIX
+//
+//                is JetCallExpression -> {
+//                    if ((parent.getParent() as JetQualifiedExpression).getOperationSign() == JetTokens.SAFE_ACCESS)
+//                        CallType.SAFE
+//                    else
+//                        CallType.DEFAULT
+//                }
+//
+//                is JetQualifiedExpression -> {
+//                    if (parent.getOperationSign() == JetTokens.SAFE_ACCESS)
+//                        CallType.SAFE
+//                    else
+//                        CallType.DEFAULT
+//                }
+//
+//                is JetUnaryExpression -> CallType.OPERATOR
+//
+//                is JetUserType -> CallType.DEFAULT
+//
+//                is JetArrayAccessExpression -> CallType.DEFAULT
+//
+//                is JetArrayAccessExpression -> CallType.NORMAL
+//
+//                is JetPropertyDelegate -> CallType.NORMAL
+//
+//                else -> return null
+//            }
+//            return ExplicitReceiverData(receiverExpression, callType)
+//        }
+//    }
 }

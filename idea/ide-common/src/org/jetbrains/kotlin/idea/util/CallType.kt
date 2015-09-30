@@ -46,6 +46,7 @@ public sealed class CallType<TReceiver : JetElement?>(val descriptorKindFilter: 
 
     object INFIX : CallType<JetExpression>(DescriptorKindFilter.FUNCTIONS exclude NonInfixExclude)
 
+    // TODO: Operators +=, -=, *=
     object OPERATOR : CallType<JetExpression>(DescriptorKindFilter.FUNCTIONS exclude NonOperatorExclude)
 
     object CALLABLE_REFERENCE : CallType<JetTypeReference?>(DescriptorKindFilter.CALLABLES exclude CallableReferenceExclude)
@@ -55,6 +56,8 @@ public sealed class CallType<TReceiver : JetElement?>(val descriptorKindFilter: 
     object PACKAGE_DIRECTIVE : CallType<JetExpression?>(DescriptorKindFilter.PACKAGES)
 
     object TYPE : CallType<JetExpression?>(DescriptorKindFilter(DescriptorKindFilter.CLASSIFIERS_MASK or DescriptorKindFilter.PACKAGES_MASK))
+
+    object DELEGATE : CallType<JetPropertyDelegate>(DescriptorKindFilter.FUNCTIONS)
 
     private object NonInfixExclude : DescriptorKindExclude {
         //TODO: check 'infix' modifier
@@ -99,71 +102,75 @@ public sealed class CallTypeAndReceiver<TReceiver : JetElement?, TCallType : Cal
     class TYPE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.TYPE>(CallType.TYPE, receiver)
 
     companion object {
-        public fun detect(expression: JetSimpleNameExpression): CallTypeAndReceiver<*, *> {
+        public fun detect(expression: JetExpression): CallTypeAndReceiver<*, *> {
             val parent = expression.parent
             if (parent is JetCallableReferenceExpression) {
                 return CallTypeAndReceiver.CALLABLE_REFERENCE(parent.typeReference)
             }
 
-            val receiverExpression = expression.getReceiverExpression()
+            if (expression is JetSimpleNameExpression) {
+                val receiverExpression: JetExpression? = expression.getReceiverExpression()
 
-            if (expression.isImportDirectiveExpression()) {
-                return CallTypeAndReceiver.IMPORT_DIRECTIVE(receiverExpression)
-            }
-
-            if (expression.isPackageDirectiveExpression()) {
-                return CallTypeAndReceiver.PACKAGE_DIRECTIVE(receiverExpression)
-            }
-
-            if (parent is JetUserType) {
-                return CallTypeAndReceiver.TYPE(receiverExpression)
-            }
-
-            when (expression) {
-                is JetOperationReferenceExpression -> {
-                    if (receiverExpression == null) {
-                        return UNKNOWN // incomplete code
-                    }
-                    return when (parent) {
-                        is JetBinaryExpression -> {
-                            if (parent.operationToken == JetTokens.IDENTIFIER)
-                                CallTypeAndReceiver.INFIX(receiverExpression)
-                            else
-                                CallTypeAndReceiver.OPERATOR(receiverExpression)
-                        }
-
-                        is JetUnaryExpression -> CallTypeAndReceiver.OPERATOR(receiverExpression)
-
-                        else -> error("Unknown parent for JetOperationReferenceExpression: $parent")
-                    }
+                if (expression.isImportDirectiveExpression()) {
+                    return CallTypeAndReceiver.IMPORT_DIRECTIVE(receiverExpression)
                 }
 
-                is JetNameReferenceExpression -> {
-                    if (receiverExpression == null) {
-                        return CallTypeAndReceiver.DEFAULT
-                    }
-
-                    return when (parent) {
-                        is JetCallExpression -> {
-                            if ((parent.parent as JetQualifiedExpression).operationSign == JetTokens.SAFE_ACCESS)
-                                CallTypeAndReceiver.SAFE(receiverExpression)
-                            else
-                                CallTypeAndReceiver.DOT(receiverExpression)
-                        }
-
-                        is JetQualifiedExpression -> {
-                            if (parent.operationSign == JetTokens.SAFE_ACCESS)
-                                CallTypeAndReceiver.SAFE(receiverExpression)
-                            else
-                                CallTypeAndReceiver.DOT(receiverExpression)
-                        }
-
-                        else -> error("Unknown parent for JetNameReferenceExpression with receiver: $parent")
-                    }
+                if (expression.isPackageDirectiveExpression()) {
+                    return CallTypeAndReceiver.PACKAGE_DIRECTIVE(receiverExpression)
                 }
 
-                else -> return UNKNOWN
+                if (parent is JetUserType) {
+                    return CallTypeAndReceiver.TYPE(receiverExpression)
+                }
+
+                when (expression) {
+                    is JetOperationReferenceExpression -> {
+                        if (receiverExpression == null) {
+                            return UNKNOWN // incomplete code
+                        }
+                        return when (parent) {
+                            is JetBinaryExpression -> {
+                                if (parent.operationToken == JetTokens.IDENTIFIER)
+                                    CallTypeAndReceiver.INFIX(receiverExpression)
+                                else
+                                    CallTypeAndReceiver.OPERATOR(receiverExpression)
+                            }
+
+                            is JetUnaryExpression -> CallTypeAndReceiver.OPERATOR(receiverExpression)
+
+                            else -> error("Unknown parent for JetOperationReferenceExpression: $parent")
+                        }
+                    }
+
+                    is JetNameReferenceExpression -> {
+                        if (receiverExpression == null) {
+                            return CallTypeAndReceiver.DEFAULT
+                        }
+
+                        return when (parent) {
+                            is JetCallExpression -> {
+                                if ((parent.parent as JetQualifiedExpression).operationSign == JetTokens.SAFE_ACCESS)
+                                    CallTypeAndReceiver.SAFE(receiverExpression)
+                                else
+                                    CallTypeAndReceiver.DOT(receiverExpression)
+                            }
+
+                            is JetQualifiedExpression -> {
+                                if (parent.operationSign == JetTokens.SAFE_ACCESS)
+                                    CallTypeAndReceiver.SAFE(receiverExpression)
+                                else
+                                    CallTypeAndReceiver.DOT(receiverExpression)
+                            }
+
+                            else -> error("Unknown parent for JetNameReferenceExpression with receiver: $parent")
+                        }
+                    }
+
+                    else -> return UNKNOWN
+                }
             }
+
+            return UNKNOWN
         }
     }
 }
