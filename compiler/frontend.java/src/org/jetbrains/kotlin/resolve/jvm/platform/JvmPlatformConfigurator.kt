@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.load.java.lazy.types.isMarkedNullable
 import org.jetbrains.kotlin.load.kotlin.JavaAnnotationCallChecker
 import org.jetbrains.kotlin.load.kotlin.JavaAnnotationMethodCallChecker
 import org.jetbrains.kotlin.load.kotlin.nativeDeclarations.NativeFunChecker
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.*
@@ -63,6 +64,7 @@ import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.expressions.SenselessComparisonChecker
+import java.util.*
 
 public object JvmPlatformConfigurator : PlatformConfigurator(
         DynamicTypesSettings(),
@@ -138,6 +140,23 @@ public object FileAnnotationsChecker : AdditionalAnnotationChecker {
                                                JvmFileClassUtil.JVM_MULTIFILE_CLASS_SHORT to JvmFileClassUtil.JVM_MULTIFILE_CLASS)
 
     override fun checkEntries(entries: List<JetAnnotationEntry>, actualTargets: List<KotlinTarget>, trace: BindingTrace) {
+        val fileAnnotationsToCheck = collectResolvedFileAnnotations(entries, trace)
+
+        checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck, trace)
+
+        val jvmMultifileClassEntry = findAnnotationEntry(fileAnnotationsToCheck, JvmFileClassUtil.JVM_MULTIFILE_CLASS)
+        val jvmNameEntry = findAnnotationEntry(fileAnnotationsToCheck, JvmFileClassUtil.JVM_NAME)
+
+        if (jvmMultifileClassEntry != null && jvmNameEntry == null) {
+            trace.report(ErrorsJvm.JVM_MULTIFILE_CLASS_WITHOUT_JVM_NAME.on(jvmMultifileClassEntry))
+        }
+
+        if (jvmMultifileClassEntry != null) {
+            checkFileClassAnnotationsApplicability(fileAnnotationsToCheck, trace)
+        }
+    }
+
+    private fun collectResolvedFileAnnotations(entries: List<JetAnnotationEntry>, trace: BindingTrace): List<Pair<JetAnnotationEntry, ClassDescriptor>> {
         val fileAnnotationsToCheck = arrayListOf<Pair<JetAnnotationEntry, ClassDescriptor>>()
         for (entry in entries) {
             if (entry.useSiteTarget?.getAnnotationUseSiteTarget() != AnnotationUseSiteTarget.FILE) continue
@@ -148,10 +167,11 @@ public object FileAnnotationsChecker : AdditionalAnnotationChecker {
             if (applicableTargets == null || !applicableTargets.contains(KotlinTarget.FILE)) continue
             fileAnnotationsToCheck.add(Pair(entry, classDescriptor))
         }
-
-        checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck, trace)
-        checkFileClassAnnotationsApplicability(fileAnnotationsToCheck, trace)
+        return fileAnnotationsToCheck
     }
+
+    private fun findAnnotationEntry(annotations: List<Pair<JetAnnotationEntry, ClassDescriptor>>, fqName: FqName) =
+            annotations.firstOrNull { it.second.classId.asSingleFqName() == fqName }?.first
 
     private fun checkSpecialFileAnnotationsNaming(fileAnnotationsToCheck: List<Pair<JetAnnotationEntry, ClassDescriptor>>, trace: BindingTrace) {
         for ((entry, classDescriptor) in fileAnnotationsToCheck) {

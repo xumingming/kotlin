@@ -123,6 +123,12 @@ public class JetDiagnosticsTestWithStdLibGenerated extends AbstractJetDiagnostic
                 doTest(fileName);
             }
 
+            @TestMetadata("jvmMultifileClassWithoutJvmName.kt")
+            public void testJvmMultifileClassWithoutJvmName() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations/annotationApplicability/jvmMultifileClassWithoutJvmName.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("jvmName.kt")
             public void testJvmName() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations/annotationApplicability/jvmName.kt");
