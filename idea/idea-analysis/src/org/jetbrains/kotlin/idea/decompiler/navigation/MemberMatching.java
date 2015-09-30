@@ -76,9 +76,11 @@ public class MemberMatching {
             public String visitFunctionType(@NotNull JetFunctionType type, Void data) {
                 int parameterCount = type.getParameters().size();
                 if (type.getReceiverTypeReference() != null) {
-                    parameterCount++;
+                    return KotlinBuiltIns.getExtensionFunctionName(parameterCount);
                 }
-                return KotlinBuiltIns.getFunctionXName(parameterCount);
+                else {
+                    return KotlinBuiltIns.getFunctionName(parameterCount);
+                }
             }
 
             @Override
