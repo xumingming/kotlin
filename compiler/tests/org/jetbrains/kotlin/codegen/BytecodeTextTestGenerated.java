@@ -239,6 +239,12 @@ public class BytecodeTextTestGenerated extends AbstractBytecodeTextTest {
         doTest(fileName);
     }
 
+    @TestMetadata("safeAsOnMutableTypes.kt")
+    public void testSafeAsOnMutableTypes() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/safeAsOnMutableTypes.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("topLevelFunWithDefaultArgs.kt")
     public void testTopLevelFunWithDefaultArgs() throws Exception {
         String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/topLevelFunWithDefaultArgs.kt");
@@ -526,6 +532,12 @@ public class BytecodeTextTestGenerated extends AbstractBytecodeTextTest {
         @TestMetadata("notSplitedExceptionTable.kt")
         public void testNotSplitedExceptionTable() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/inline/notSplitedExceptionTable.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("reifiedSafeAsOnMutableTypes.kt")
+        public void testReifiedSafeAsOnMutableTypes() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/inline/reifiedSafeAsOnMutableTypes.kt");
             doTest(fileName);
         }
 

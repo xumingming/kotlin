@@ -22,12 +22,13 @@ import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
+import org.jetbrains.org.objectweb.asm.tree.AbstractInsnNode
 import org.jetbrains.org.objectweb.asm.tree.InsnList
 import org.jetbrains.org.objectweb.asm.tree.MethodInsnNode
 import org.jetbrains.org.objectweb.asm.tree.TypeInsnNode
 
 object CheckCast {
-    private val INTRINSICS_CLASS = "kotlin/jvm/internal/TypeIntrinsics"
+    private val TYPE_INTRINSICS_CLASS = "kotlin/jvm/internal/TypeIntrinsics"
 
     private val CHECKCAST_METHOD_NAME = hashMapOf(
             "kotlin.MutableIterator" to "asMutableIterator",
@@ -51,14 +52,17 @@ object CheckCast {
             "kotlin.MutableMap.MutableEntry" to "safeAsMutableMapEntry"
     )
 
+    public @JvmStatic fun hasSafeCheckcastIntrinsic(jetType: JetType): Boolean =
+            getCheckcastIntrinsicMethodName(jetType, true) != null
+
     public @JvmStatic fun checkcast(v: InstructionAdapter, jetType: JetType, boxedAsmType: Type, safe: Boolean) {
         val intrinsicMethodName = getCheckcastIntrinsicMethodName(jetType, safe)
         if (intrinsicMethodName == null) {
             v.checkcast(boxedAsmType)
         }
         else {
-            val signature = getCheckcastIntrinsicMethodSignature(boxedAsmType)
-            v.invokestatic(INTRINSICS_CLASS, intrinsicMethodName, signature, false)
+            val signature = getCheckcastIntrinsicMethodDescriptor(boxedAsmType)
+            v.invokestatic(TYPE_INTRINSICS_CLASS, intrinsicMethodName, signature, false)
         }
     }
 
@@ -68,11 +72,54 @@ object CheckCast {
             checkcastInsn.desc = asmType.internalName
         }
         else {
-            val signature = getCheckcastIntrinsicMethodSignature(asmType)
-            val invokeNode = MethodInsnNode(Opcodes.INVOKESTATIC, INTRINSICS_CLASS, intrinsicMethodName, signature, false)
-            instructions.insertBefore(checkcastInsn, invokeNode)
+            val signature = getCheckcastIntrinsicMethodDescriptor(asmType)
+            val intrinsicNode = MethodInsnNode(Opcodes.INVOKESTATIC, TYPE_INTRINSICS_CLASS, intrinsicMethodName, signature, false)
+            instructions.insertBefore(checkcastInsn, intrinsicNode)
             instructions.remove(checkcastInsn)
+            if (safe) {
+                removeInstanceOfCheck(intrinsicNode, instructions)
+            }
         }
+    }
+
+    private fun removeInstanceOfCheck(intrinsicNode: MethodInsnNode, instructions: InsnList) {
+        // After removing type parameter reification markers the code generated for 'as?' looks like:
+        //   1     DUP
+        //   2     INVOKESTATIC kotlin/jvm/internal/TypeIntrinsics.(...) <-- intrinsic for 'is'
+        //   3     IFNE LA
+        //   4     POP
+        //   5     ACONST_NULL
+        //   6  LA:
+        //          <special instruction for safe-cast type parameter>
+        //          <reify marker for safe-cast>
+        //   7     INVOKESTATIC kotlin/jvm/internal/TypeIntrinsics.(...) <-- intrinsic for 'as?'
+        // Intrinsic for 'as?' performs 'is'-related checks, so we should remove instructions 1..6.
+
+        if (intrinsicNode.opcode != Opcodes.INVOKESTATIC && intrinsicNode.owner != TYPE_INTRINSICS_CLASS) return
+
+        val reifyMarkerInsn = intrinsicNode.previous ?: return
+        val typeParamInsn = reifyMarkerInsn.previous ?: return
+
+        val insn6 = typeParamInsn.previous ?: return
+        val insn5 = insn6.previous ?: return
+        val insn4 = insn5.previous ?: return
+        val insn3 = insn4.previous ?: return
+        val insn2 = insn3.previous ?: return
+        val insn1 = insn2.previous ?: return
+
+        if (insn1.opcode != Opcodes.DUP) return
+        if (insn2.opcode != Opcodes.INVOKESTATIC && (insn2 !is MethodInsnNode || insn2.owner != TYPE_INTRINSICS_CLASS)) return
+        if (insn3.opcode != Opcodes.IFNE) return
+        if (insn4.opcode != Opcodes.POP) return
+        if (insn5.opcode != Opcodes.ACONST_NULL) return
+        if (insn6.type != AbstractInsnNode.LABEL) return
+
+        instructions.remove(insn1)
+        instructions.remove(insn2)
+        instructions.remove(insn3)
+        instructions.remove(insn4)
+        instructions.remove(insn5)
+        instructions.remove(insn6)
     }
 
     private fun getCheckcastIntrinsicMethodName(jetType: JetType, safe: Boolean): String? {
@@ -81,7 +128,7 @@ object CheckCast {
         return if (safe) SAFE_CHECKCAST_METHOD_NAME[classFqName] else CHECKCAST_METHOD_NAME[classFqName]
     }
 
-    private fun getCheckcastIntrinsicMethodSignature(asmType: Type): String =
+    private fun getCheckcastIntrinsicMethodDescriptor(asmType: Type): String =
             Type.getMethodDescriptor(asmType, Type.getObjectType("java/lang/Object"));
 
 }

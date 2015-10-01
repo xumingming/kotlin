@@ -27,9 +27,9 @@ import org.jetbrains.org.objectweb.asm.tree.MethodInsnNode
 import org.jetbrains.org.objectweb.asm.tree.TypeInsnNode
 
 object InstanceOf {
-    private val INTRINSICS_CLASS = "kotlin/jvm/internal/TypeIntrinsics"
+    private val TYPE_INTRINSICS_CLASS = "kotlin/jvm/internal/TypeIntrinsics"
 
-    private val INSTANCEOF_METHOD_SIGNATURE =
+    private val INSTANCEOF_METHOD_DESCRIPTOR =
             Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getObjectType("java/lang/Object"))
 
     private val INSTANCEOF_METHOD_NAME = hashMapOf(
@@ -49,7 +49,7 @@ object InstanceOf {
             v.instanceOf(boxedAsmType)
         }
         else {
-            v.invokestatic(INTRINSICS_CLASS, intrinsicMethodName, INSTANCEOF_METHOD_SIGNATURE, false)
+            v.invokestatic(TYPE_INTRINSICS_CLASS, intrinsicMethodName, INSTANCEOF_METHOD_DESCRIPTOR, false)
         }
     }
 
@@ -59,7 +59,7 @@ object InstanceOf {
             instanceofInsn.desc = asmType.internalName
         }
         else {
-            val invokeNode = MethodInsnNode(Opcodes.INVOKESTATIC, INTRINSICS_CLASS, intrinsicMethodName, INSTANCEOF_METHOD_SIGNATURE, false)
+            val invokeNode = MethodInsnNode(Opcodes.INVOKESTATIC, TYPE_INTRINSICS_CLASS, intrinsicMethodName, INSTANCEOF_METHOD_DESCRIPTOR, false)
             instructions.insertBefore(instanceofInsn, invokeNode)
             instructions.remove(instanceofInsn)
         }

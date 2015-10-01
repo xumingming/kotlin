@@ -3740,13 +3740,15 @@ The "returned" value of try expression with no finally is either the last expres
                     }
                 }
                 else {
-                    v.dup();
-                    generateInstanceOfInstruction(rightType);
-                    Label ok = new Label();
-                    v.ifne(ok);
-                    v.pop();
-                    v.aconst(null);
-                    v.mark(ok);
+                    if (!CheckCast.hasSafeCheckcastIntrinsic(rightType)) {
+                        v.dup();
+                        generateInstanceOfInstruction(rightType);
+                        Label ok = new Label();
+                        v.ifne(ok);
+                        v.pop();
+                        v.aconst(null);
+                        v.mark(ok);
+                    }
                 }
 
                 generateCheckCastInstruction(rightType, opToken == JetTokens.AS_SAFE);
