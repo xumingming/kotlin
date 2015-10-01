@@ -99,7 +99,7 @@ public fun LexicalScope.getLocalVariable(name: Name): VariableDescriptor? {
         else if (it is MemberScopeToFileScopeAdapter) { // todo remove hack
             return it.memberScope.getLocalVariable(name)
         }
-        else if (it !is FileScope && it !is LexicalChainedScope) { // todo check this
+        else if (it !is FileScope && (it !is LexicalChainedScope || it.isStaticScope)) { // todo check this
             it.getDeclaredVariables(name, NoLookupLocation.UNSORTED).singleOrNull()?.let { return it }
         }
     }

@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.resolve.calls.tasks.createSynthesizedInvokes
 import org.jetbrains.kotlin.resolve.calls.util.FakeCallableDescriptorForObject
 import org.jetbrains.kotlin.resolve.descriptorUtil.hasClassObjectType
 import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.resolve.scopes.LexicalChainedScope
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.resolve.scopes.utils.collectAllFromMeAndParent
 import org.jetbrains.kotlin.resolve.scopes.utils.getLocalVariable
@@ -81,6 +82,10 @@ private object FunctionCollector : CallableDescriptorCollector<FunctionDescripto
             if (it.ownerDescriptor is FunctionDescriptor) {
                 it.getDeclaredFunctions(name, location).filter { it.extensionReceiverParameter == null } +
                     getConstructors(it.getDeclaredClassifier(name, location))
+            }
+            // todo this is hack for static members priority
+            else if (it is LexicalChainedScope && it.isStaticScope) {
+                it.getDeclaredFunctions(name, location).filter { it.extensionReceiverParameter == null }
             }
             else {
                 emptyList()
