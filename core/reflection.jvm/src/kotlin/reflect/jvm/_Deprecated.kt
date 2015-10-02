@@ -45,13 +45,3 @@ public val <T : Any> KClass<T>.declaredExtensionProperties: Collection<KProperty
 public var KProperty<*>.accessible: Boolean
     get() = isAccessible
     set(value) { isAccessible = value }
-
-@HiddenDeclaration
-@Deprecated("Moved to package kotlin.jvm", ReplaceWith("java"))
-public val <T : Any> KClass<T>.java: Class<T>
-    get() = java
-
-@HiddenDeclaration
-@Deprecated("Moved to package kotlin.jvm", ReplaceWith("kotlin"))
-public val <T : Any> Class<T>.kotlin: KClass<T>
-    get() = kotlin

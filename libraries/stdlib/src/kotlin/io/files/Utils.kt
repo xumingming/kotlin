@@ -52,13 +52,6 @@ public val File.directory: File
     get() = if (isDirectory()) this else parent!!
 
 /**
- * Returns parent of this abstract path name, or `null` if it has no parent.
- */
-@Deprecated("Use parentFile", ReplaceWith("parentFile"))
-public val File.parent: File?
-    get() = parentFile
-
-/**
  * Returns the canonical path of this file.
  */
 @HiddenDeclaration
