@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.resolve.scopes.utils.getClassifier
 import org.jetbrains.kotlin.resolve.validation.SymbolUsageValidator
+import org.jetbrains.kotlin.types.TypeSubstitutor
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.check
 
@@ -190,9 +191,9 @@ public class QualifiedExpressionResolver(val symbolUsageValidator: SymbolUsageVa
                     descriptors.addAll(packageOrClassDescriptor.unsubstitutedMemberScope.getFunctions(lastName, location).map {
                         FunctionImportedFromObject(it)
                     })
-                    descriptors.addAll(packageOrClassDescriptor.unsubstitutedMemberScope.getProperties(lastName, location).map {
-                        PropertyImportedFromObject(it)
-                    })
+                    val properties = packageOrClassDescriptor.unsubstitutedMemberScope.getProperties(lastName, location)
+                            .filterIsInstance<PropertyDescriptor>().map { PropertyImportedFromObject(it) }
+                    descriptors.addAll(properties)
                 }
             }
 
@@ -430,11 +431,30 @@ public class QualifiedExpressionResolver(val symbolUsageValidator: SymbolUsageVa
     }
 }
 
+abstract class ImportedFromObjectCallableDescriptor(val containingObject: ClassDescriptor)
+
 // members imported from object should be wrapped to not require dispatch receiver
-private class FunctionImportedFromObject(private val original: FunctionDescriptor): FunctionDescriptor by original {
+class FunctionImportedFromObject(val functionFromObject: FunctionDescriptor) :
+        FunctionDescriptor by functionFromObject,
+        ImportedFromObjectCallableDescriptor(functionFromObject.containingDeclaration as ClassDescriptor)
+{
     override fun getDispatchReceiverParameter(): ReceiverParameterDescriptor? = null
+
+    override fun substitute(substitutor: TypeSubstitutor) = functionFromObject.substitute(substitutor).wrap()
+
+    override fun getOriginal() = functionFromObject.original.wrap()
 }
 
-private class PropertyImportedFromObject(private val original: VariableDescriptor): VariableDescriptor by original {
+class PropertyImportedFromObject(private val propertyFromObject: PropertyDescriptor) :
+        PropertyDescriptor by propertyFromObject,
+        ImportedFromObjectCallableDescriptor(propertyFromObject.containingDeclaration as ClassDescriptor)
+{
     override fun getDispatchReceiverParameter(): ReceiverParameterDescriptor? = null
+
+    override fun substitute(substitutor: TypeSubstitutor) = propertyFromObject.substitute(substitutor)?.wrap()
+
+    override fun getOriginal() = propertyFromObject.original.wrap()
 }
+
+private fun FunctionDescriptor.wrap() = FunctionImportedFromObject(this)
+private fun PropertyDescriptor.wrap() = PropertyImportedFromObject(this)
