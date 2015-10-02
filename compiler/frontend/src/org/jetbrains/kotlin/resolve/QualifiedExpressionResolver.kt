@@ -185,6 +185,15 @@ public class QualifiedExpressionResolver(val symbolUsageValidator: SymbolUsageVa
                 val staticClassScope = packageOrClassDescriptor.staticScope
                 descriptors.addAll(staticClassScope.getFunctions(lastName, location))
                 descriptors.addAll(staticClassScope.getProperties(lastName, location))
+
+                if (packageOrClassDescriptor.kind == ClassKind.OBJECT) {
+                    descriptors.addAll(packageOrClassDescriptor.unsubstitutedMemberScope.getFunctions(lastName, location).map {
+                        FunctionImportedFromObject(it)
+                    })
+                    descriptors.addAll(packageOrClassDescriptor.unsubstitutedMemberScope.getProperties(lastName, location).map {
+                        PropertyImportedFromObject(it)
+                    })
+                }
             }
 
             else -> throw IllegalStateException("Should be class or package: $packageOrClassDescriptor")
@@ -424,4 +433,13 @@ public class QualifiedExpressionResolver(val symbolUsageValidator: SymbolUsageVa
         }
         return Visibilities.isVisible(ReceiverValue.IRRELEVANT_RECEIVER, descriptor, shouldBeVisibleFrom)
     }
+}
+
+// members imported from object should be wrapped to not require dispatch receiver
+private class FunctionImportedFromObject(private val original: FunctionDescriptor): FunctionDescriptor by original {
+    override fun getDispatchReceiverParameter(): ReceiverParameterDescriptor? = null
+}
+
+private class PropertyImportedFromObject(private val original: VariableDescriptor): VariableDescriptor by original {
+    override fun getDispatchReceiverParameter(): ReceiverParameterDescriptor? = null
 }
