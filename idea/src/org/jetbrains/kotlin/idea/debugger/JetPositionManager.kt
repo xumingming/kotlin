@@ -462,9 +462,9 @@ public class JetPositionManager(private val myDebugProcess: DebugProcess) : Mult
             if (psiElement is JetNamedFunction &&
                 InlineUtil.isInline(typeMapper.getBindingContext().get(BindingContext.DECLARATION_TO_DESCRIPTOR, psiElement))
             ) {
-                ReferencesSearch.search(psiElement).forEach {
-                    if (!it.isImportUsage()) {
-                        val psiElement = it.getElement()
+                for (ref in ReferencesSearch.search(psiElement)) {
+                    if (!ref.isImportUsage()) {
+                        val psiElement = ref.getElement()
                         if (psiElement is JetElement) {
                             //TODO recursive search
                             val name = classNameForPosition(psiElement)

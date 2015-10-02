@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.types.TypeSubstitutor
 import org.jetbrains.kotlin.types.substitutions.getTypeSubstitutor
 import org.jetbrains.kotlin.util.findCallableMemberBySignature
 import org.jetbrains.kotlin.utils.keysToMap
-import java.util.ArrayList
+import java.util.*
 
 public class KotlinPushDownContext(
         val sourceClass: JetClass,
@@ -149,7 +149,7 @@ public class KotlinPushDownProcessor(
                             addModifierWithSpace(JetTokens.OVERRIDE_KEYWORD)
                         }
                     } ?: addMemberToTarget(member, targetClass).apply {
-                        if (context.sourceClassDescriptor.kind == ClassKind.INTERFACE) {
+                        if (this@KotlinPushDownProcessor.context.sourceClassDescriptor.kind == ClassKind.INTERFACE) {
                             if (targetClassDescriptor.kind != ClassKind.INTERFACE && memberDescriptor.modality == Modality.ABSTRACT) {
                                 addModifierWithSpace(JetTokens.ABSTRACT_KEYWORD)
                             }

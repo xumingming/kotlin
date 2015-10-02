@@ -45,8 +45,7 @@ import org.jetbrains.kotlin.idea.hierarchy.calls.KotlinCallerMethodsTreeStructur
 import org.jetbrains.kotlin.psi.JetClass
 import org.jetbrains.kotlin.psi.JetFunction
 import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
-import java.util.HashSet
-import java.util.LinkedHashSet
+import java.util.*
 
 public class KotlinCallerChooser(
         declaration: PsiElement,
@@ -119,7 +118,7 @@ public class KotlinMethodNode(
         }
         val query = myMethod.getRepresentativeLightMethod()?.let { MethodReferencesSearch.search(it, it.getUseScope(), true) }
                     ?: ReferencesSearch.search(myMethod, myMethod.getUseScope())
-        query.forEach { processor.process(it) }
+        query.forEach(processor)
         return callers.toList()
     }
 }

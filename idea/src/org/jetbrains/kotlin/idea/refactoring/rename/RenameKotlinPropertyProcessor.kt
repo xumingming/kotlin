@@ -32,11 +32,9 @@ import com.intellij.refactoring.util.RefactoringUtil
 import com.intellij.usageView.UsageInfo
 import org.jetbrains.kotlin.asJava.LightClassUtil
 import org.jetbrains.kotlin.asJava.namedUnwrappedElement
-import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptor
 import org.jetbrains.kotlin.idea.util.application.runReadAction
 import org.jetbrains.kotlin.lexer.JetTokens
 import org.jetbrains.kotlin.load.java.JvmAbi
@@ -153,7 +151,7 @@ public class RenameKotlinPropertyProcessor : RenamePsiElementProcessor() {
                                   scope: SearchScope) {
         if (psiMethod == null) return
 
-        OverridingMethodsSearch.search(psiMethod, scope, true).forEach { overrider ->
+        for (overrider in OverridingMethodsSearch.search(psiMethod, scope, true)) {
             val overriderElement = overrider.namedUnwrappedElement
 
             if (overriderElement != null && overriderElement !is SyntheticElement) {

@@ -46,9 +46,7 @@ import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.types.JetType
 import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.LinkedHashSet
+import java.util.*
 
 public open class JetChangeInfo(
         val methodDescriptor: JetMethodDescriptor,
@@ -176,7 +174,10 @@ public open class JetChangeInfo(
 
             for (caller in value) {
                 add(caller)
-                OverridingMethodsSearch.search(caller.getRepresentativeLightMethod() ?: continue).forEach { add(it) }
+                val query = OverridingMethodsSearch.search(caller.getRepresentativeLightMethod() ?: continue)
+                for (ref in query) {
+                    add(ref)
+                }
             }
 
             propagationTargetUsageInfos = result.toList()

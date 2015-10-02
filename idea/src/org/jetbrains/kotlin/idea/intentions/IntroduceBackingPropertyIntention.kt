@@ -135,8 +135,8 @@ class IntroduceBackingPropertyIntention(): JetSelfTargetingIntention<JetProperty
         // TODO: drop this when we get rid of backing field syntax
         private fun replaceBackingFieldReferences(prop: JetProperty) {
             val containingClass = prop.getStrictParentOfType<JetClassOrObject>()!!
-            ReferencesSearch.search(prop, LocalSearchScope(containingClass)).forEach {
-                val element = it.element as? JetNameReferenceExpression
+            for (reference in ReferencesSearch.search(prop, LocalSearchScope(containingClass))) {
+                val element = reference.element as? JetNameReferenceExpression
                 if (element != null && element.getReferencedNameElementType() == JetTokens.FIELD_IDENTIFIER) {
                     element.replace(JetPsiFactory(element).createSimpleName("_${prop.name}"))
                 }
