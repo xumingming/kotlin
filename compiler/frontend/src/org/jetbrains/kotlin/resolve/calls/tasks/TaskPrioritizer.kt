@@ -21,11 +21,11 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.incremental.KotlinLookupLocation
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.Call
+import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.doNotAnalyze
 import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.jetbrains.kotlin.resolve.calls.CallTransformer
 import org.jetbrains.kotlin.resolve.calls.callResolverUtil.isConventionCall
-import org.jetbrains.kotlin.resolve.calls.callResolverUtil.isOrOverridesSynthesized
 import org.jetbrains.kotlin.resolve.calls.context.BasicCallResolutionContext
 import org.jetbrains.kotlin.resolve.calls.context.ResolutionContext
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
@@ -446,7 +446,7 @@ public class TaskPrioritizer(
 
         override fun getPriority(candidate: ResolutionCandidate<D>)
                 = if (hasImplicitDynamicReceiver(candidate)) 0
-                  else (if (isVisible(candidate)) 2 else 0) + (if (isSynthesized(candidate)) 0 else 1)
+                  else (if (isVisible(candidate)) 2 else 0) + (if (isStaticSynthesizedMember(candidate)) 0 else 1)
 
         override fun getMaxPriority() = 3
 
@@ -458,9 +458,13 @@ public class TaskPrioritizer(
             return Visibilities.isVisible(receiverValue, candidateDescriptor, context.scope.ownerDescriptor)
         }
 
-        private fun isSynthesized(candidate: ResolutionCandidate<D>): Boolean {
+        // TODO: it's a temporary solution to have smaller priority for SAM-adapters of static java members
+        private fun isStaticSynthesizedMember(candidate: ResolutionCandidate<D>): Boolean {
             val descriptor = candidate.getDescriptor()
-            return descriptor is CallableMemberDescriptor && isOrOverridesSynthesized(descriptor : CallableMemberDescriptor)
+            return descriptor is CallableMemberDescriptor
+                   && descriptor.kind == CallableMemberDescriptor.Kind.SYNTHESIZED
+                   && descriptor.containingDeclaration is ClassifierDescriptor
+                   && descriptor.dispatchReceiverParameter == null
         }
 
         fun hasImplicitDynamicReceiver(candidate: ResolutionCandidate<D>): Boolean {

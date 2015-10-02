@@ -4,4 +4,4 @@ fun Runnable(f: () -> Unit): Runnable = object : Runnable {
     }
 }
 
-val x = Runnable {  }
+val x = <!OVERLOAD_RESOLUTION_AMBIGUITY!>Runnable<!> {  }

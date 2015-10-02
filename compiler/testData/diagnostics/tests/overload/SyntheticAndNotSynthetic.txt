@@ -1,4 +1,4 @@
 package
 
-public val x: java.lang.Runnable
+public val x: [ERROR : Type for Runnable {  }]
 public fun Runnable(/*0*/ f: () -> kotlin.Unit): java.lang.Runnable
