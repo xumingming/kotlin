@@ -30,6 +30,7 @@ package a {
         public final var kotlin.String.ext: kotlin.Int
         public final fun A(/*0*/ c: kotlin.Int): a.S.A
         public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+        public final fun </*0*/ T> genericFun(/*0*/ t: T, /*1*/ t2: T): kotlin.Unit
         public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
         public final fun o(/*0*/ i: kotlin.Int): kotlin.Unit
         public final fun o(/*0*/ s: kotlin.String): kotlin.Unit
@@ -50,6 +51,7 @@ package b {
 }
 
 package c {
+    public fun </*0*/ T> t(/*0*/ t: T): kotlin.Unit
     public fun testImportFromObjectByName(): kotlin.Unit
 }
 

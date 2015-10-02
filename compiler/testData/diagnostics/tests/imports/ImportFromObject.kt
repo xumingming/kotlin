@@ -25,6 +25,8 @@ object S {
     fun A(<!UNUSED_PARAMETER!>c<!>: Int) = A()
 
     class A()
+
+    fun <T> genericFun(<!UNUSED_PARAMETER!>t<!>: T, <!UNUSED_PARAMETER!>t2<!>: T) = Unit
 }
 
 // FILE: b.kt
@@ -45,6 +47,7 @@ import a.S.prop
 import a.S.o
 import a.S.ext
 import a.S.A
+import a.S.genericFun
 
 fun testImportFromObjectByName() {
     prop
@@ -56,6 +59,14 @@ fun testImportFromObjectByName() {
 
     A()
     A(3)
+
+    genericFun(3, 3)
+    genericFun("A", "b")
+    genericFun(true, false)
+}
+
+fun <T> t(t: T) {
+    genericFun(t, t)
 }
 
 // FILE: d.kt
