@@ -47,9 +47,7 @@ import org.jetbrains.kotlin.psi.JetExpression;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetFunctionLiteral;
 import org.jetbrains.kotlin.psi.JetFunctionLiteralExpression;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils;
-import org.jetbrains.kotlin.resolve.DescriptorUtils;
+import org.jetbrains.kotlin.resolve.*;
 import org.jetbrains.kotlin.resolve.annotations.AnnotationsPackage;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
@@ -64,7 +62,6 @@ import org.jetbrains.kotlin.resolve.scopes.AbstractScopeAdapter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
 import org.jetbrains.kotlin.serialization.deserialization.DeserializedType;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor;
-import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor;
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf;
 import org.jetbrains.kotlin.types.*;
 import org.jetbrains.kotlin.types.expressions.OperatorConventions;
@@ -715,9 +712,11 @@ public class JetTypeMapper {
                 }
             }
             else {
-                if (isStaticDeclaration(functionDescriptor) ||
-                    isStaticAccessor(functionDescriptor) ||
-                    AnnotationsPackage.isPlatformStaticInObjectOrClass(functionDescriptor)) {
+                boolean isStaticInvocation = (isStaticDeclaration(functionDescriptor) &&
+                                              !(functionDescriptor instanceof ImportedFromObjectCallableDescriptor)) ||
+                                             isStaticAccessor(functionDescriptor) ||
+                                             AnnotationsPackage.isPlatformStaticInObjectOrClass(functionDescriptor);
+                if (isStaticInvocation) {
                     invokeOpcode = INVOKESTATIC;
                 }
                 else if (isInterface) {
@@ -861,6 +860,10 @@ public class JetTypeMapper {
     @NotNull
     public JvmMethodSignature mapSignature(@NotNull FunctionDescriptor f, @NotNull OwnerKind kind,
             List<ValueParameterDescriptor> valueParameters) {
+        if (f instanceof FunctionImportedFromObject) {
+            return mapSignature(((FunctionImportedFromObject) f).getFunctionFromObject());
+        }
+
         BothSignatureWriter sw = new BothSignatureWriter(BothSignatureWriter.Mode.METHOD);
 
         if (f instanceof ConstructorDescriptor) {
