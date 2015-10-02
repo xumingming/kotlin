@@ -16,17 +16,13 @@
 
 package org.jetbrains.kotlin.js.test
 
-import com.google.dart.compiler.backend.js.ast.JsProgram
 import org.jetbrains.kotlin.js.config.EcmaVersion
 import org.jetbrains.kotlin.js.facade.MainCallParameters
 import org.jetbrains.kotlin.js.test.rhino.RhinoFunctionResultChecker
-import org.jetbrains.kotlin.js.test.utils.DirectiveTestUtils
-import org.jetbrains.kotlin.js.test.utils.JsTestUtils
 import org.jetbrains.kotlin.js.test.utils.JsTestUtils.getAllFilesInDir
 import org.jetbrains.kotlin.utils.KotlinJavascriptMetadataUtils
 import java.io.File
-import java.util.ArrayList
-import java.util.LinkedHashMap
+import java.util.*
 
 public abstract class MultipleModulesTranslationTest(main: String) : BasicTest(main) {
 
@@ -106,7 +102,7 @@ public abstract class MultipleModulesTranslationTest(main: String) : BasicTest(m
         var file = File(dir, name)
 
         while (dir != null && dir.isDirectory() && !file.isFile()) {
-            dir = dir.parent
+            dir = dir.parentFile
             file = File(dir, name)
         }
 
