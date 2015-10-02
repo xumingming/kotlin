@@ -23,8 +23,36 @@ package a {
             public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
         }
     }
+
+    public object S {
+        private constructor S()
+        public final val prop: kotlin.String = ""
+        public final var kotlin.String.ext: kotlin.Int
+        public final fun A(/*0*/ c: kotlin.Int): a.S.A
+        public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+        public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+        public final fun o(/*0*/ i: kotlin.Int): kotlin.Unit
+        public final fun o(/*0*/ s: kotlin.String): kotlin.Unit
+        public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+        public final fun kotlin.Int.ext(): kotlin.Unit
+
+        public final class A {
+            public constructor A()
+            public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+            public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+            public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+        }
+    }
 }
 
 package b {
-    public fun test(): kotlin.Unit
+    public fun testErroneusAllUnderImportFromObject(): kotlin.Unit
+}
+
+package c {
+    public fun testImportFromObjectByName(): kotlin.Unit
+}
+
+package d {
+    public fun testFunImportedFromObjectHasNoDispatchReceiver(/*0*/ l: a.S): kotlin.Unit
 }
