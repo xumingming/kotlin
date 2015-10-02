@@ -4,7 +4,6 @@
 package kotlin.io
 
 import java.io.*
-import java.nio.charset.Charset
 import java.util.*
 
 /**
@@ -310,6 +309,7 @@ public fun File.deleteRecursively(): Boolean = walkBottomUp().fold(exists(), { r
  * Returns an array of files and directories in the directory that match the specified [filter]
  * or `null` if this file does not denote a directory.
  */
+@HiddenDeclaration
 public fun File.listFiles(filter: (file: File) -> Boolean): Array<File>? = listFiles(FileFilter(filter))
 
 /**
