@@ -2685,52 +2685,48 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
 
         if (hasSpread) {
-            if (size == 1) {
-                gen(arguments.get(0).getArgumentExpression(), type);
+            String owner;
+            String addDescriptor;
+            String toArrayDescriptor;
+            boolean arrayOfReferences = KotlinBuiltIns.isArray(outType);
+            if (arrayOfReferences) {
+                owner = "kotlin/jvm/internal/SpreadBuilder";
+                addDescriptor = "(Ljava/lang/Object;)V";
+                toArrayDescriptor = "([Ljava/lang/Object;)[Ljava/lang/Object;";
             }
             else {
-                String owner;
-                String addDescriptor;
-                String toArrayDescriptor;
-                boolean arrayOfReferences = KotlinBuiltIns.isArray(outType);
-                if (arrayOfReferences) {
-                    owner = "kotlin/jvm/internal/SpreadBuilder";
-                    addDescriptor = "(Ljava/lang/Object;)V";
-                    toArrayDescriptor = "([Ljava/lang/Object;)[Ljava/lang/Object;";
-                }
-                else {
-                    String spreadBuilderClassName = AsmUtil.asmPrimitiveTypeToLangPrimitiveType(elementType).getTypeName().getIdentifier() + "SpreadBuilder";
-                    owner = "kotlin/jvm/internal/" + spreadBuilderClassName;
-                    addDescriptor = "(" + elementType.getDescriptor() + ")V";
-                    toArrayDescriptor = "()" + type.getDescriptor();
-                }
-                v.anew(Type.getObjectType(owner));
+                String spreadBuilderClassName = AsmUtil.asmPrimitiveTypeToLangPrimitiveType(elementType).getTypeName().getIdentifier() + "SpreadBuilder";
+                owner = "kotlin/jvm/internal/" + spreadBuilderClassName;
+                addDescriptor = "(" + elementType.getDescriptor() + ")V";
+                toArrayDescriptor = "()" + type.getDescriptor();
+            }
+            v.anew(Type.getObjectType(owner));
+            v.dup();
+            v.iconst(size);
+            v.invokespecial(owner, "<init>", "(I)V", false);
+            for (int i = 0; i != size; ++i) {
                 v.dup();
-                v.iconst(size);
-                v.invokespecial(owner, "<init>", "(I)V", false);
-                for (int i = 0; i != size; ++i) {
-                    v.dup();
-                    ValueArgument argument = arguments.get(i);
-                    if (argument.getSpreadElement() != null) {
-                        gen(argument.getArgumentExpression(), OBJECT_TYPE);
-                        v.invokevirtual(owner, "addSpread", "(Ljava/lang/Object;)V", false);
-                    }
-                    else {
-                        gen(argument.getArgumentExpression(), elementType);
-                        v.invokevirtual(owner, "add", addDescriptor, false);
-                    }
-                }
-                if (arrayOfReferences) {
-                    v.dup();
-                    v.invokevirtual(owner, "size", "()I", false);
-                    newArrayInstruction(outType);
-                    v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
-                    v.checkcast(type);
+                ValueArgument argument = arguments.get(i);
+                if (argument.getSpreadElement() != null) {
+                    gen(argument.getArgumentExpression(), OBJECT_TYPE);
+                    v.invokevirtual(owner, "addSpread", "(Ljava/lang/Object;)V", false);
                 }
                 else {
-                    v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+                    gen(argument.getArgumentExpression(), elementType);
+                    v.invokevirtual(owner, "add", addDescriptor, false);
                 }
             }
+            if (arrayOfReferences) {
+                v.dup();
+                v.invokevirtual(owner, "size", "()I", false);
+                newArrayInstruction(outType);
+                v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+                v.checkcast(type);
+            }
+            else {
+                v.invokevirtual(owner, "toArray", toArrayDescriptor, false);
+            }
+
         }
         else {
             v.iconst(arguments.size());
