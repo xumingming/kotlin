@@ -21,6 +21,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.test.JetTestUtils;
@@ -43,7 +44,7 @@ public class SingleClassTestModel implements TestClassModel {
     @Nullable
     private final Boolean checkFilenameStartsLowerCase;
     @NotNull
-    private final String doTestMethodName;
+    private final Function1<File, String> testMethodNameProducer;
     @NotNull
     private final String testClassName;
     @NotNull
@@ -55,14 +56,14 @@ public class SingleClassTestModel implements TestClassModel {
             @NotNull File rootFile,
             @NotNull Pattern filenamePattern,
             @Nullable Boolean checkFilenameStartsLowerCase,
-            @NotNull String doTestMethodName,
+            @NotNull Function1<File, String> testMethodNameProducer,
             @NotNull String testClassName,
             @NotNull TargetBackend targetBackend
     ) {
         this.rootFile = rootFile;
         this.filenamePattern = filenamePattern;
         this.checkFilenameStartsLowerCase = checkFilenameStartsLowerCase;
-        this.doTestMethodName = doTestMethodName;
+        this.testMethodNameProducer = testMethodNameProducer;
         this.testClassName = testClassName;
         this.targetBackend = targetBackend;
     }
@@ -107,7 +108,7 @@ public class SingleClassTestModel implements TestClassModel {
 
     @NotNull
     protected Collection<TestMethodModel> getTestMethodsFromFile(File file) {
-        return Collections.<TestMethodModel>singletonList(new SimpleTestMethodModel(rootFile, file, doTestMethodName,
+        return Collections.<TestMethodModel>singletonList(new SimpleTestMethodModel(rootFile, file, testMethodNameProducer,
                                                                                     filenamePattern, checkFilenameStartsLowerCase,
                                                                                     targetBackend));
     }

@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.generators.tests.generator;
 
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.test.InTextDirectivesUtils;
@@ -40,7 +41,7 @@ public class SimpleTestMethodModel implements TestMethodModel {
     @NotNull
     private final File file;
     @NotNull
-    private final String doTestMethodName;
+    private final Function1<File, String> testMethodProducer;
     @NotNull
     private final Pattern filenamePattern;
     @NotNull
@@ -49,14 +50,14 @@ public class SimpleTestMethodModel implements TestMethodModel {
     public SimpleTestMethodModel(
             @NotNull File rootDir,
             @NotNull File file,
-            @NotNull String doTestMethodName,
+            @NotNull Function1<File, String> testMethodProducer,
             @NotNull Pattern filenamePattern,
             @Nullable Boolean checkFilenameStartsLowerCase,
             @NotNull TargetBackend targetBackend
     ) {
         this.rootDir = rootDir;
         this.file = file;
-        this.doTestMethodName = doTestMethodName;
+        this.testMethodProducer = testMethodProducer;
         this.filenamePattern = filenamePattern;
         this.targetBackend = targetBackend;
 
@@ -75,7 +76,7 @@ public class SimpleTestMethodModel implements TestMethodModel {
     public void generateBody(@NotNull Printer p) {
         String filePath = JetTestUtils.getFilePath(file) + (file.isDirectory() ? "/" : "");
         p.println("String fileName = JetTestUtils.navigationMetadata(\"", filePath, "\");");
-        p.println(doTestMethodName, "(fileName);");
+        p.println(testMethodProducer.invoke(file), "(fileName);");
     }
 
     @Override
@@ -109,7 +110,7 @@ public class SimpleTestMethodModel implements TestMethodModel {
         Matcher matcher = filenamePattern.matcher(file.getName());
         boolean found = matcher.find();
         assert found : file.getName() + " isn't matched by regex " + filenamePattern.pattern();
-        assert matcher.groupCount() == 1 : filenamePattern.pattern();
+        assert matcher.groupCount() >= 1 : filenamePattern.pattern();
         String extractedName = matcher.group(1);
         assert extractedName != null : "extractedName should not be null: "  + filenamePattern.pattern();
 
