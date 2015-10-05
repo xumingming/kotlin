@@ -16,13 +16,10 @@
 
 package org.jetbrains.kotlin.resolve
 
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor
+import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.types.TypeSubstitutor
 
-abstract class ImportedFromObjectCallableDescriptor(val containingObject: ClassDescriptor)
+abstract class ImportedFromObjectCallableDescriptor(val containingObject: ClassDescriptor): CallableDescriptor
 
 // members imported from object should be wrapped to not require dispatch receiver
 class FunctionImportedFromObject(val functionFromObject: FunctionDescriptor) :
@@ -33,6 +30,13 @@ class FunctionImportedFromObject(val functionFromObject: FunctionDescriptor) :
     override fun substitute(substitutor: TypeSubstitutor) = functionFromObject.substitute(substitutor).wrap()
 
     override fun getOriginal() = functionFromObject.original.wrap()
+
+    override fun copy(
+            newOwner: DeclarationDescriptor?, modality: Modality?, visibility: Visibility?,
+            kind: CallableMemberDescriptor.Kind?, copyOverrides: Boolean
+    ): FunctionDescriptor {
+        throw IllegalStateException("copy() should not be called on ${this.javaClass.simpleName}, was called for $this")
+    }
 }
 
 class PropertyImportedFromObject(private val propertyFromObject: PropertyDescriptor) :
@@ -43,6 +47,13 @@ class PropertyImportedFromObject(private val propertyFromObject: PropertyDescrip
     override fun substitute(substitutor: TypeSubstitutor) = propertyFromObject.substitute(substitutor)?.wrap()
 
     override fun getOriginal() = propertyFromObject.original.wrap()
+
+    override fun copy(
+            newOwner: DeclarationDescriptor?, modality: Modality?, visibility: Visibility?,
+            kind: CallableMemberDescriptor.Kind?, copyOverrides: Boolean
+    ): FunctionDescriptor {
+        throw IllegalStateException("copy() should not be called on ${this.javaClass.simpleName}, was called for $this")
+    }
 }
 
 private fun FunctionDescriptor.wrap() = FunctionImportedFromObject(this)
