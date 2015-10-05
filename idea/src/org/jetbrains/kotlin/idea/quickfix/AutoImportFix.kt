@@ -50,7 +50,7 @@ import java.util.*
 /**
  * Check possibility and perform fix for unresolved references.
  */
-public class AutoImportFix private constructor(expression: JetExpression, type: AutoImportFix.AutoImportType): JetHintAction<JetExpression>(expression), HighPriorityAction {
+public class AutoImportFix private constructor(expression: JetElement, type: AutoImportFix.AutoImportType): JetHintAction<JetElement>(expression), HighPriorityAction {
     enum class AutoImportType {
         SIMPLE_NAME,
         ARRAY,
@@ -106,7 +106,7 @@ public class AutoImportFix private constructor(expression: JetExpression, type: 
     private fun createAction(project: Project, editor: Editor) = KotlinAddImportAction(project, editor, element, suggestions)
 
     companion object : JetSingleIntentionActionFactory() {
-        override fun createAction(diagnostic: Diagnostic): JetIntentionAction<JetExpression>? {
+        override fun createAction(diagnostic: Diagnostic): JetIntentionAction<JetElement>? {
             // There could be different psi elements (i.e. JetArrayAccessExpression), but we can fix only JetSimpleNameExpression case
             val psiElement = diagnostic.getPsiElement()
             if (psiElement is JetSimpleNameExpression) {
@@ -119,7 +119,7 @@ public class AutoImportFix private constructor(expression: JetExpression, type: 
 
             val parent = psiElement.parent
             if (parent is JetPropertyDelegate && parent.expression == psiElement) {
-                return AutoImportFix(parent.expression!!, AutoImportType.DELEGATE_ACCESSOR)
+                return AutoImportFix(parent, AutoImportType.DELEGATE_ACCESSOR)
             }
 
             return null
@@ -129,7 +129,7 @@ public class AutoImportFix private constructor(expression: JetExpression, type: 
 
         private val ERRORS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER, Errors.DELEGATE_SPECIAL_FUNCTION_MISSING)
 
-        public fun computeSuggestions(element: JetExpression, type: AutoImportType): Collection<DeclarationDescriptor> {
+        public fun computeSuggestions(element: JetElement, type: AutoImportType): Collection<DeclarationDescriptor> {
             if (!element.isValid()) return listOf()
 
             val file = element.getContainingFile() as? JetFile ?: return emptyList()
@@ -169,7 +169,7 @@ public class AutoImportFix private constructor(expression: JetExpression, type: 
 
             val bindingContext = element.analyze(BodyResolveMode.PARTIAL)
 
-            val diagnostics = bindingContext.getDiagnostics().forElement(element)
+            val diagnostics = bindingContext.getDiagnostics().forElement(if (element is JetPropertyDelegate) element.expression!! else element)
             if (!diagnostics.any { it.getFactory() in ERRORS }) return emptyList()
 
             val resolutionScope = element.getResolutionScope(bindingContext, file.getResolutionFacade())
@@ -201,7 +201,9 @@ public class AutoImportFix private constructor(expression: JetExpression, type: 
                 }
             }
 
-            result.addAll(indicesHelper.getCallableTopLevelExtensions({ it == referenceName }, callTypeAndReceiver, element, bindingContext))
+            result.addAll(indicesHelper.getCallableTopLevelExtensions(
+                    { it == referenceName }, callTypeAndReceiver,
+                    if (element is JetExpression) element else (element as JetPropertyDelegate).expression!!, bindingContext))
 
             return if (result.size() > 1)
                 reduceCandidatesBasedOnDependencyRuleViolation(result, file)

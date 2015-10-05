@@ -57,7 +57,7 @@ public sealed class CallType<TReceiver : JetElement?>(val descriptorKindFilter: 
 
     object TYPE : CallType<JetExpression?>(DescriptorKindFilter(DescriptorKindFilter.CLASSIFIERS_MASK or DescriptorKindFilter.PACKAGES_MASK))
 
-    object DELEGATE : CallType<JetPropertyDelegate>(DescriptorKindFilter.FUNCTIONS)
+    object DELEGATE : CallType<JetExpression?>(DescriptorKindFilter.FUNCTIONS)
 
     private object NonInfixExclude : DescriptorKindExclude {
         //TODO: check 'infix' modifier
@@ -83,7 +83,6 @@ public sealed class CallType<TReceiver : JetElement?>(val descriptorKindFilter: 
         override val fullyExcludedDescriptorKinds: Int
             get() = 0
     }
-
 }
 
 public sealed class CallTypeAndReceiver<TReceiver : JetElement?, TCallType : CallType<TReceiver>>(
@@ -92,6 +91,7 @@ public sealed class CallTypeAndReceiver<TReceiver : JetElement?, TCallType : Cal
 ) {
     object UNKNOWN : CallTypeAndReceiver<Nothing?, CallType.UNKNOWN>(CallType.UNKNOWN, null)
     object DEFAULT : CallTypeAndReceiver<Nothing?, CallType.DEFAULT>(CallType.DEFAULT, null)
+
     class DOT(receiver: JetExpression) : CallTypeAndReceiver<JetExpression, CallType.DOT>(CallType.DOT, receiver)
     class SAFE(receiver: JetExpression) : CallTypeAndReceiver<JetExpression, CallType.SAFE>(CallType.SAFE, receiver)
     class INFIX(receiver: JetExpression) : CallTypeAndReceiver<JetExpression, CallType.INFIX>(CallType.INFIX, receiver)
@@ -100,9 +100,14 @@ public sealed class CallTypeAndReceiver<TReceiver : JetElement?, TCallType : Cal
     class IMPORT_DIRECTIVE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.IMPORT_DIRECTIVE>(CallType.IMPORT_DIRECTIVE, receiver)
     class PACKAGE_DIRECTIVE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.PACKAGE_DIRECTIVE>(CallType.PACKAGE_DIRECTIVE, receiver)
     class TYPE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.TYPE>(CallType.TYPE, receiver)
+    class DELEGATE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.DELEGATE>(CallType.DELEGATE, receiver)
 
     companion object {
-        public fun detect(expression: JetExpression): CallTypeAndReceiver<*, *> {
+        public fun detect(expression: JetElement): CallTypeAndReceiver<*, *> {
+            if (expression is JetPropertyDelegate) {
+                return CallTypeAndReceiver.DELEGATE(expression.getExpression())
+            }
+
             val parent = expression.parent
             if (parent is JetCallableReferenceExpression) {
                 return CallTypeAndReceiver.CALLABLE_REFERENCE(parent.typeReference)
@@ -192,6 +197,7 @@ public fun CallTypeAndReceiver<*, *>.receiverTypes(
         is CallTypeAndReceiver.SAFE -> receiverExpression = receiver
         is CallTypeAndReceiver.INFIX -> receiverExpression = receiver
         is CallTypeAndReceiver.OPERATOR -> receiverExpression = receiver
+        is CallTypeAndReceiver.DELEGATE -> receiverExpression = receiver
 
         is CallTypeAndReceiver.IMPORT_DIRECTIVE,
         is CallTypeAndReceiver.PACKAGE_DIRECTIVE,
