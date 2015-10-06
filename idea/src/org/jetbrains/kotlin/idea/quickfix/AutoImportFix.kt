@@ -29,7 +29,6 @@ import com.intellij.psi.util.PsiModificationTracker
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.idea.JetBundle
 import org.jetbrains.kotlin.idea.actions.KotlinAddImportAction
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
@@ -127,7 +126,7 @@ public class AutoImportFix private constructor(expression: JetElement, type: Aut
 
         override fun isApplicableForCodeFragment() = true
 
-        private val ERRORS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER, Errors.DELEGATE_SPECIAL_FUNCTION_MISSING)
+        private val ERRORS by lazy(LazyThreadSafetyMode.PUBLICATION ) { QuickFixes.getInstance().getDiagnostics(this) }
 
         public fun computeSuggestions(element: JetElement, type: AutoImportType): Collection<DeclarationDescriptor> {
             if (!element.isValid()) return listOf()
