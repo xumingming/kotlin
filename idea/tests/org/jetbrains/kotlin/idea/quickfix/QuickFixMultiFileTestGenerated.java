@@ -173,6 +173,12 @@ public class QuickFixMultiFileTestGenerated extends AbstractQuickFixMultiFileTes
             doTestWithExtraFile(fileName);
         }
 
+        @TestMetadata("multiDeclarationsExtension.test")
+        public void testMultiDeclarationsExtension() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/quickfix/autoImports/multiDeclarationsExtension.test");
+            doMultiFileTest(fileName);
+        }
+
         @TestMetadata("nestedClass.before.Main.kt")
         public void testNestedClass() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/quickfix/autoImports/nestedClass.before.Main.kt");
