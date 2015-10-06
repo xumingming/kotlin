@@ -29,6 +29,7 @@ import com.intellij.psi.util.PsiModificationTracker
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.idea.JetBundle
 import org.jetbrains.kotlin.idea.actions.KotlinAddImportAction
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
@@ -39,6 +40,7 @@ import org.jetbrains.kotlin.idea.core.KotlinIndicesHelper
 import org.jetbrains.kotlin.idea.core.getResolutionScope
 import org.jetbrains.kotlin.idea.core.isVisible
 import org.jetbrains.kotlin.idea.project.ProjectStructureUtil
+import org.jetbrains.kotlin.idea.util.CallType
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
@@ -54,7 +56,8 @@ public class AutoImportFix private constructor(expression: JetElement, type: Aut
         SIMPLE_NAME,
         ARRAY,
         INVOKE,
-        DELEGATE_ACCESSOR
+        DELEGATE_ACCESSOR,
+        COMPONENTS
     }
 
     private val modificationCountOnCreate = PsiModificationTracker.SERVICE.getInstance(element.getProject()).getModificationCount()
@@ -121,6 +124,10 @@ public class AutoImportFix private constructor(expression: JetElement, type: Aut
                 return AutoImportFix(parent, AutoImportType.DELEGATE_ACCESSOR)
             }
 
+            if (psiElement is JetExpression && diagnostic.factory == Errors.COMPONENT_FUNCTION_MISSING) {
+                return AutoImportFix(psiElement, AutoImportType.COMPONENTS)
+            }
+
             return null
         }
 
@@ -133,7 +140,11 @@ public class AutoImportFix private constructor(expression: JetElement, type: Aut
 
             val file = element.getContainingFile() as? JetFile ?: return emptyList()
 
-            val callTypeAndReceiver = CallTypeAndReceiver.detect(element)
+            val callTypeAndReceiver = when (type) {
+                AutoImportType.COMPONENTS -> CallTypeAndReceiver.COMPONENT(element as JetExpression)
+                else -> CallTypeAndReceiver.detect(element)
+            }
+
             if (callTypeAndReceiver is CallTypeAndReceiver.UNKNOWN) return emptyList()
 
             fun filterByCallType(descriptor: DeclarationDescriptor)
@@ -158,8 +169,9 @@ public class AutoImportFix private constructor(expression: JetElement, type: Aut
                 }
 
                 AutoImportType.ARRAY -> "get"
-                AutoImportType.DELEGATE_ACCESSOR -> "get"
+                AutoImportType.DELEGATE_ACCESSOR -> "get" // TODO: "set"
                 AutoImportType.INVOKE -> "invoke"
+                AutoImportType.COMPONENTS -> "component1" // TODO: other components
                 else -> ""
             }
             if (referenceName.isEmpty()) return emptyList()

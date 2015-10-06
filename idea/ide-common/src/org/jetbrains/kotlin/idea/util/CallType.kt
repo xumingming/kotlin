@@ -59,6 +59,8 @@ public sealed class CallType<TReceiver : JetElement?>(val descriptorKindFilter: 
 
     object DELEGATE : CallType<JetExpression?>(DescriptorKindFilter.FUNCTIONS)
 
+    object COMPONENT : CallType<JetExpression>(DescriptorKindFilter.CALLABLES)
+
     private object NonInfixExclude : DescriptorKindExclude {
         //TODO: check 'infix' modifier
         override fun excludes(descriptor: DeclarationDescriptor) =
@@ -101,6 +103,7 @@ public sealed class CallTypeAndReceiver<TReceiver : JetElement?, TCallType : Cal
     class PACKAGE_DIRECTIVE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.PACKAGE_DIRECTIVE>(CallType.PACKAGE_DIRECTIVE, receiver)
     class TYPE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.TYPE>(CallType.TYPE, receiver)
     class DELEGATE(receiver: JetExpression?) : CallTypeAndReceiver<JetExpression?, CallType.DELEGATE>(CallType.DELEGATE, receiver)
+    class COMPONENT(receiver: JetExpression) : CallTypeAndReceiver<JetExpression, CallType.COMPONENT>(CallType.COMPONENT, receiver)
 
     companion object {
         public fun detect(expression: JetElement): CallTypeAndReceiver<*, *> {
@@ -198,6 +201,7 @@ public fun CallTypeAndReceiver<*, *>.receiverTypes(
         is CallTypeAndReceiver.INFIX -> receiverExpression = receiver
         is CallTypeAndReceiver.OPERATOR -> receiverExpression = receiver
         is CallTypeAndReceiver.DELEGATE -> receiverExpression = receiver
+        is CallTypeAndReceiver.COMPONENT -> receiverExpression = receiver
 
         is CallTypeAndReceiver.IMPORT_DIRECTIVE,
         is CallTypeAndReceiver.PACKAGE_DIRECTIVE,
