@@ -221,7 +221,15 @@ fun specialJVM(): List<GenericFunction> {
         returns("List<T>")
         body(ArraysOfObjects) {
             """
-            return Arrays.asList(*this)
+            return object : AbstractList<T>(), RandomAccess {
+                override fun size(): Int = this@asList.size()
+                override fun isEmpty(): Boolean = this@asList.isEmpty()
+                override fun contains(o: Any?): Boolean = this@asList.contains(o as T)
+                override fun iterator(): MutableIterator<T> = this@asList.iterator() as MutableIterator<T>
+                override fun get(index: Int): T = this@asList[index]
+                override fun indexOf(o: Any?): Int = this@asList.indexOf(o as T)
+                override fun lastIndexOf(o: Any?): Int = this@asList.lastIndexOf(o as T)
+            }
             """
         }
 
