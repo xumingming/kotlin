@@ -1,6 +1,6 @@
 // FILE: first.before.kt
 // "Import" "true"
-// ERROR: Expression 'Some()' of type 'some.Some' cannot be invoked as a function. The function invoke() is not found
+// ERROR: Multi-declaration initializer of type some.Some must have a 'component1()' function
 
 package testing
 
@@ -15,7 +15,6 @@ fun testing() {
 
 // FILE: second.kt
 // "Import" "true"
-// ERROR: Expression 'Some()' of type 'some.Some' cannot be invoked as a function. The function invoke() is not found
 
 package some
 
@@ -28,6 +27,7 @@ operator fun Some.component2() = 3
 
 // FILE: first.after.kt
 // "Import" "true"
+// ERROR: Multi-declaration initializer of type some.Some must have a 'component1()' function
 
 package testing
 
@@ -39,3 +39,5 @@ fun testing() {
     val (a, b) = <caret>Some()
 }
 //-----------------------
+
+
