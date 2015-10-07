@@ -990,9 +990,18 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             StackValue.Field field = StackValue.singleton(descriptor, typeMapper);
             v.newField(OtherOrigin(myClass), ACC_PUBLIC | ACC_STATIC | ACC_FINAL, field.name, field.type.getDescriptor(), null, null);
 
+            FieldInfo deprecatedFieldInfo = FieldInfo.deprecatedFieldForNonCompanionObject(descriptor, typeMapper);
+            v.newField(
+                    OtherOrigin(myClass),
+                    ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_DEPRECATED,
+                    deprecatedFieldInfo.getFieldName(),
+                    deprecatedFieldInfo.getFieldType().getDescriptor(),
+                    null, null
+            );
+
             if (state.getClassBuilderMode() != ClassBuilderMode.FULL) return;
 
-            // Invoke the object constructor but ignore the result because INSTANCE$ will be initialized in the first line of <init>
+            // Invoke the object constructor but ignore the result because INSTANCE will be initialized in the first line of <init>
             InstructionAdapter v = createOrGetClInitCodegen().v;
             v.anew(classAsmType);
             v.invokespecial(classAsmType.getInternalName(), "<init>", "()V", false);
@@ -1140,6 +1149,8 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
 
         if (isNonCompanionObject(descriptor)) {
             StackValue.singleton(descriptor, typeMapper).store(StackValue.LOCAL_0, iv);
+            StackValue.Field deprecatedField = StackValue.field(FieldInfo.deprecatedFieldForNonCompanionObject(descriptor, typeMapper));
+            deprecatedField.store(StackValue.LOCAL_0, iv);
         }
 
         for (JetDelegationSpecifier specifier : myClass.getDelegationSpecifiers()) {
