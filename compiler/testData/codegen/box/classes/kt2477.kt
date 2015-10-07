@@ -5,15 +5,11 @@ interface A {
         get() = "OK"
 }
 
-interface B {
-    protected val c: String
-}
-
 open class C {
     private val c: String = "FAIL"
 }
 
-open class D: C(), A, B {
+open class D: C(), A {
     val b = c
 }
 
