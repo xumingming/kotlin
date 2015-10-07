@@ -228,7 +228,7 @@ public abstract class StackValue {
     }
 
     @NotNull
-    private static Field field(@NotNull FieldInfo info) {
+    public static Field field(@NotNull FieldInfo info) {
         return field(info.getFieldType(), Type.getObjectType(info.getOwnerInternalName()), info.getFieldName(), true, none());
     }
 

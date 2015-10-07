@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.codegen;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.builtins.CompanionObjectMapping;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.load.java.JvmAbi;
@@ -48,6 +47,14 @@ public class FieldInfo {
             Type ownerType = typeMapper.mapType(ownerDescriptor);
             return new FieldInfo(ownerType, typeMapper.mapType(classDescriptor), classDescriptor.getName().asString(), true);
         }
+    }
+
+
+    @NotNull
+    public static FieldInfo deprecatedFieldForNonCompanionObject(@NotNull ClassDescriptor object, @NotNull JetTypeMapper typeMapper) {
+        assert DescriptorUtils.isNonCompanionObject(object) : "Not an object: " + object;
+        Type type = typeMapper.mapType(object);
+        return new FieldInfo(type, type, JvmAbi.DEPRECATED_INSTANCE_FIELD, true);
     }
 
     @NotNull
