@@ -8974,6 +8974,39 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             }
         }
 
+        @TestMetadata("compiler/testData/diagnostics/tests/java8Overrides")
+        @TestDataPath("$PROJECT_ROOT")
+        @RunWith(JUnit3RunnerWithInners.class)
+        public static class Java8Overrides extends AbstractJetDiagnosticsTest {
+            @TestMetadata("abstractBaseClassMemberNotImplemented.kt")
+            public void testAbstractBaseClassMemberNotImplemented() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/abstractBaseClassMemberNotImplemented.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("abstractVsAbstract.kt")
+            public void testAbstractVsAbstract() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/abstractVsAbstract.kt");
+                doTest(fileName);
+            }
+
+            public void testAllFilesPresentInJava8Overrides() throws Exception {
+                JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/java8Overrides"), Pattern.compile("^(.+)\\.kt$"), true);
+            }
+
+            @TestMetadata("defaultVsAbstract.kt")
+            public void testDefaultVsAbstract() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/defaultVsAbstract.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("singleRelevantDefault.kt")
+            public void testSingleRelevantDefault() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/singleRelevantDefault.kt");
+                doTest(fileName);
+            }
+        }
+
         @TestMetadata("compiler/testData/diagnostics/tests/jdk-annotations")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
