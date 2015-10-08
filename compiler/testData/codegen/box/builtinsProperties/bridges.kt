@@ -9,6 +9,8 @@ class B0 : Collection<String>, A0 {
     override fun contains(o: Any?) = throw UnsupportedOperationException()
     override fun iterator() = throw UnsupportedOperationException()
     override fun containsAll(c: Collection<Any?>) = throw UnsupportedOperationException()
+    override val size: Int
+        get() = super.size
 }
 
 open class A1 {
@@ -45,6 +47,8 @@ class B4 : Collection<String>, I4<Int> {
     override fun contains(o: Any?) = throw UnsupportedOperationException()
     override fun iterator() = throw UnsupportedOperationException()
     override fun containsAll(c: Collection<Any?>) = throw UnsupportedOperationException()
+    override val size: Int
+        get() = super.size
 }
 
 interface I5 : Collection<String> {
