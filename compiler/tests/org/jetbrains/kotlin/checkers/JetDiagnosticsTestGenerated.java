@@ -9111,6 +9111,24 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("hidingMethodOfAny.kt")
+            public void testHidingMethodOfAny() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/hidingMethodOfAny.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("implementingMethodOfAny.kt")
+            public void testImplementingMethodOfAny() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/implementingMethodOfAny.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("notAMethodOfAny.kt")
+            public void testNotAMethodOfAny() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/notAMethodOfAny.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("singleRelevantDefault.kt")
             public void testSingleRelevantDefault() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/java8Overrides/singleRelevantDefault.kt");
