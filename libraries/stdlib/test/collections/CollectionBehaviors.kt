@@ -107,8 +107,8 @@ public fun <T> CompareContext<Collection<T>>.collectionBehavior(objectName: Stri
     propertyEquals (prefix + "size") { size() }
     propertyEquals (prefix + "isEmpty") { isEmpty() }
 
-    (object {}).let { propertyEquals { (this as Collection<*>).contains(it)}  }
-    propertyEquals { (this as Collection<Any?>).contains(firstOrNull()) }
+    (object {}).let { propertyEquals { (this as Collection<Any?>).contains(it)}  }
+    propertyEquals { this.contains(firstOrNull() as T?) } // ?
     propertyEquals { containsAll(this) }
 }
 
