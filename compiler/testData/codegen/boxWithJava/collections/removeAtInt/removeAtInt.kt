@@ -1,15 +1,18 @@
-open class KList : MutableList<String> {
+open class A : MutableList<Int> {
     override val size: Int
         get() = throw UnsupportedOperationException()
+    override val isEmpty: Boolean
+        get() = throw UnsupportedOperationException()
 
-    override val isEmpty: Boolean get() {
+    override fun contains(o: Int): Boolean {
         throw UnsupportedOperationException()
     }
 
-    override fun contains(o: String) = true
-    override fun containsAll(c: Collection<String>) = true
+    override fun containsAll(c: Collection<Int>): Boolean {
+        throw UnsupportedOperationException()
+    }
 
-    override fun get(index: Int): String {
+    override fun get(index: Int): Int {
         throw UnsupportedOperationException()
     }
 
@@ -21,23 +24,19 @@ open class KList : MutableList<String> {
         throw UnsupportedOperationException()
     }
 
-    override fun iterator(): MutableIterator<String> {
+    override fun add(e: Int): Boolean {
         throw UnsupportedOperationException()
     }
 
-    override fun add(e: String): Boolean {
+    override fun remove(o: Int) = true
+
+    override fun removeAt(index: Int): Int = 123
+
+    override fun addAll(c: Collection<Int>): Boolean {
         throw UnsupportedOperationException()
     }
 
-    override fun remove(o: String): Boolean {
-        throw UnsupportedOperationException()
-    }
-
-    override fun addAll(c: Collection<String>): Boolean {
-        throw UnsupportedOperationException()
-    }
-
-    override fun addAll(index: Int, c: Collection<String>): Boolean {
+    override fun addAll(index: Int, c: Collection<Int>): Boolean {
         throw UnsupportedOperationException()
     }
 
@@ -53,29 +52,29 @@ open class KList : MutableList<String> {
         throw UnsupportedOperationException()
     }
 
-    override fun set(index: Int, element: String): String {
+    override fun set(index: Int, element: Int): Int {
         throw UnsupportedOperationException()
     }
 
-    override fun add(index: Int, element: String) {
+    override fun add(index: Int, element: Int) {
         throw UnsupportedOperationException()
     }
 
-    override fun removeAt(index: Int): String {
+    override fun listIterator(): MutableListIterator<Int> {
         throw UnsupportedOperationException()
     }
 
-    override fun listIterator(): MutableListIterator<String> {
+    override fun listIterator(index: Int): MutableListIterator<Int> {
         throw UnsupportedOperationException()
     }
 
-    override fun listIterator(index: Int): MutableListIterator<String> {
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<Int> {
         throw UnsupportedOperationException()
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<String> {
+    override fun iterator(): MutableIterator<Int> {
         throw UnsupportedOperationException()
     }
-
 }
+
 fun box() = J.foo()
