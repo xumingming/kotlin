@@ -470,44 +470,44 @@ class CollectionTest {
     }
 
     @test fun min() {
-        expect(null, { listOf<Int>().min() })
+        assertNull(listOf<Int>().min())
         expect(1, { listOf(1).min() })
         expect(2, { listOf(2, 3).min() })
         expect(2000000000000, { listOf(3000000000000, 2000000000000).min() })
         expect('a', { listOf('a', 'b').min() })
         expect("a", { listOf("a", "b").min() })
-        expect(null, { listOf<Int>().asSequence().min() })
+        assertNull(listOf<Int>().asSequence().min())
         expect(2, { listOf(2, 3).asSequence().min() })
     }
 
     @test fun max() {
-        expect(null, { listOf<Int>().max() })
+        assertNull(listOf<Int>().max())
         expect(1, { listOf(1).max() })
         expect(3, { listOf(2, 3).max() })
         expect(3000000000000, { listOf(3000000000000, 2000000000000).max() })
         expect('b', { listOf('a', 'b').max() })
         expect("b", { listOf("a", "b").max() })
-        expect(null, { listOf<Int>().asSequence().max() })
+        assertNull(listOf<Int>().asSequence().max())
         expect(3, { listOf(2, 3).asSequence().max() })
     }
 
     @test fun minBy() {
-        expect(null, { listOf<Int>().minBy { it } })
+        assertNull(listOf<Int>().minBy { it })
         expect(1, { listOf(1).minBy { it } })
         expect(3, { listOf(2, 3).minBy { -it } })
         expect('a', { listOf('a', 'b').minBy { "x$it" } })
         expect("b", { listOf("b", "abc").minBy { it.length() } })
-        expect(null, { listOf<Int>().asSequence().minBy { it } })
+        assertNull(listOf<Int>().asSequence().minBy { it })
         expect(3, { listOf(2, 3).asSequence().minBy { -it } })
     }
 
     @test fun maxBy() {
-        expect(null, { listOf<Int>().maxBy { it } })
+        assertNull(listOf<Int>().maxBy { it })
         expect(1, { listOf(1).maxBy { it } })
         expect(2, { listOf(2, 3).maxBy { -it } })
         expect('b', { listOf('a', 'b').maxBy { "x$it" } })
         expect("abc", { listOf("b", "abc").maxBy { it.length() } })
-        expect(null, { listOf<Int>().asSequence().maxBy { it } })
+        assertNull(listOf<Int>().asSequence().maxBy { it })
         expect(2, { listOf(2, 3).asSequence().maxBy { -it } })
     }
 
