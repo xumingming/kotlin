@@ -217,6 +217,7 @@ public interface Errors {
             .create(WARNING, ABSTRACT_MODIFIER);
 
     DiagnosticFactory0<JetDeclaration> CONSTRUCTOR_IN_TRAIT = DiagnosticFactory0.create(ERROR, DECLARATION_SIGNATURE);
+    DiagnosticFactory0<JetDeclaration> METHOD_OF_ANY_IMPLEMENTED_IN_INTERFACE = DiagnosticFactory0.create(ERROR);
 
     DiagnosticFactory0<PsiElement> SUPERTYPE_INITIALIZED_IN_TRAIT = DiagnosticFactory0.create(ERROR);
 
@@ -309,8 +310,13 @@ public interface Errors {
 
     DiagnosticFactory2<JetClassOrObject, JetClassOrObject, CallableMemberDescriptor> ABSTRACT_MEMBER_NOT_IMPLEMENTED =
             DiagnosticFactory2.create(ERROR, DECLARATION_NAME);
+    DiagnosticFactory2<JetClassOrObject, JetClassOrObject, CallableMemberDescriptor> ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED =
+            DiagnosticFactory2.create(ERROR, DECLARATION_NAME);
     DiagnosticFactory2<JetClassOrObject, JetClassOrObject, CallableMemberDescriptor> MANY_IMPL_MEMBER_NOT_IMPLEMENTED =
             DiagnosticFactory2.create(ERROR, DECLARATION_NAME);
+    DiagnosticFactory2<JetClassOrObject, JetClassOrObject, CallableMemberDescriptor> MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED =
+            DiagnosticFactory2.create(ERROR, DECLARATION_NAME);
+
 
     DiagnosticFactory1<JetNamedDeclaration, Collection<JetType>> AMBIGUOUS_ANONYMOUS_TYPE_INFERRED =
             DiagnosticFactory1.create(ERROR, DECLARATION_SIGNATURE);
@@ -322,6 +328,7 @@ public interface Errors {
 
     DiagnosticFactory0<PsiElement> REDUNDANT_MODIFIER_IN_GETTER = DiagnosticFactory0.create(WARNING);
     DiagnosticFactory0<PsiElement> GETTER_VISIBILITY_DIFFERS_FROM_PROPERTY_VISIBILITY = DiagnosticFactory0.create(ERROR);
+    DiagnosticFactory0<PsiElement> PRIVATE_SETTER_ON_NON_PRIVATE_LATE_INIT_VAR = DiagnosticFactory0.create(ERROR);
     DiagnosticFactory2<JetTypeReference, JetType, JetType> WRONG_GETTER_RETURN_TYPE = DiagnosticFactory2.create(ERROR);
 
     DiagnosticFactory0<JetModifierListOwner>
@@ -692,6 +699,8 @@ public interface Errors {
             DiagnosticFactory2.create(ERROR, FUNCTION_PARAMETERS);
 
     DiagnosticFactory2<JetElement, JetType, JetType> INCOMPATIBLE_TYPES = DiagnosticFactory2.create(ERROR);
+
+    DiagnosticFactory0<PsiElement> IMPLICIT_NOTHING_RETURN_TYPE = DiagnosticFactory0.create(WARNING);
 
     // Context tracking
 

@@ -221,6 +221,7 @@ public class DefaultErrorMessages {
         MAP.put(INAPPLICABLE_LATEINIT_MODIFIER_PRIMITIVE, "''lateinit'' modifier is not allowed on primitive type properties");
 
         MAP.put(GETTER_VISIBILITY_DIFFERS_FROM_PROPERTY_VISIBILITY, "Getter visibility must be the same as property visibility");
+        MAP.put(PRIVATE_SETTER_ON_NON_PRIVATE_LATE_INIT_VAR, "Private setter is not allowed on non-private lateinit property");
         MAP.put(BACKING_FIELD_IN_TRAIT, "Property in an interface cannot have a backing field");
         MAP.put(MUST_BE_INITIALIZED, "Property must be initialized");
         MAP.put(MUST_BE_INITIALIZED_OR_BE_ABSTRACT, "Property must be initialized or be abstract");
@@ -438,6 +439,7 @@ public class DefaultErrorMessages {
         MAP.put(SUPERTYPE_INITIALIZED_IN_TRAIT, "Interfaces cannot initialize supertypes");
         MAP.put(CLASS_IN_SUPERTYPE_FOR_ENUM, "Enum class cannot inherit from classes");
         MAP.put(CONSTRUCTOR_IN_TRAIT, "An interface may not have a constructor");
+        MAP.put(METHOD_OF_ANY_IMPLEMENTED_IN_INTERFACE, "An interface may not implement a method of 'kotlin.Any'");
         MAP.put(TRAIT_WITH_SUPERCLASS, "An interface cannot inherit from a class");
         MAP.put(SUPERTYPE_APPEARS_TWICE, "A supertype appears twice");
         MAP.put(FINAL_SUPERTYPE, "This type is final, so it cannot be inherited from");
@@ -524,6 +526,7 @@ public class DefaultErrorMessages {
                 RENDER_TYPE);
         MAP.put(TYPE_MISMATCH_IN_CONDITION, "Condition must be of type kotlin.Boolean, but is of type {0}", RENDER_TYPE);
         MAP.put(INCOMPATIBLE_TYPES, "Incompatible types: {0} and {1}", RENDER_TYPE, RENDER_TYPE);
+        MAP.put(IMPLICIT_NOTHING_RETURN_TYPE, "''Nothing'' return type needs to be specified explicitly");
         MAP.put(EXPECTED_CONDITION, "Expected condition of type kotlin.Boolean");
 
         MAP.put(CANNOT_CHECK_FOR_ERASED, "Cannot check for instance of erased type: {0}", RENDER_TYPE);
@@ -557,8 +560,12 @@ public class DefaultErrorMessages {
 
         MAP.put(ABSTRACT_MEMBER_NOT_IMPLEMENTED, "{0} must be declared abstract or implement abstract member {1}", RENDER_CLASS_OR_OBJECT,
                 FQ_NAMES_IN_TYPES);
+        MAP.put(ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED, "{0} must be declared abstract or implement abstract base class member {1}",
+                RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
 
         MAP.put(MANY_IMPL_MEMBER_NOT_IMPLEMENTED, "{0} must override {1} because it inherits many implementations of it",
+                RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
+        MAP.put(MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED, "{0} must override {1} because it inherits multiple interface methods of it",
                 RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
 
         MAP.put(CONFLICTING_OVERLOADS, "''{0}'' is already defined in {1}", COMPACT_WITH_MODIFIERS, STRING);
