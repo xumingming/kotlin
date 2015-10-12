@@ -39,6 +39,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             doTest(fileName);
         }
 
+        @TestMetadata("AbstractAccessor.kt")
+        public void testAbstractAccessor() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/AbstractAccessor.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("AbstractInAbstractClass.kt")
         public void testAbstractInAbstractClass() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/AbstractInAbstractClass.kt");
@@ -13254,6 +13260,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("NonExhaustiveWhenWithAnyCase.kt")
             public void testNonExhaustiveWhenWithAnyCase() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/sealed/NonExhaustiveWhenWithAnyCase.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("NotFinal.kt")
+            public void testNotFinal() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/sealed/NotFinal.kt");
                 doTest(fileName);
             }
 
