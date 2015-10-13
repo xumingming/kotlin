@@ -25,7 +25,7 @@ import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.backend.common.bridges.Bridge;
-import org.jetbrains.kotlin.backend.common.bridges.BridgesPackage;
+import org.jetbrains.kotlin.backend.common.bridges.ImplKt;
 import org.jetbrains.kotlin.codegen.annotation.AnnotatedWithOnlyTargetedAnnotations;
 import org.jetbrains.kotlin.codegen.context.*;
 import org.jetbrains.kotlin.codegen.intrinsics.TypeIntrinsics;
@@ -39,19 +39,19 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget;
 import org.jetbrains.kotlin.jvm.RuntimeAssertionInfo;
 import org.jetbrains.kotlin.load.java.BuiltinsPropertiesUtilKt;
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames;
-import org.jetbrains.kotlin.load.kotlin.nativeDeclarations.NativeDeclarationsPackage;
+import org.jetbrains.kotlin.load.kotlin.nativeDeclarations.NativeKt;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetNamedFunction;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
-import org.jetbrains.kotlin.resolve.annotations.AnnotationsPackage;
-import org.jetbrains.kotlin.resolve.calls.callResolverUtil.CallResolverUtilPackage;
+import org.jetbrains.kotlin.resolve.annotations.AnnotationUtilKt;
+import org.jetbrains.kotlin.resolve.calls.callResolverUtil.CallResolverUtilKt;
 import org.jetbrains.kotlin.resolve.constants.ArrayValue;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
 import org.jetbrains.kotlin.resolve.constants.KClassValue;
-import org.jetbrains.kotlin.resolve.jvm.diagnostics.DiagnosticsPackage;
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin;
+import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOriginKt;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodParameterKind;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodParameterSignature;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodSignature;
@@ -79,7 +79,6 @@ import static org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarg
 import static org.jetbrains.kotlin.resolve.DescriptorToSourceUtils.getSourceFromDescriptor;
 import static org.jetbrains.kotlin.resolve.DescriptorUtils.*;
 import static org.jetbrains.kotlin.resolve.jvm.AsmTypes.OBJECT_TYPE;
-import static org.jetbrains.kotlin.resolve.jvm.diagnostics.DiagnosticsPackage.*;
 import static org.jetbrains.org.objectweb.asm.Opcodes.*;
 
 public class FunctionCodegen {
@@ -110,7 +109,7 @@ public class FunctionCodegen {
                                             "in " + function.getContainingFile().getVirtualFile();
 
         if (owner.getContextKind() != OwnerKind.DEFAULT_IMPLS || function.hasBody()) {
-            generateMethod(OtherOrigin(function, functionDescriptor), functionDescriptor,
+            generateMethod(JvmDeclarationOriginKt.OtherOrigin(function, functionDescriptor), functionDescriptor,
                            new FunctionGenerationStrategy.FunctionDefault(state, functionDescriptor, function));
         }
 
@@ -155,7 +154,7 @@ public class FunctionCodegen {
         Method asmMethod = jvmSignature.getAsmMethod();
 
         int flags = getMethodAsmFlags(functionDescriptor, contextKind);
-        boolean isNative = NativeDeclarationsPackage.hasNativeAnnotation(functionDescriptor);
+        boolean isNative = NativeKt.hasNativeAnnotation(functionDescriptor);
 
         if (isNative && owner instanceof DelegatingFacadeContext) {
             // Native methods are only defined in facades and do not need package part implementations
@@ -182,7 +181,7 @@ public class FunctionCodegen {
 
         generateBridges(functionDescriptor);
 
-        boolean staticInCompanionObject = AnnotationsPackage.isPlatformStaticInCompanionObject(functionDescriptor);
+        boolean staticInCompanionObject = AnnotationUtilKt.isPlatformStaticInCompanionObject(functionDescriptor);
         if (staticInCompanionObject) {
             ImplementationBodyCodegen parentBodyCodegen = (ImplementationBodyCodegen) memberCodegen.getParentCodegen();
             parentBodyCodegen.addAdditionalTask(new PlatformStaticGenerator(functionDescriptor, origin, state));
@@ -514,13 +513,13 @@ public class FunctionCodegen {
         if (isMethodOfAny(descriptor)) return;
 
         // If the function doesn't have a physical declaration among super-functions, it's a SAM adapter or alike and doesn't need bridges
-        if (CallResolverUtilPackage.isOrOverridesSynthesized(descriptor)) return;
+        if (CallResolverUtilKt.isOrOverridesSynthesized(descriptor)) return;
 
         boolean isSpecial = BuiltinsPropertiesUtilKt.overridesBuiltinSpecialDeclaration(descriptor);
 
         Set<Bridge<Method>> bridgesToGenerate;
         if (!isSpecial) {
-            bridgesToGenerate = BridgesPackage.generateBridgesForFunctionDescriptor(
+            bridgesToGenerate = ImplKt.generateBridgesForFunctionDescriptor(
                     descriptor,
                     new Function1<FunctionDescriptor, Method>() {
                         @Override
@@ -565,7 +564,7 @@ public class FunctionCodegen {
 
                 Method method = typeMapper.mapSignature(descriptor).getAsmMethod();
                 int flags = ACC_ABSTRACT | getVisibilityAccessFlag(descriptor);
-                v.newMethod(OtherOrigin(overridden), flags, method.getName(), method.getDescriptor(), null, null);
+                v.newMethod(JvmDeclarationOriginKt.OtherOrigin(overridden), flags, method.getName(), method.getDescriptor(), null, null);
             }
         }
     }
@@ -644,7 +643,7 @@ public class FunctionCodegen {
         Method defaultMethod = typeMapper.mapDefaultMethod(functionDescriptor, kind);
 
         MethodVisitor mv = v.newMethod(
-                Synthetic(function, functionDescriptor),
+                JvmDeclarationOriginKt.Synthetic(function, functionDescriptor),
                 flags,
                 defaultMethod.getName(),
                 defaultMethod.getDescriptor(), null,
@@ -806,7 +805,7 @@ public class FunctionCodegen {
         int flags = ACC_PUBLIC | ACC_BRIDGE | (!isSpecialBridge ? ACC_SYNTHETIC : 0) | (isSpecialBridge ? ACC_FINAL : 0); // TODO.
 
         MethodVisitor mv =
-                v.newMethod(DiagnosticsPackage.Bridge(descriptor, origin), flags, bridge.getName(), bridge.getDescriptor(), null, null);
+                v.newMethod(JvmDeclarationOriginKt.Bridge(descriptor, origin), flags, bridge.getName(), bridge.getDescriptor(), null, null);
         if (state.getClassBuilderMode() != ClassBuilderMode.FULL) return;
 
         mv.visitCode();
@@ -904,7 +903,7 @@ public class FunctionCodegen {
             final StackValue field
     ) {
         generateMethod(
-                Delegation(DescriptorToSourceUtils.descriptorToDeclaration(delegatedTo), delegateFunction), delegateFunction,
+                JvmDeclarationOriginKt.Delegation(DescriptorToSourceUtils.descriptorToDeclaration(delegatedTo), delegateFunction), delegateFunction,
                 new FunctionGenerationStrategy() {
                     @Override
                     public void generateBody(
