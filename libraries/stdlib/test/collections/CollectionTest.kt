@@ -466,7 +466,7 @@ class CollectionTest {
         assertFalse(hashSetOf<Int>().contains(12))
         assertTrue(listOf(15, 19, 20).contains(15))
 
-        assertTrue(IterableWrapper(hashSetOf(45, 14, 13)).contains(14))
+        assertTrue(IterableWrapper(hashSetOf(45, 14, 13)).contains(14 as Int))
     }
 
     @test fun min() {
