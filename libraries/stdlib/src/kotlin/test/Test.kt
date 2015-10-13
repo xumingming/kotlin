@@ -31,14 +31,12 @@ public fun assertFalse(actual: Boolean, message: String? = null) {
 }
 
 /** Asserts that the [expected] value is equal to the [actual] value, with an optional [message]. */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public fun <T> assertEquals(expected: T, actual: @NoInfer T?, message: String? = null) {
+public fun <T> assertEquals(expected: T, actual: T, message: String? = null) {
     asserter.assertEquals(message, expected, actual)
 }
 
 /** Asserts that the [actual] value is not equal to the illegal value, with an optional [message]. */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public fun <T> assertNotEquals(illegal: T, actual: @NoInfer T?, message: String? = null) {
+public fun <T> assertNotEquals(illegal: T, actual: T, message: String? = null) {
     asserter.assertNotEquals(message, illegal, actual)
 }
 
@@ -67,14 +65,12 @@ public fun fail(message: String? = null) {
 }
 
 /** Asserts that given function [block] returns the given [expected] value. */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public fun <T> expect(expected: T, block: () -> @NoInfer T?) {
+public fun <T> expect(expected: T, block: () -> T) {
     assertEquals(expected, block())
 }
 
 /** Asserts that given function [block] returns the given [expected] value and use the given [message] if it fails. */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public fun <T> expect(expected: T, message: String?, block: () -> @NoInfer T?) {
+public fun <T> expect(expected: T, message: String?, block: () -> T) {
     assertEquals(expected, block(), message)
 }
 
