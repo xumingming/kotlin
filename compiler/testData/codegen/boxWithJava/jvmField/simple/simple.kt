@@ -1,5 +1,5 @@
 class C {
-    @publicField private val foo: String = "OK"
+    @JvmField public val foo: String = "OK"
 }
 
 fun box(): String {
