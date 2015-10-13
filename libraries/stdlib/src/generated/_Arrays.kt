@@ -375,16 +375,9 @@ public inline operator fun ShortArray.component5(): Short {
 /**
  * Returns `true` if [element] is found in the collection.
  */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public operator fun <T> Array<out T>.contains(element: @NoInfer T?): Boolean {
     return (this as Array<out T?>).indexOf(element) >= 0
 }
-
-//@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-//@JvmName("containsNullable")
-//public operator fun <T: Any> Array<out T>.contains(element: @NoInfer T?): Boolean {
-//    return element != null && indexOf(element) >= 0
-//}
 
 /**
  * Returns `true` if [element] is found in the collection.
@@ -1192,7 +1185,6 @@ public fun ShortArray.getOrNull(index: Int): Short? {
 /**
  * Returns first index of [element], or -1 if the collection does not contain element.
  */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public fun <T> Array<out T>.indexOf(element: @NoInfer T): Int {
     if (element == null) {
         for (index in indices) {
@@ -1723,7 +1715,7 @@ public inline fun ShortArray.last(predicate: (Short) -> Boolean): Short {
 /**
  * Returns last index of [element], or -1 if the collection does not contain element.
  */
-public fun <T> Array<out T>.lastIndexOf(element: T): Int {
+public fun <T> Array<out T>.lastIndexOf(element: @NoInfer T): Int {
     if (element == null) {
         for (index in indices.reversed()) {
             if (this[index] == null) {

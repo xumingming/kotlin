@@ -8,17 +8,23 @@ fun elements(): List<GenericFunction> {
     templates add f("contains(element: T)") {
         operator(true)
 
+        only(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives)
         doc { "Returns `true` if [element] is found in the collection." }
+        customSignature(Iterables, ArraysOfObjects) { "contains(element: @NoInfer T?)" }
         returns("Boolean")
-        body {
+        body(Iterables) {
             """
-            if (this is Collection)
-                return contains(element)
-            return indexOf(element) >= 0
+                if (this is Collection<T?>)
+                    return contains(element)
+                return (this as Iterable<T?>).indexOf(element) >= 0
             """
         }
-        exclude(Strings, Lists, Collections)
-        body(ArraysOfPrimitives, ArraysOfObjects, Sequences) {
+        body(ArraysOfObjects) {
+            """
+            return (this as Array<out T?>).indexOf(element) >= 0
+            """
+        }
+        body(ArraysOfPrimitives, Sequences) {
             """
             return indexOf(element) >= 0
             """
@@ -26,8 +32,9 @@ fun elements(): List<GenericFunction> {
     }
 
     templates add f("indexOf(element: T)") {
-        exclude(Strings, Lists) // has native implementation
+        only(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives)
         doc { "Returns first index of [element], or -1 if the collection does not contain element." }
+        customSignature(Iterables, ArraysOfObjects) { "indexOf(element: @NoInfer T)" }
         returns("Int")
         body {
             """
@@ -72,8 +79,9 @@ fun elements(): List<GenericFunction> {
     }
 
     templates add f("lastIndexOf(element: T)") {
-        exclude(Strings, Lists) // has native implementation
+        only(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives)
         doc { "Returns last index of [element], or -1 if the collection does not contain element." }
+        customSignature(Iterables, ArraysOfObjects) { "lastIndexOf(element: @NoInfer T)" }
         returns("Int")
         body {
             """

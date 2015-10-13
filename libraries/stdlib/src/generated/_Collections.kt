@@ -55,7 +55,6 @@ public inline operator fun <T> List<T>.component5(): T {
 /**
  * Returns `true` if [element] is found in the collection.
  */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public operator fun <T> Iterable<T>.contains(element: @NoInfer T?): Boolean {
     if (this is Collection<T?>)
         return contains(element)
@@ -241,7 +240,6 @@ public fun <T> List<T>.getOrNull(index: Int): T? {
 /**
  * Returns first index of [element], or -1 if the collection does not contain element.
  */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public fun <T> Iterable<T>.indexOf(element: @NoInfer T): Int {
     var index = 0
     for (item in this) {
@@ -371,7 +369,6 @@ public inline fun <T> List<T>.last(predicate: (T) -> Boolean): T {
 /**
  * Returns last index of [element], or -1 if the collection does not contain element.
  */
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public fun <T> Iterable<T>.lastIndexOf(element: @NoInfer T): Int {
     var lastIndex = -1
     var index = 0
