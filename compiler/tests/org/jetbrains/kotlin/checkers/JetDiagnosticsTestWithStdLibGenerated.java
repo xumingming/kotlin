@@ -103,9 +103,21 @@ public class JetDiagnosticsTestWithStdLibGenerated extends AbstractJetDiagnostic
             doTest(fileName);
         }
 
+        @TestMetadata("Synchronized.kt")
+        public void testSynchronized() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations/Synchronized.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("targetuse.kt")
         public void testTargetuse() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations/targetuse.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("Volatile.kt")
+        public void testVolatile() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations/Volatile.kt");
             doTest(fileName);
         }
 
