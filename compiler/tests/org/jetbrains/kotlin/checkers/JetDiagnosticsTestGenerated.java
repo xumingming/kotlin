@@ -175,6 +175,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             doTest(fileName);
         }
 
+        @TestMetadata("DefaultValueForParameterInFunctionType.kt")
+        public void testDefaultValueForParameterInFunctionType() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/DefaultValueForParameterInFunctionType.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("DefaultValuesTypechecking.kt")
         public void testDefaultValuesTypechecking() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/DefaultValuesTypechecking.kt");
@@ -370,6 +376,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
         @TestMetadata("MultipleBounds.kt")
         public void testMultipleBounds() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/MultipleBounds.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("NamedFunctionTypeParameterInSupertype.kt")
+        public void testNamedFunctionTypeParameterInSupertype() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/NamedFunctionTypeParameterInSupertype.kt");
             doTest(fileName);
         }
 
@@ -774,6 +786,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("AnnotationOnObject.kt")
             public void testAnnotationOnObject() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/AnnotationOnObject.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("annotationOnParameterInFunctionType.kt")
+            public void testAnnotationOnParameterInFunctionType() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/annotationOnParameterInFunctionType.kt");
                 doTest(fileName);
             }
 
@@ -9408,6 +9426,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("internalInInterface.kt")
             public void testInternalInInterface() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/modifiers/internalInInterface.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("modifierOnParameterInFunctionType.kt")
+            public void testModifierOnParameterInFunctionType() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/modifiers/modifierOnParameterInFunctionType.kt");
                 doTest(fileName);
             }
 
