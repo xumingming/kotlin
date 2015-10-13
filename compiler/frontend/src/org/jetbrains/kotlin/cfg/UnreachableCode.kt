@@ -50,7 +50,7 @@ class UnreachableCodeImpl(
     }
 
     private fun JetElement.hasChildrenInSet(set: Set<JetElement>): Boolean {
-        return PsiTreeUtil.collectElements(this) { it != this }.any { it in set }
+        return PsiTreeUtil.collectElements(this) { it != this }.any { it is JetElement && it in set }
     }
 
     private fun JetElement.getLeavesOrReachableChildren(): List<PsiElement> {
@@ -86,7 +86,7 @@ class UnreachableCodeImpl(
             }
         }
         for ((index, element) in this.withIndex()) {
-            if (reachableElements.contains(element)) {
+            if (element is JetElement && reachableElements.contains(element)) {
                 childrenToRemove.add(element)
                 collectSiblingsIfMeaningless(index, -1)
                 collectSiblingsIfMeaningless(index, 1)

@@ -77,6 +77,6 @@ public open class KotlinStubBaseImpl<T : JetElementImplStub<*>>(parent: StubElem
     companion object {
         private val LOGGER: Logger = Logger.getInstance(javaClass<KotlinStubBaseImpl<JetElementImplStub<*>>>())
 
-        private val BASE_STUB_INTERFACES = listOf(javaClass<KotlinStubWithFqName<*>>(), javaClass<KotlinClassOrObjectStub<*>>(), javaClass<NamedStub<*>>(), javaClass<KotlinCallableStubBase<*>>())
+        private val BASE_STUB_INTERFACES = listOf<Class<*>>(KotlinStubWithFqName::class.java, KotlinClassOrObjectStub::class.java, NamedStub::class.java, KotlinCallableStubBase::class.java)
     }
 }

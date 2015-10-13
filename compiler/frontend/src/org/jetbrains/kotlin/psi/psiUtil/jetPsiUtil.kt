@@ -110,7 +110,7 @@ public fun JetSimpleNameExpression.getReceiverExpression(): JetExpression? {
             }
         }
         parent is JetBinaryExpression && parent.getOperationReference() == this -> {
-            return if (parent.getOperationToken() in OperatorConventions.IN_OPERATIONS) parent.getRight() else parent.getLeft()
+            return if (parent.getOperationToken() in OperatorConventions.IN_OPERATIONS as Set<*>) parent.getRight() else parent.getLeft()
         }
         parent is JetUnaryExpression && parent.getOperationReference() == this -> {
             return parent.getBaseExpression()!!

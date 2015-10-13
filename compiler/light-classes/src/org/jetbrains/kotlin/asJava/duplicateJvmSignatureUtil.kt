@@ -89,7 +89,7 @@ class FilteredJvmDiagnostics(val jvmDiagnostics: Diagnostics, val otherDiagnosti
     override fun forElement(psiElement: PsiElement): Collection<Diagnostic> {
         val jvmDiagnosticFactories = setOf(CONFLICTING_JVM_DECLARATIONS, ACCIDENTAL_OVERRIDE, CONFLICTING_INHERITED_JVM_DECLARATIONS)
         fun Diagnostic.data() = cast(this, jvmDiagnosticFactories).getA()
-        val (conflicting, other) = jvmDiagnostics.forElement(psiElement).partition { it.getFactory() in jvmDiagnosticFactories }
+        val (conflicting, other) = jvmDiagnostics.forElement(psiElement).partition { it.factory in jvmDiagnosticFactories as Set<DiagnosticFactory<*>> }
         if (alreadyReported(psiElement)) {
             // CONFLICTING_OVERLOADS already reported, no need to duplicate it
             return other

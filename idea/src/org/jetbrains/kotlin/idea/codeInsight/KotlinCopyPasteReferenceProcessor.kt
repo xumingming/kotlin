@@ -142,7 +142,7 @@ public class KotlinCopyPasteReferenceProcessor() : CopyPastePostProcessor<Kotlin
     ) {
         if (PsiTreeUtil.getNonStrictParentOfType(element, *IGNORE_REFERENCES_INSIDE) != null) return
 
-        element.forEachDescendantOfType<JetElement>(canGoInside = { it.javaClass as Class<*> !in IGNORE_REFERENCES_INSIDE }) { element ->
+        element.forEachDescendantOfType<JetElement>(canGoInside = { it.javaClass !in IGNORE_REFERENCES_INSIDE as Array<out Class<*>> }) { element ->
             val reference = element.mainReference ?: return@forEachDescendantOfType
 
             val descriptors = reference.resolveToDescriptors(element.analyze()) //TODO: we could use partial body resolve for all references together
