@@ -88,7 +88,7 @@ public class JavaMethodDescriptor extends SimpleFunctionDescriptorImpl implement
         SimpleFunctionDescriptorImpl descriptor = super.initialize(
                 receiverParameterType, dispatchReceiverParameter, typeParameters, unsubstitutedValueParameters,
                 unsubstitutedReturnType, modality, visibility);
-        setOperator(OperatorNameConventions.INSTANCE$.canBeOperator(descriptor));
+        setOperator(OperatorNameConventions.INSTANCE.canBeOperator(descriptor));
         return descriptor;
     }
 
@@ -135,7 +135,7 @@ public class JavaMethodDescriptor extends SimpleFunctionDescriptorImpl implement
             @NotNull JetType enhancedReturnType
     ) {
         List<ValueParameterDescriptor> enhancedValueParameters =
-                DescriptorsPackage.createEnhancedValueParameters(enhancedValueParametersTypes, getValueParameters(), this);
+                UtilKt.createEnhancedValueParameters(enhancedValueParametersTypes, getValueParameters(), this);
 
         // We use `doSubstitute` here because it does exactly what we need:
         // 1. creates full copy of descriptor
