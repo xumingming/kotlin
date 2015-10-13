@@ -104,7 +104,7 @@ class ArraysTest {
     }
 
     @test fun min() {
-        assertNull(arrayOf<Int>().min())
+        expect(null, { arrayOf<Int>().min() })
         expect(1, { arrayOf(1).min() })
         expect(2, { arrayOf(2, 3).min() })
         expect(2000000000000, { arrayOf(3000000000000, 2000000000000).min() })
@@ -113,19 +113,19 @@ class ArraysTest {
     }
 
     @test fun minInPrimitiveArrays() {
-        assertNull(intArrayOf().min())
+        expect(null, { intArrayOf().min() })
         expect(1, { intArrayOf(1).min() })
         expect(2, { intArrayOf(2, 3).min() })
         expect(2000000000000, { longArrayOf(3000000000000, 2000000000000).min() })
-        expect(1.toByte(), { byteArrayOf(1, 3, 2).min() })
-        expect(2.toShort(), { shortArrayOf(3, 2).min() })
+        expect(1, { byteArrayOf(1, 3, 2).min() })
+        expect(2, { shortArrayOf(3, 2).min() })
         expect(2.0F, { floatArrayOf(3.0F, 2.0F).min() })
         expect(2.0, { doubleArrayOf(2.0, 3.0).min() })
         expect('a', { charArrayOf('a', 'b').min() })
     }
 
     @test fun max() {
-        assertNull(arrayOf<Int>().max())
+        expect(null, { arrayOf<Int>().max() })
         expect(1, { arrayOf(1).max() })
         expect(3, { arrayOf(2, 3).max() })
         expect(3000000000000, { arrayOf(3000000000000, 2000000000000).max() })
@@ -134,19 +134,19 @@ class ArraysTest {
     }
 
     @test fun maxInPrimitiveArrays() {
-        assertNull(intArrayOf().max())
+        expect(null, { intArrayOf().max() })
         expect(1, { intArrayOf(1).max() })
         expect(3, { intArrayOf(2, 3).max() })
         expect(3000000000000, { longArrayOf(3000000000000, 2000000000000).max() })
-        expect(3.toByte(), { byteArrayOf(1, 3, 2).max() })
-        expect(3.toShort(), { shortArrayOf(3, 2).max() })
+        expect(3, { byteArrayOf(1, 3, 2).max() })
+        expect(3, { shortArrayOf(3, 2).max() })
         expect(3.0F, { floatArrayOf(3.0F, 2.0F).max() })
         expect(3.0, { doubleArrayOf(2.0, 3.0).max() })
         expect('b', { charArrayOf('a', 'b').max() })
     }
 
     @test fun minBy() {
-        assertNull(arrayOf<Int>().minBy { it })
+        expect(null, { arrayOf<Int>().minBy { it } })
         expect(1, { arrayOf(1).minBy { it } })
         expect(3, { arrayOf(2, 3).minBy { -it } })
         expect('a', { arrayOf('a', 'b').minBy { "x$it" } })
@@ -154,18 +154,18 @@ class ArraysTest {
     }
 
     @test fun minByInPrimitiveArrays() {
-        assertNull(intArrayOf().minBy { it })
+        expect(null, { intArrayOf().minBy { it } })
         expect(1, { intArrayOf(1).minBy { it } })
         expect(3, { intArrayOf(2, 3).minBy { -it } })
         expect(2000000000000, { longArrayOf(3000000000000, 2000000000000).minBy { it + 1 } })
-        expect(1.toByte(), { byteArrayOf(1, 3, 2).minBy { it * it } })
-        expect(3.toShort(), { shortArrayOf(3, 2).minBy { "a" } })
+        expect(1, { byteArrayOf(1, 3, 2).minBy { it * it } })
+        expect(3, { shortArrayOf(3, 2).minBy { "a" } })
         expect(2.0F, { floatArrayOf(3.0F, 2.0F).minBy { it.toString() } })
         expect(2.0, { doubleArrayOf(2.0, 3.0).minBy { Math.sqrt(it) } })
     }
 
     @test fun maxBy() {
-        assertNull(arrayOf<Int>().maxBy { it })
+        expect(null, { arrayOf<Int>().maxBy { it } })
         expect(1, { arrayOf(1).maxBy { it } })
         expect(2, { arrayOf(2, 3).maxBy { -it } })
         expect('b', { arrayOf('a', 'b').maxBy { "x$it" } })
@@ -173,12 +173,12 @@ class ArraysTest {
     }
 
     @test fun maxByInPrimitiveArrays() {
-        assertNull(intArrayOf().maxBy { it })
+        expect(null, { intArrayOf().maxBy { it } })
         expect(1, { intArrayOf(1).maxBy { it } })
         expect(2, { intArrayOf(2, 3).maxBy { -it } })
         expect(3000000000000, { longArrayOf(3000000000000, 2000000000000).maxBy { it + 1 } })
-        expect(3.toByte(), { byteArrayOf(1, 3, 2).maxBy { it * it } })
-        expect(3.toShort(), { shortArrayOf(3, 2).maxBy { "a" } })
+        expect(3, { byteArrayOf(1, 3, 2).maxBy { it * it } })
+        expect(3, { shortArrayOf(3, 2).maxBy { "a" } })
         expect(3.0F, { floatArrayOf(3.0F, 2.0F).maxBy { it.toString() } })
         expect(3.0, { doubleArrayOf(2.0, 3.0).maxBy { Math.sqrt(it) } })
     }
@@ -230,7 +230,7 @@ class ArraysTest {
         expect(3.8) { arrayOf(1, 2, 5, 8, 3).average() }
         expect(2.1) { arrayOf(1.6, 2.6, 3.6, 0.6).average() }
         expect(100.0) { arrayOf<Byte>(100, 100, 100, 100, 100, 100).average() }
-        expect(0.toShort()) { arrayOf<Short>(1, -1, 2, -2, 3, -3).average().toShort() }
+        expect(0) { arrayOf<Short>(1, -1, 2, -2, 3, -3).average().toShort() }
         // TODO: Property based tests
         // for each arr with size 1 arr.average() == arr[0]
         // for each arr with size > 0  arr.average() = arr.sum().toDouble() / arr.size()
