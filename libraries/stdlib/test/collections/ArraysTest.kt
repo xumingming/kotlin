@@ -384,6 +384,9 @@ class ArraysTest {
         assertTrue(arrayOf("1", "2", "3", "4").contains("2"))
         assertTrue("3" in arrayOf("1", "2", "3", "4"))
         assertTrue("0" !in arrayOf("1", "2", "3", "4"))
+        assertFalse(null in arrayOf("1"))
+        assertTrue(null in arrayOf(null, 1))
+        assertFalse(2.0 in arrayOf(1) as Array<out Number>)
     }
 
     @test fun slice() {

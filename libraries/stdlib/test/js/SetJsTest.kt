@@ -103,7 +103,7 @@ abstract class SetJsTest {
         assertTrue(data.contains("foo"))
         assertTrue(data.contains("bar"))
         assertFalse(data.contains("baz"))
-        assertFalse(data.contains(1 as Any))
+        assertFalse((data as Set<Any>).contains(1))
         assertFalse(empty.contains("foo"))
         assertFalse(empty.contains("bar"))
         assertFalse(empty.contains("baz"))

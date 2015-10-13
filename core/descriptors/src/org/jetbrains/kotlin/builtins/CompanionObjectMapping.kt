@@ -36,6 +36,6 @@ public class CompanionObjectMapping(private val builtIns: KotlinBuiltIns) {
 
     public fun hasMappingToObject(classDescriptor: ClassDescriptor): Boolean {
         return DescriptorUtils.isCompanionObject(classDescriptor) &&
-               classDescriptor.getContainingDeclaration() in classes
+               classDescriptor.getContainingDeclaration() as? ClassDescriptor in classes
     }
 }

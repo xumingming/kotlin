@@ -56,35 +56,11 @@ public inline operator fun <T> List<T>.component5(): T {
  * Returns `true` if [element] is found in the collection.
  */
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public operator fun <T, E> Iterable<@Exact T>.contains(element: @Exact E): Boolean where T: E {
-    if (this is Collection<E>)
+public operator fun <T> Iterable<T>.contains(element: @NoInfer T?): Boolean {
+    if (this is Collection<T?>)
         return contains(element)
-    return (this as Iterable<E>).indexOf(element) >= 0
+    return (this as Iterable<T?>).indexOf(element) >= 0
 }
-
-///**
-// * Returns `true` if [element] is not null and is found in the collection.
-// */
-//@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-//@kotlin.jvm.JvmName("containsNullable")
-//public operator fun <T: Any> Iterable<T>.contains(element: @NoInfer T?): Boolean {
-//    if (element == null)
-//        return false
-//    if (this is Collection)
-//        return contains(element)
-//    return indexOf(element) >= 0
-//}
-
-///**
-// * Returns `true` if [element] is found in the collection.
-// */
-//@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-//@kotlin.jvm.JvmName("ofNullableContainsNullable")
-//public operator fun <T: Any> Iterable<T?>.contains(element: @NoInfer T?): Boolean {
-//    if (this is Collection)
-//        return contains(element)
-//    return indexOf(element) >= 0
-//}
 
 /**
  * Returns an element at the given [index] or throws an [IndexOutOfBoundsException] if the [index] is out of bounds of this collection.
