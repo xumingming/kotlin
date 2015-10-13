@@ -63,7 +63,6 @@ import static org.jetbrains.kotlin.codegen.JvmCodegenUtil.writeModuleName;
 import static org.jetbrains.kotlin.codegen.binding.CodegenBinding.CLOSURE;
 import static org.jetbrains.kotlin.codegen.binding.CodegenBinding.asmTypeForAnonymousClass;
 import static org.jetbrains.kotlin.resolve.jvm.AsmTypes.*;
-import static org.jetbrains.kotlin.resolve.jvm.diagnostics.DiagnosticsPackage.OtherOrigin;
 import static org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin.NO_ORIGIN;
 import static org.jetbrains.org.objectweb.asm.Opcodes.*;
 
@@ -208,7 +207,7 @@ public class ClosureCodegen extends MemberCodegen<JetElement> {
         this.constructor = generateConstructor();
 
         if (isConst(closure)) {
-            generateConstInstance(asmType, asmType, FunctionsKt.doNothing());
+            generateConstInstance(asmType, asmType, FunctionsKt.<InstructionAdapter>doNothing());
         }
 
         genClosureFields(closure, v, typeMapper);
@@ -285,8 +284,8 @@ public class ClosureCodegen extends MemberCodegen<JetElement> {
 
         Type[] myParameterTypes = bridge.getArgumentTypes();
 
-        List<ParameterDescriptor> calleeParameters = CollectionsKt.plus(
-                org.jetbrains.kotlin.utils.CollectionsKt.singletonOrEmptyList(funDescriptor.getExtensionReceiverParameter()),
+        List<ParameterDescriptor> calleeParameters = CollectionsKt.<ParameterDescriptor>plus(
+                org.jetbrains.kotlin.utils.CollectionsKt.<ParameterDescriptor>singletonOrEmptyList(funDescriptor.getExtensionReceiverParameter()),
                 funDescriptor.getValueParameters()
         );
 
