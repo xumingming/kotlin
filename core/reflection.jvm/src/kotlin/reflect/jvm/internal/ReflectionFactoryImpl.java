@@ -18,6 +18,7 @@ package kotlin.reflect.jvm.internal;
 
 import kotlin.jvm.internal.*;
 import kotlin.reflect.*;
+import kotlin.reflect.jvm.internal.KClassCacheKt;
 
 /**
  * @suppress
