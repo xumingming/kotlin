@@ -9292,16 +9292,6 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             }
         }
 
-        @TestMetadata("compiler/testData/diagnostics/tests/jdk-annotations")
-        @TestDataPath("$PROJECT_ROOT")
-        @RunWith(JUnit3RunnerWithInners.class)
-        public static class Jdk_annotations extends AbstractJetDiagnosticsTest {
-            public void testAllFilesPresentInJdk_annotations() throws Exception {
-                JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/jdk-annotations"), Pattern.compile("^(.+)\\.kt$"), true);
-            }
-
-        }
-
         @TestMetadata("compiler/testData/diagnostics/tests/labels")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
