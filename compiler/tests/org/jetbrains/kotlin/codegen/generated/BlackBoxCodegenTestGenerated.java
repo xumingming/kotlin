@@ -921,6 +921,12 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/builtinsProperties/maps.kt");
             doTest(fileName);
         }
+
+        @TestMetadata("throwable.kt")
+        public void testThrowable() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/builtinsProperties/throwable.kt");
+            doTest(fileName);
+        }
     }
 
     @TestMetadata("compiler/testData/codegen/box/casts")
@@ -2929,12 +2935,6 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest(fileName);
         }
 
-        @TestMetadata("propertyMetadataEqualsHashCodeToString.kt")
-        public void testPropertyMetadataEqualsHashCodeToString() throws Exception {
-            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/delegatedProperty/propertyMetadataEqualsHashCodeToString.kt");
-            doTest(fileName);
-        }
-
         @TestMetadata("propertyMetadataShouldBeCached.kt")
         public void testPropertyMetadataShouldBeCached() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/delegatedProperty/propertyMetadataShouldBeCached.kt");
@@ -2968,6 +2968,12 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
         @TestMetadata("twoPropByOneDelegete.kt")
         public void testTwoPropByOneDelegete() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/delegatedProperty/twoPropByOneDelegete.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("useReflectionOnKProperty.kt")
+        public void testUseReflectionOnKProperty() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/delegatedProperty/useReflectionOnKProperty.kt");
             doTest(fileName);
         }
 

@@ -1611,6 +1611,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("objectMembersUnsupported.kt")
+            public void testObjectMembersUnsupported() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/objectMembersUnsupported.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("unused.kt")
             public void testUnused() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/callableReference/unused.kt");
@@ -9161,6 +9167,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                     JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/j+k/collectionOverrides"), Pattern.compile("^(.+)\\.kt$"), true);
                 }
 
+                @TestMetadata("commonCollections.kt")
+                public void testCommonCollections() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/commonCollections.kt");
+                    doTest(fileName);
+                }
+
                 @TestMetadata("contains.kt")
                 public void testContains() throws Exception {
                     String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/contains.kt");
@@ -9182,6 +9194,18 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 @TestMetadata("getCharSequence.kt")
                 public void testGetCharSequence() throws Exception {
                     String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/getCharSequence.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("mapGetOverride.kt")
+                public void testMapGetOverride() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/mapGetOverride.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("overridesBuiltinNoMagic.kt")
+                public void testOverridesBuiltinNoMagic() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/overridesBuiltinNoMagic.kt");
                     doTest(fileName);
                 }
 
