@@ -132,6 +132,7 @@ public class DefaultErrorMessages {
         MAP.put(REDUNDANT_MODIFIER_FOR_TARGET, "Modifier ''{0}'' is redundant for ''{1}''", TO_STRING, TO_STRING);
         MAP.put(WRONG_MODIFIER_CONTAINING_DECLARATION, "Modifier ''{0}'' is not applicable inside ''{1}''", TO_STRING, TO_STRING);
         MAP.put(DEPRECATED_MODIFIER_CONTAINING_DECLARATION, "Modifier ''{0}'' is deprecated inside ''{1}''", TO_STRING, TO_STRING);
+        MAP.put(ILLEGAL_INLINE_PARAMETER_MODIFIER, "Modifier ''{0}'' is allowed only for function parameters of an inline function", TO_STRING);
         MAP.put(WRONG_ANNOTATION_TARGET, "This annotation is not applicable to target ''{0}''", TO_STRING);
         MAP.put(WRONG_ANNOTATION_TARGET_WITH_USE_SITE_TARGET, "This annotation is not applicable to target ''{0}'' and use site target ''@{1}''", TO_STRING, TO_STRING);
         MAP.put(REPEATED_ANNOTATION, "This annotation is not repeatable");
@@ -269,8 +270,6 @@ public class DefaultErrorMessages {
         MAP.put(UNUSED_CHANGED_VALUE, "The value changed at ''{0}'' is never used", ELEMENT_TEXT);
         MAP.put(UNUSED_EXPRESSION, "The expression is unused");
         MAP.put(UNUSED_FUNCTION_LITERAL, "The function literal is unused. If you mean block, you can use 'run { ... }'");
-        MAP.put(FUNCTION_RETURN_TYPE_DEPENDS_ON_LOCAL_CLASS, "Function return type depends on local class or object {0}", NAME);
-        MAP.put(PROPERTY_TYPE_DEPENDS_ON_LOCAL_CLASS, "Property type depends on local class or object {0}", NAME);
 
         MAP.put(VAL_REASSIGNMENT, "Val cannot be reassigned", NAME);
         MAP.put(SETTER_PROJECTED_OUT, "Setter for ''{0}'' is removed by type projection", NAME);
@@ -282,11 +281,6 @@ public class DefaultErrorMessages {
         MAP.put(VAL_OR_VAR_ON_FUN_PARAMETER, "''{0}'' on function parameter is not allowed", TO_STRING);
         MAP.put(VAL_OR_VAR_ON_CATCH_PARAMETER, "''{0}'' on catch parameter is not allowed", TO_STRING);
         MAP.put(VAL_OR_VAR_ON_SECONDARY_CONSTRUCTOR_PARAMETER, "''{0}'' on secondary constructor parameter is not allowed", TO_STRING);
-
-        MAP.put(INITIALIZATION_USING_BACKING_FIELD_CUSTOM_SETTER,
-                "This property cannot be initialized inside ''init'' block because it has a custom setter", NAME);
-        MAP.put(INITIALIZATION_USING_BACKING_FIELD_OPEN_SETTER,
-                "This property cannot be initialized inside ''init'' block because it has an open setter", NAME);
 
         MAP.put(UNREACHABLE_CODE, "Unreachable code", TO_STRING);
 
