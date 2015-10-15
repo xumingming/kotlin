@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.idea.quickfix.migration
+package org.jetbrains.kotlin.jvm.compiler
 
-import org.jetbrains.kotlin.psi.JetAnnotationEntry
-import org.jetbrains.kotlin.psi.JetPsiFactory
-
-public fun JetAnnotationEntry.addAtSymbol() {
-    addBefore(JetPsiFactory(this).createAnnotationEntry("@ann").atSymbol!!, firstChild)
+abstract class AbstractLoadKotlinWithTypeTableTest : AbstractLoadJavaTest() {
+    protected fun doTest(fileName: String) {
+        doTestCompiledKotlinWithTypeTable(fileName)
+    }
 }
