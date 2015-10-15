@@ -368,7 +368,7 @@ class TypeConverter(val converter: Converter) {
 
         override fun fromType(type: PsiType): Mutability {
             val target = (type as? PsiClassType)?.resolve() ?: return Mutability.NonMutable
-            if (target.getQualifiedName() !in TypeVisitor.toKotlinMutableTypesMap.keySet()) return Mutability.NonMutable
+            if (target.qualifiedName.let { it == null || it !in TypeVisitor.toKotlinMutableTypesMap.keys}) return Mutability.NonMutable
             return Mutability.Default
         }
 
@@ -394,7 +394,7 @@ class TypeConverter(val converter: Converter) {
         private fun isMutableFromUsage(usage: PsiExpression): Boolean {
             val parent = usage.getParent()
             if (parent is PsiReferenceExpression && usage == parent.getQualifierExpression() && parent.getParent() is PsiMethodCallExpression) {
-                return parent.getReferenceName() in modificationMethodNames
+                return parent.referenceName.let { it != null && it in modificationMethodNames }
             }
             else if (parent is PsiExpressionList) {
                 val call = parent.getParent() as? PsiCall ?: return false

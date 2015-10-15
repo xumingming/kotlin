@@ -40,7 +40,7 @@ class AnnotationConverter(private val converter: Converter) {
 
     private fun convertAnnotationsOnly(owner: PsiModifierListOwner): Annotations {
         val modifierList = owner.getModifierList()
-        val annotations = modifierList?.getAnnotations()?.filter { it.getQualifiedName() !in annotationsToRemove }
+        val annotations = modifierList?.getAnnotations()?.filterNot { it.qualifiedName.let { it != null && it in annotationsToRemove } }
 
         var convertedAnnotations: List<Annotation> = if (annotations != null && annotations.isNotEmpty()) {
             val newLines = if (!modifierList!!.isInSingleLine()) {

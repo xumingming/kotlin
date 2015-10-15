@@ -47,7 +47,7 @@ object KeywordCompletion {
     private val NON_ACTUAL_KEYWORDS = setOf(CAPITALIZED_THIS_KEYWORD,
                                             TYPE_ALIAS_KEYWORD)
     private val ALL_KEYWORDS = (KEYWORDS.getTypes() + SOFT_KEYWORDS.getTypes())
-            .filter { it !in NON_ACTUAL_KEYWORDS }
+            .filter { !NON_ACTUAL_KEYWORDS.containsRaw(it) }
             .map { it as KtKeywordToken }
 
     private val KEYWORDS_TO_IGNORE_PREFIX = TokenSet.create(OVERRIDE_KEYWORD /* it's needed to complete overrides that should be work by member name too */)

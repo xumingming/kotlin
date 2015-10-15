@@ -211,7 +211,7 @@ class SmartCompletionInBasicWeigher(
 
         val o = element.`object`
 
-        if ((o as? DeclarationLookupObject)?.descriptor in descriptorsToSkip) return DESCRIPTOR_TO_SKIP_WEIGHT
+        if ((o as? DeclarationLookupObject)?.descriptor.let { it != null && it in descriptorsToSkip }) return DESCRIPTOR_TO_SKIP_WEIGHT
 
         if (expectedInfos.isEmpty()) return NO_MATCH_WEIGHT
 

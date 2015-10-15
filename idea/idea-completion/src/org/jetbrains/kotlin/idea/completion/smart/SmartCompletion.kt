@@ -107,7 +107,7 @@ class SmartCompletion(
             is KtBinaryExpression -> {
                 if (parent.getRight() == expressionWithType) {
                     val operationToken = parent.getOperationToken()
-                    if (operationToken == KtTokens.EQ || operationToken in COMPARISON_TOKENS) {
+                    if (operationToken == KtTokens.EQ || COMPARISON_TOKENS.containsRaw(operationToken)) {
                         val left = parent.getLeft()
                         if (left is KtReferenceExpression) {
                             return@lazy bindingContext[BindingContext.REFERENCE_TARGET, left].singletonOrEmptySet()

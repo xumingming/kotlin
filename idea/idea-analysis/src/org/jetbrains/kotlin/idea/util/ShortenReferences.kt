@@ -178,7 +178,7 @@ public class ShortenReferences(val options: (KtElement) -> Options = { Options.D
         val elementSet = elements.toSet()
         val newElements = LinkedHashSet<KtElement>(elementSet.size())
         for (element in elementSet) {
-            if (!element.parents.any { it in elementSet }) {
+            if (!element.parents.any { elementSet.contains<PsiElement>(it) }) {
                 newElements.add(element)
             }
         }

@@ -106,7 +106,7 @@ public class KotlinCacheService(val project: Project) {
                             targetPlatform,
                             syntheticFiles = files,
                             reuseDataFrom = globalFacade(targetPlatform),
-                            moduleFilter = { it in dependentModules },
+                            moduleFilter = { dependentModules.contains<IdeaModuleInfo>(it) },
                             dependencies = dependenciesForSyntheticFileCache
                     )
                 }

@@ -78,7 +78,7 @@ public class ReferenceVariantsHelper(
                 }
             }
 
-            variants = variants.filter { it.original !in accessorMethodsToRemove }
+            variants = variants.filterNot { accessorMethodsToRemove.contains<DeclarationDescriptor>(it.original) }
         }
 
         return variants

@@ -398,13 +398,13 @@ class ExpectedInfos(
         val binaryExpression = expressionWithType.getParent() as? KtBinaryExpression
         if (binaryExpression != null) {
             val operationToken = binaryExpression.getOperationToken()
-            if (operationToken == KtTokens.EQ || operationToken in COMPARISON_TOKENS) {
+            if (operationToken == KtTokens.EQ || COMPARISON_TOKENS.containsRaw(operationToken)) {
                 val otherOperand = if (expressionWithType == binaryExpression.getRight()) binaryExpression.getLeft() else binaryExpression.getRight()
                 if (otherOperand != null) {
                     var expectedType = bindingContext.getType(otherOperand) ?: return null
 
                     // if we complete argument of == or !=, make types in expected info's nullable to allow nullable items too
-                    if (operationToken in COMPARISON_TOKENS) {
+                    if (COMPARISON_TOKENS.containsRaw(operationToken)) {
                         expectedType = expectedType.makeNullable()
                     }
 
