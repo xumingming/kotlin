@@ -60,7 +60,7 @@ object BuiltinSpecialProperties {
     }
 
     fun CallableMemberDescriptor.hasBuiltinSpecialPropertyFqNameImpl(): Boolean {
-        if (fqNameOrNull() in FQ_NAMES) return true
+        if (FQ_NAMES.contains<FqName?>(fqNameOrNull())) return true
         if (!isFromBuiltins()) return false
 
         return overriddenDescriptors.any { hasBuiltinSpecialPropertyFqName(it) }
@@ -101,7 +101,7 @@ object BuiltinMethodsWithSpecialGenericSignature {
             ERASED_VALUE_PARAMETERS_FQ_NAMES.map { it.shortName() }.toSet()
 
     private val CallableMemberDescriptor.hasErasedValueParametersInJava: Boolean
-        get() = fqNameOrNull() in ERASED_VALUE_PARAMETERS_FQ_NAMES
+        get() = ERASED_VALUE_PARAMETERS_FQ_NAMES.contains<FqName?>(fqNameOrNull())
 
     @JvmStatic
     fun getOverriddenBuiltinFunctionWithErasedValueParametersInJava(

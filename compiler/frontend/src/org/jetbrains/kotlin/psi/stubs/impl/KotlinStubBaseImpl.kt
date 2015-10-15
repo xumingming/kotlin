@@ -47,7 +47,7 @@ public open class KotlinStubBaseImpl<T : KtElementImplStub<*>>(parent: StubEleme
         val result = ArrayList<Method>()
         result.addAll(stubInterface.getDeclaredMethods().filter { it.getParameterTypes()!!.isEmpty() })
         for (baseInterface in stubInterface.getInterfaces()) {
-            if (baseInterface in BASE_STUB_INTERFACES) {
+            if (BASE_STUB_INTERFACES.contains<Class<*>>(baseInterface)) {
                 result.addAll(collectProperties(baseInterface))
             }
         }

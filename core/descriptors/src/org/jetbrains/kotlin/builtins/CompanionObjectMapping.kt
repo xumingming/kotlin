@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.builtins
 
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import java.util.*
 
@@ -36,6 +37,6 @@ public class CompanionObjectMapping(private val builtIns: KotlinBuiltIns) {
 
     public fun hasMappingToObject(classDescriptor: ClassDescriptor): Boolean {
         return DescriptorUtils.isCompanionObject(classDescriptor) &&
-               classDescriptor.getContainingDeclaration() in classes
+                classes.contains<DeclarationDescriptor>(classDescriptor.containingDeclaration)
     }
 }

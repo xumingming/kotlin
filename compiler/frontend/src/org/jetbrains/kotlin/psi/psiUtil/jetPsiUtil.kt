@@ -110,7 +110,7 @@ public fun KtSimpleNameExpression.getReceiverExpression(): KtExpression? {
             }
         }
         parent is KtBinaryExpression && parent.getOperationReference() == this -> {
-            return if (parent.getOperationToken() in OperatorConventions.IN_OPERATIONS) parent.getRight() else parent.getLeft()
+            return if (OperatorConventions.IN_OPERATIONS.containsRaw(parent.getOperationToken())) parent.getRight() else parent.getLeft()
         }
         parent is KtUnaryExpression && parent.getOperationReference() == this -> {
             return parent.getBaseExpression()!!

@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.resolve.calls.inference
 
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.descriptors.ClassifierDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.annotations.FilteredAnnotations
@@ -171,7 +172,7 @@ public class ConstraintSystemImpl : ConstraintSystem {
         }
 
     fun KotlinType.isProper() = !TypeUtils.containsSpecialType(this) {
-        type -> type.getConstructor().getDeclarationDescriptor() in getAllTypeVariables()
+        type -> getAllTypeVariables().contains<ClassifierDescriptor?>(type.constructor.declarationDescriptor)
     }
 
     fun KotlinType.getNestedTypeVariables(original: Boolean = true): List<TypeParameterDescriptor> {

@@ -50,14 +50,14 @@ class UnreachableCodeImpl(
     }
 
     private fun KtElement.hasChildrenInSet(set: Set<KtElement>): Boolean {
-        return PsiTreeUtil.collectElements(this) { it != this }.any { it in set }
+        return PsiTreeUtil.collectElements(this) { it != this }.any { it is KtElement && it in set }
     }
 
     private fun KtElement.getLeavesOrReachableChildren(): List<PsiElement> {
         val children = ArrayList<PsiElement>()
         acceptChildren(object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                val isReachable = element is KtElement && reachableElements.contains(element) && !element.hasChildrenInSet(unreachableElements)
+                val isReachable = element is KtElement && element in reachableElements && !element.hasChildrenInSet(unreachableElements)
                 if (isReachable || element.getChildren().size() == 0) {
                     children.add(element)
                 }
@@ -85,8 +85,8 @@ class UnreachableCodeImpl(
                 collectSiblingsIfMeaningless(index, direction)
             }
         }
-        for ((index, element) in this.withIndex()) {
-            if (reachableElements.contains(element)) {
+        forEachIndexed { index, element ->
+            if (element is KtElement && element in reachableElements) {
                 childrenToRemove.add(element)
                 collectSiblingsIfMeaningless(index, -1)
                 collectSiblingsIfMeaningless(index, 1)
