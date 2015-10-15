@@ -571,6 +571,12 @@ public class JetParsingTestGenerated extends AbstractJetParsingTest {
             doParsingTest(fileName);
         }
 
+        @TestMetadata("NumThenIdIsAnError.kt")
+        public void testNumThenIdIsAnError() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/NumThenIdIsAnError.kt");
+            doParsingTest(fileName);
+        }
+
         @TestMetadata("ObjectLiteralAsStatement.kt")
         public void testObjectLiteralAsStatement() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/ObjectLiteralAsStatement.kt");

@@ -234,6 +234,8 @@ LONG_TEMPLATE_ENTRY_START=\$\{
 
 {CHARACTER_LITERAL} { return JetTokens.CHARACTER_LITERAL; }
 
+({INTEGER_LITERAL}|{DOUBLE_LITERAL}){IDENTIFIER} { return TokenType.ERROR_ELEMENT; }
+
 "typealias"  { return JetTokens.TYPE_ALIAS_KEYWORD ;}
 "interface"  { return JetTokens.INTERFACE_KEYWORD ;}
 "continue"   { return JetTokens.CONTINUE_KEYWORD ;}

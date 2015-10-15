@@ -1,0 +1,41 @@
+JetFile: NumThenIdIsAnError.kt
+  PACKAGE_DIRECTIVE
+    <empty list>
+  IMPORT_LIST
+    <empty list>
+  FUN
+    PsiElement(fun)('fun')
+    PsiWhiteSpace(' ')
+    PsiElement(IDENTIFIER)('foo')
+    VALUE_PARAMETER_LIST
+      PsiElement(LPAR)('(')
+      PsiElement(RPAR)(')')
+    PsiWhiteSpace(' ')
+    BLOCK
+      PsiElement(LBRACE)('{')
+      PsiWhiteSpace('\n    ')
+      PsiErrorElement:Expecting an element
+        PsiElement(ERROR_ELEMENT)('1.0b')
+      PsiWhiteSpace('\n    ')
+      FLOAT_CONSTANT
+        PsiElement(FLOAT_CONSTANT)('1.0e')
+      PsiWhiteSpace('\n    ')
+      FLOAT_CONSTANT
+        PsiElement(FLOAT_CONSTANT)('1.0e+1')
+      PsiWhiteSpace('\n    ')
+      PsiErrorElement:Expecting an element
+        PsiElement(ERROR_ELEMENT)('1a')
+      PsiWhiteSpace('\n    ')
+      PsiErrorElement:Expecting an element
+        PsiElement(ERROR_ELEMENT)('0x1Z')
+      PsiWhiteSpace('\n    ')
+      INTEGER_CONSTANT
+        PsiElement(INTEGER_LITERAL)('0x1L')
+      PsiWhiteSpace('\n    ')
+      PsiErrorElement:Expecting an element
+        PsiElement(ERROR_ELEMENT)('0b1a')
+      PsiWhiteSpace('\n    ')
+      INTEGER_CONSTANT
+        PsiElement(INTEGER_LITERAL)('0b1L')
+      PsiWhiteSpace('\n')
+      PsiElement(RBRACE)('}')
