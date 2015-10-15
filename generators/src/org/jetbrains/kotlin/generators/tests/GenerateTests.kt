@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.AbstractDataFlowValueRenderingTest
 import org.jetbrains.kotlin.addImport.AbstractAddImportTest
 import org.jetbrains.kotlin.android.*
 import org.jetbrains.kotlin.annotation.AbstractAnnotationProcessorBoxTest
-import org.jetbrains.kotlin.asJava.AbstractKotlinLightClassTest
+import org.jetbrains.kotlin.asJava.AbstractCompilerLightClassTest
 import org.jetbrains.kotlin.cfg.AbstractControlFlowTest
 import org.jetbrains.kotlin.cfg.AbstractDataFlowTest
 import org.jetbrains.kotlin.cfg.AbstractPseudoValueTest
@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.generators.tests.reservedWords.generateTestDataForRe
 import org.jetbrains.kotlin.idea.AbstractExpressionSelectionTest
 import org.jetbrains.kotlin.idea.AbstractSmartSelectionTest
 import org.jetbrains.kotlin.idea.actions.AbstractGotoTestOrCodeActionTest
+import org.jetbrains.kotlin.idea.caches.resolve.AbstractIdeLightClassTest
 import org.jetbrains.kotlin.idea.codeInsight.*
 import org.jetbrains.kotlin.idea.codeInsight.generate.AbstractGenerateActionTest
 import org.jetbrains.kotlin.idea.codeInsight.generate.AbstractGenerateTestSupportMethodActionTest
@@ -324,7 +325,7 @@ fun main(args: Array<String>) {
             model("evaluate/usesVariableAsConstant", testMethod = "doUsesVariableAsConstantTest")
         }
 
-        testClass<AbstractKotlinLightClassTest>() {
+        testClass<AbstractCompilerLightClassTest>() {
             model("asJava/lightClasses")
         }
 
@@ -744,6 +745,12 @@ fun main(args: Array<String>) {
     testGroup("idea/tests", "compiler/testData") {
         testClass<AbstractResolveByStubTest>() {
             model("loadJava/compiledKotlin")
+        }
+    }
+
+    testGroup("idea/tests", "compiler/testData") {
+        testClass<AbstractIdeLightClassTest>() {
+            model("asJava/lightClasses", excludeDirs = listOf("delegation"))
         }
     }
 
