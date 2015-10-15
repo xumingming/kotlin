@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.types.expressions;
 
 import com.google.common.collect.Lists;
+import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
@@ -31,6 +32,8 @@ import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
+import org.jetbrains.kotlin.diagnostics.Errors;
+import org.jetbrains.kotlin.lexer.JetKeywordToken;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.*;
@@ -73,8 +76,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.jetbrains.kotlin.diagnostics.Errors.*;
-import static org.jetbrains.kotlin.lexer.JetTokens.AS_KEYWORD;
-import static org.jetbrains.kotlin.lexer.JetTokens.AS_SAFE;
+import static org.jetbrains.kotlin.lexer.JetTokens.*;
 import static org.jetbrains.kotlin.resolve.BindingContext.*;
 import static org.jetbrains.kotlin.resolve.calls.context.ContextDependency.DEPENDENT;
 import static org.jetbrains.kotlin.resolve.calls.context.ContextDependency.INDEPENDENT;
@@ -115,6 +117,10 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
 
     @Override
     public JetTypeInfo visitConstantExpression(@NotNull JetConstantExpression expression, ExpressionTypingContext context) {
+        if (expression.getNode().getElementType() == JetNodeTypes.CHARACTER_CONSTANT) {
+            checkStringPrefixAndSuffix(expression, context);
+        }
+
         CompileTimeConstant<?> compileTimeConstant = components.constantExpressionEvaluator.evaluateExpression(
                 expression, context.trace, context.expectedType
         );
@@ -1372,6 +1378,9 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
     @Override
     public JetTypeInfo visitStringTemplateExpression(@NotNull JetStringTemplateExpression expression, ExpressionTypingContext contextWithExpectedType) {
         final ExpressionTypingContext context = contextWithExpectedType.replaceExpectedType(NO_EXPECTED_TYPE).replaceContextDependency(INDEPENDENT);
+
+        checkStringPrefixAndSuffix(expression, context);
+
         class StringTemplateVisitor extends JetVisitorVoid {
             private JetTypeInfo typeInfo = TypeInfoFactoryKt.noTypeInfo(context);
 
@@ -1400,6 +1409,28 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
         return components.dataFlowAnalyzer.checkType(visitor.typeInfo.replaceType(components.builtIns.getStringType()),
                                           expression,
                                           contextWithExpectedType);
+    }
+
+    private static void checkStringPrefixAndSuffix(@NotNull PsiElement expression, ExpressionTypingContext context) {
+        checkStringPrefixOrSuffix(PsiTreeUtil.prevLeaf(expression), context);
+        checkStringPrefixOrSuffix(PsiTreeUtil.nextLeaf(expression), context);
+    }
+
+    private static void checkStringPrefixOrSuffix(PsiElement prefixOrSuffix, ExpressionTypingContext context) {
+        if (illegalStringPrefixOrSuffix(prefixOrSuffix)) {
+            context.trace.report(Errors.UNSUPPORTED.on(prefixOrSuffix, "string prefixes and suffixes"));
+        }
+    }
+
+    private static boolean illegalStringPrefixOrSuffix(@Nullable PsiElement element) {
+        if (element == null) return false;
+
+        ASTNode node = element.getNode();
+        IElementType elementType = node.getElementType();
+        return elementType == IDENTIFIER ||
+               elementType == INTEGER_LITERAL ||
+               elementType == FLOAT_LITERAL ||
+               elementType instanceof JetKeywordToken;
     }
 
     @Override
