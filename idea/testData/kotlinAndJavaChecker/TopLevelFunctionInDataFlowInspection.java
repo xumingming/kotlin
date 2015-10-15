@@ -5,7 +5,7 @@ import test.kotlin.KotlinPackage;
 
 public class TopLevelFunctionInDataFlowInspection {
     void other(@NotNull Object some) {
-        Object foo = KotlinPackage.foo(some);
+        Object foo = TopLevelFunctionInDataFlowInspectionKt.foo(some);
     }
 }
 
