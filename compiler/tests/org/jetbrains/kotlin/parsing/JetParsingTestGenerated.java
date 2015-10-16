@@ -703,12 +703,6 @@ public class JetParsingTestGenerated extends AbstractJetParsingTest {
             doParsingTest(fileName);
         }
 
-        @TestMetadata("ThisType.kt")
-        public void testThisType() throws Exception {
-            String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/ThisType.kt");
-            doParsingTest(fileName);
-        }
-
         @TestMetadata("TraitConstructor.kt")
         public void testTraitConstructor() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/TraitConstructor.kt");

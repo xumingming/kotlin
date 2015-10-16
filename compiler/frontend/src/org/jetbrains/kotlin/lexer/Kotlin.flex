@@ -255,7 +255,6 @@ LONG_TEMPLATE_ENTRY_START=\$\{
 "this"       { return JetTokens.THIS_KEYWORD ;}
 "null"       { return JetTokens.NULL_KEYWORD ;}
 "else"       { return JetTokens.ELSE_KEYWORD ;}
-"This"       { return JetTokens.CAPITALIZED_THIS_KEYWORD ;}
 "try"        { return JetTokens.TRY_KEYWORD ;}
 "val"        { return JetTokens.VAL_KEYWORD ;}
 "var"        { return JetTokens.VAR_KEYWORD ;}
