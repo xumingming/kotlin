@@ -21,4 +21,10 @@ public final class ClassWithClassObject public constructor() {
     }
 
     public final fun f(): kotlin.Unit { /* compiled code */ }
+
+    public final class WithNamed public constructor() {
+        public companion object Named {
+            public final fun a(): kotlin.Unit { /* compiled code */ }
+        }
+    }
 }

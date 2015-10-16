@@ -25,6 +25,13 @@ class ClassWithClassObject {
             throw RuntimeException()
         }
     }
+
+    class WithNamed {
+        companion object Named {
+            fun a() {
+            }
+        }
+    }
 }
 
 class B {
