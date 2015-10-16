@@ -48,17 +48,11 @@ open class FakeFileForLightClass(
         private val lightClass: KotlinLightClass,
         private val stub: () -> PsiClassHolderFileStub<*>
 ) : ClsFileImpl(ClassFileViewProvider(psiManager, virtualFile)) {
-    override fun getPackageName(): String {
-        return packageFqName.asString()
-    }
+    override fun getPackageName() = packageFqName.asString()
 
-    override fun getStub(): PsiClassHolderFileStub<*> = stub()
+    override fun getStub() = stub()
 
-    override fun getClasses(): Array<out PsiClass> {
-        return arrayOf(lightClass)
-    }
+    override fun getClasses() = arrayOf(lightClass)
 
-    override fun getNavigationElement(): PsiElement {
-        return this
-    }
+    override fun getNavigationElement() = this
 }
