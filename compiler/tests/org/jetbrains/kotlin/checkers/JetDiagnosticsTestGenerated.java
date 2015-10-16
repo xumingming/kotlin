@@ -5223,6 +5223,39 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 }
             }
 
+            @TestMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics")
+            @TestDataPath("$PROJECT_ROOT")
+            @RunWith(JUnit3RunnerWithInners.class)
+            public static class Statics extends AbstractJetDiagnosticsTest {
+                public void testAllFilesPresentInStatics() throws Exception {
+                    JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics"), Pattern.compile("^(.+)\\.kt$"), true);
+                }
+
+                @TestMetadata("jjk.kt")
+                public void testJjk() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics/jjk.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("jk.kt")
+                public void testJk() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics/jk.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("jkjk.kt")
+                public void testJkjk() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics/jkjk.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("kotlinMembersVsJavaNonVisibleStatics.kt")
+                public void testKotlinMembersVsJavaNonVisibleStatics() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/statics/kotlinMembersVsJavaNonVisibleStatics.kt");
+                    doTest(fileName);
+                }
+            }
+
             @TestMetadata("compiler/testData/diagnostics/tests/duplicateJvmSignature/synthesized")
             @TestDataPath("$PROJECT_ROOT")
             @RunWith(JUnit3RunnerWithInners.class)
@@ -8603,6 +8636,18 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
         public static class Inner extends AbstractJetDiagnosticsTest {
+            @TestMetadata("accessingToJavaNestedClass.kt")
+            public void testAccessingToJavaNestedClass() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/inner/accessingToJavaNestedClass.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("accessingToKotlinNestedClass.kt")
+            public void testAccessingToKotlinNestedClass() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/inner/accessingToKotlinNestedClass.kt");
+                doTest(fileName);
+            }
+
             public void testAllFilesPresentInInner() throws Exception {
                 JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/inner"), Pattern.compile("^(.+)\\.kt$"), true);
             }
@@ -15144,9 +15189,21 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/subtyping"), Pattern.compile("^(.+)\\.kt$"), true);
             }
 
+            @TestMetadata("extFunctionTypeAsSuperType.kt")
+            public void testExtFunctionTypeAsSuperType() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/subtyping/extFunctionTypeAsSuperType.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("findClosestCorrespondingSupertype.kt")
             public void testFindClosestCorrespondingSupertype() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/subtyping/findClosestCorrespondingSupertype.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("functionTypeAsSuperType.kt")
+            public void testFunctionTypeAsSuperType() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/subtyping/functionTypeAsSuperType.kt");
                 doTest(fileName);
             }
 
