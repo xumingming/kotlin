@@ -35,17 +35,17 @@ JetFile: Expressions_ERR.kt
           PsiErrorElement:Expecting an element
             PsiElement(RPAR)(')')
           PsiErrorElement:Unexpected tokens (use ';' to separate expressions on the same line)
-            PsiElement(DOUBLE_SEMICOLON)(';;')
+            PsiElement(RESERVED)(';;')
           PsiErrorElement:Expecting an element
             PsiElement(SEMICOLON)(';')
           PsiErrorElement:Unexpected tokens (use ';' to separate expressions on the same line)
             PsiElement(RPAR)(')')
-            PsiElement(DOUBLE_SEMICOLON)(';;')
+            PsiElement(RESERVED)(';;')
           PsiErrorElement:Expecting an element
             PsiElement(SEMICOLON)(';')
           PsiErrorElement:Unexpected tokens (use ';' to separate expressions on the same line)
             PsiElement(BAD_CHARACTER)('~')
-            PsiElement(DOUBLE_SEMICOLON)(';;')
+            PsiElement(RESERVED)(';;')
           PsiErrorElement:Expecting an element
             PsiElement(SEMICOLON)(';')
           PsiWhiteSpace('\n  ')

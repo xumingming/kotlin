@@ -631,6 +631,12 @@ public class JetParsingTestGenerated extends AbstractJetParsingTest {
             doParsingTest(fileName);
         }
 
+        @TestMetadata("ReservedKeywords.kt")
+        public void testReservedKeywords() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/ReservedKeywords.kt");
+            doParsingTest(fileName);
+        }
+
         @TestMetadata("RootPackage.kt")
         public void testRootPackage() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/RootPackage.kt");

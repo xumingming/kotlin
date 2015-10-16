@@ -30,9 +30,13 @@ JetFile: semicolonBetweenDeclarations.kt
     PsiWhiteSpace(' ')
     INTEGER_CONSTANT
       PsiElement(INTEGER_LITERAL)('1')
-    PsiErrorElement:Property getter or setter expected
-      PsiElement(DOUBLE_SEMICOLON)(';;')
-      PsiElement(DOUBLE_SEMICOLON)(';;')
+    PsiElement(SEMICOLON)(';')
+    PsiWhiteSpace(' ')
+    PsiElement(SEMICOLON)(';')
+  PsiWhiteSpace(' ')
+  PsiElement(SEMICOLON)(';')
+  PsiWhiteSpace(' ')
+  PsiElement(SEMICOLON)(';')
   PsiWhiteSpace('\n')
   CLASS
     PsiElement(class)('class')

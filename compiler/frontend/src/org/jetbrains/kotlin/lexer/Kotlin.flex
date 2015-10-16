@@ -240,6 +240,10 @@ LONG_TEMPLATE_ENTRY_START=\$\{
 "package"    { return JetTokens.PACKAGE_KEYWORD ;}
 "return"     { return JetTokens.RETURN_KEYWORD ;}
 "object"     { return JetTokens.OBJECT_KEYWORD ;}
+"typeof"     { return JetTokens.RESERVED ;}
+"async"      { return JetTokens.RESERVED ;}
+"await"      { return JetTokens.RESERVED ;}
+"yield"      { return JetTokens.RESERVED ;}
 "while"      { return JetTokens.WHILE_KEYWORD ;}
 "break"      { return JetTokens.BREAK_KEYWORD ;}
 "class"      { return JetTokens.CLASS_KEYWORD ;}
@@ -307,7 +311,7 @@ LONG_TEMPLATE_ENTRY_START=\$\{
 ">"          { return JetTokens.GT        ; }
 "?"          { return JetTokens.QUEST     ; }
 ":"          { return JetTokens.COLON     ; }
-";;"          { return JetTokens.DOUBLE_SEMICOLON;}
+";;"         { return JetTokens.RESERVED  ; }
 ";"          { return JetTokens.SEMICOLON ; }
 "="          { return JetTokens.EQ        ; }
 ","          { return JetTokens.COMMA     ; }

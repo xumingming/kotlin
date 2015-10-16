@@ -134,5 +134,5 @@ fun foo() {
 
     do while (r)
     do foo while (r)
-    do {;;;foo;bar;;;; } while (r)
+    do {; ; ;foo;bar; ; ; ; } while (r)
 }

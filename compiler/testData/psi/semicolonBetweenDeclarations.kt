@@ -1,7 +1,7 @@
 package foo;
 
 fun foo1() {};
-val x = 1;;;;
+val x = 1; ; ; ;
 class A() {
     val x = 1;
 

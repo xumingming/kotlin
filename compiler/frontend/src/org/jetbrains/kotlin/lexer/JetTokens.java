@@ -22,7 +22,7 @@ import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.kotlin.kdoc.lexer.KDocTokens;
 
 public interface JetTokens {
-    JetToken EOF   = new JetToken("EOF");
+    JetToken RESERVED   = new JetToken("RESERVED");
 
     JetToken BLOCK_COMMENT     = new JetToken("BLOCK_COMMENT");
     JetToken EOL_COMMENT       = new JetToken("EOL_COMMENT");
@@ -116,7 +116,6 @@ public interface JetTokens {
     JetSingleValueToken COLONCOLON  = new JetSingleValueToken("COLONCOLON", "::");
     JetSingleValueToken COLON       = new JetSingleValueToken("COLON", ":");
     JetSingleValueToken SEMICOLON   = new JetSingleValueToken("SEMICOLON", ";");
-    JetSingleValueToken DOUBLE_SEMICOLON   = new JetSingleValueToken("DOUBLE_SEMICOLON", ";;");
     JetSingleValueToken RANGE       = new JetSingleValueToken("RANGE", "..");
     JetSingleValueToken EQ          = new JetSingleValueToken("EQ", "=");
     JetSingleValueToken MULTEQ      = new JetSingleValueToken("MULTEQ", "*=");
