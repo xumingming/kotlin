@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetParameter;
 import org.jetbrains.kotlin.psi.psiUtil.PsiUtilsKt;
 
-public class RemoveValVarFromParameterFix extends JetIntentionAction<JetParameter> {
+public class RemoveValVarFromParameterFix extends KotlinQuickFixAction<JetParameter> {
     private final String varOrVal;
 
     public RemoveValVarFromParameterFix(@NotNull JetParameter element) {
@@ -53,7 +53,7 @@ public class RemoveValVarFromParameterFix extends JetIntentionAction<JetParamete
 
     @Override
     protected void invoke(@NotNull Project project, Editor editor, JetFile file) throws IncorrectOperationException {
-        PsiElement keyword = element.getValOrVarKeyword();
+        PsiElement keyword = getElement().getValOrVarKeyword();
         if (keyword == null) return;
         keyword.delete();
     }

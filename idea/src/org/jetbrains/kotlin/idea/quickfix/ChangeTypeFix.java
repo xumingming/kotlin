@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.psi.JetPsiFactoryKt;
 import org.jetbrains.kotlin.psi.JetTypeReference;
 import org.jetbrains.kotlin.types.JetType;
 
-public class ChangeTypeFix extends JetIntentionAction<JetTypeReference> {
+public class ChangeTypeFix extends KotlinQuickFixAction<JetTypeReference> {
     private final JetType type;
     private final String renderedType;
 
@@ -48,7 +48,7 @@ public class ChangeTypeFix extends JetIntentionAction<JetTypeReference> {
     @NotNull
     @Override
     public String getText() {
-        String currentTypeText = element.getText();
+        String currentTypeText = getElement().getText();
         return JetBundle.message("change.type", currentTypeText, QuickFixUtil.renderTypeWithFqNameOnClash(type, currentTypeText));
     }
 
@@ -60,7 +60,7 @@ public class ChangeTypeFix extends JetIntentionAction<JetTypeReference> {
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, JetFile file) throws IncorrectOperationException {
-        JetTypeReference newTypeRef = (JetTypeReference) element.replace(JetPsiFactoryKt.JetPsiFactory(file).createType(renderedType));
+        JetTypeReference newTypeRef = (JetTypeReference) getElement().replace(JetPsiFactoryKt.JetPsiFactory(file).createType(renderedType));
         ShortenReferences.DEFAULT.process(newTypeRef);
     }
 

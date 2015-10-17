@@ -29,6 +29,8 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.addToStdlib.check
 import org.jetbrains.kotlin.load.java.BuiltinSpecialProperties.getBuiltinSpecialPropertyGetterName
+import org.jetbrains.kotlin.load.java.BuiltinMethodsWithSpecialGenericSignature.sameAsBuiltinMethodWithErasedValueParameters
+import org.jetbrains.kotlin.load.java.BuiltinMethodsWithSpecialGenericSignature.getSpecialSignatureInfo
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 
 object BuiltinSpecialProperties {
@@ -47,7 +49,7 @@ object BuiltinSpecialProperties {
             PROPERTY_FQ_NAME_TO_JVM_GETTER_NAME_MAP.getInversedShortNamesMap()
 
     private val FQ_NAMES = PROPERTY_FQ_NAME_TO_JVM_GETTER_NAME_MAP.keySet()
-    private val SHORT_NAMES = FQ_NAMES.map { it.shortName() }.toSet()
+    internal val SHORT_NAMES = FQ_NAMES.map { it.shortName() }.toSet()
 
     fun hasBuiltinSpecialPropertyFqName(callableMemberDescriptor: CallableMemberDescriptor): Boolean {
         if (callableMemberDescriptor.name !in SHORT_NAMES) return false
@@ -73,7 +75,7 @@ object BuiltinSpecialProperties {
     }
 }
 
-object BuiltinMethodsWithSpecialJvmSignature {
+object BuiltinMethodsWithSpecialGenericSignature {
     private val ERASED_COLLECTION_PARAMETER_FQ_NAMES = setOf(
             FqName("kotlin.Collection.containsAll"),
             FqName("kotlin.MutableCollection.removeAll"),
@@ -117,7 +119,7 @@ object BuiltinMethodsWithSpecialJvmSignature {
 
     fun CallableMemberDescriptor.isBuiltinWithSpecialDescriptorInJvm(): Boolean {
         if (!isFromBuiltins()) return false
-        return getSpecialSignatureInfo() == SpecialSignatureInfo.GENERIC_PARAMETER || overridesBuiltinSpecialDeclaration()
+        return getSpecialSignatureInfo() == SpecialSignatureInfo.GENERIC_PARAMETER || doesOverrideBuiltinWithDifferentJvmName()
     }
 
     @JvmStatic
@@ -133,7 +135,7 @@ object BuiltinMethodsWithSpecialJvmSignature {
     }
 }
 
-object BuiltinSpecialMethods {
+object BuiltinMethodsWithDifferentJvmName {
     val REMOVE_AT_FQ_NAME = FqName("kotlin.MutableList.removeAt")
 
     val FQ_NAMES_TO_JVM_MAP: Map<FqName, Name> = mapOf(
@@ -154,7 +156,7 @@ object BuiltinSpecialMethods {
     val Name.sameAsRenamedInJvmBuiltin: Boolean
         get() = this in ORIGINAL_SHORT_NAMES
 
-    fun getSpecialJvmName(callableMemberDescriptor: CallableMemberDescriptor): Name? {
+    fun getJvmName(callableMemberDescriptor: CallableMemberDescriptor): Name? {
         return FQ_NAMES_TO_JVM_MAP[callableMemberDescriptor.fqNameOrNull() ?: return null]
     }
 
@@ -164,7 +166,7 @@ object BuiltinSpecialMethods {
         return callableMemberDescriptor.firstOverridden { FQ_NAMES_TO_JVM_MAP.containsKey(fqName) } != null
     }
 
-    fun getSpecialBuiltinFunctionsByJvmName(name: Name): List<Name> =
+    fun getBuiltinFunctionNamesByJvmName(name: Name): List<Name> =
             JVM_SHORT_NAME_TO_BUILTIN_SHORT_NAMES_MAP[name] ?: emptyList()
 
 
@@ -173,29 +175,44 @@ object BuiltinSpecialMethods {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : CallableMemberDescriptor> T.getBuiltinSpecialOverridden(): T? {
+fun <T : CallableMemberDescriptor> T.getOverriddenBuiltinWithDifferentJvmName(): T? {
+    if (name !in BuiltinMethodsWithDifferentJvmName.ORIGINAL_SHORT_NAMES
+            && propertyIfAccessor.name !in BuiltinSpecialProperties.SHORT_NAMES) return null
+
     return when (this) {
         is PropertyDescriptor, is PropertyAccessorDescriptor ->
             firstOverridden { BuiltinSpecialProperties.hasBuiltinSpecialPropertyFqName(it.propertyIfAccessor) } as T?
-        else -> firstOverridden { BuiltinSpecialMethods.isBuiltinFunctionWithDifferentNameInJvm(it) } as T?
+        else -> firstOverridden { BuiltinMethodsWithDifferentJvmName.isBuiltinFunctionWithDifferentNameInJvm(it) } as T?
     }
 }
 
-fun CallableMemberDescriptor.overridesBuiltinSpecialDeclaration(): Boolean = getBuiltinSpecialOverridden() != null
+fun CallableMemberDescriptor.doesOverrideBuiltinWithDifferentJvmName(): Boolean = getOverriddenBuiltinWithDifferentJvmName() != null
+
+@Suppress("UNCHECKED_CAST")
+fun <T : CallableMemberDescriptor> T.getOverriddenBuiltinWithDifferentJvmDescriptor(): T? {
+    getOverriddenBuiltinWithDifferentJvmName()?.let { return it }
+
+    if (!name.sameAsBuiltinMethodWithErasedValueParameters) return null
+
+    return firstOverridden {
+        it.isFromBuiltins()
+                && it.getSpecialSignatureInfo() == BuiltinMethodsWithSpecialGenericSignature.SpecialSignatureInfo.GENERIC_PARAMETER
+    }?.original as T?
+}
 
 fun getJvmMethodNameIfSpecial(callableMemberDescriptor: CallableMemberDescriptor): String? {
     val builtinOverridden = getBuiltinOverriddenThatAffectsJvmName(callableMemberDescriptor)?.propertyIfAccessor
             ?: return null
     return when (builtinOverridden) {
         is PropertyDescriptor -> builtinOverridden.getBuiltinSpecialPropertyGetterName()
-        else -> BuiltinSpecialMethods.getSpecialJvmName(builtinOverridden)?.asString()
+        else -> BuiltinMethodsWithDifferentJvmName.getJvmName(builtinOverridden)?.asString()
     }
 }
 
 private fun getBuiltinOverriddenThatAffectsJvmName(
         callableMemberDescriptor: CallableMemberDescriptor
 ): CallableMemberDescriptor? {
-    val overriddenBuiltin = callableMemberDescriptor.getBuiltinSpecialOverridden() ?: return null
+    val overriddenBuiltin = callableMemberDescriptor.getOverriddenBuiltinWithDifferentJvmName() ?: return null
 
     if (callableMemberDescriptor.isFromJavaOrBuiltins()) return overriddenBuiltin
 

@@ -37,7 +37,7 @@ import org.jetbrains.kotlin.descriptors.annotations.Annotated;
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget;
 import org.jetbrains.kotlin.jvm.RuntimeAssertionInfo;
-import org.jetbrains.kotlin.load.java.BuiltinMethodsWithSpecialJvmSignature;
+import org.jetbrains.kotlin.load.java.BuiltinMethodsWithSpecialGenericSignature;
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames;
 import org.jetbrains.kotlin.load.java.SpecialBuiltinMembers;
 import org.jetbrains.kotlin.load.kotlin.nativeDeclarations.NativeKt;
@@ -516,7 +516,7 @@ public class FunctionCodegen {
         // If the function doesn't have a physical declaration among super-functions, it's a SAM adapter or alike and doesn't need bridges
         if (CallResolverUtilKt.isOrOverridesSynthesized(descriptor)) return;
 
-        boolean isSpecial = SpecialBuiltinMembers.overridesBuiltinSpecialDeclaration(descriptor);
+        boolean isSpecial = SpecialBuiltinMembers.getOverriddenBuiltinWithDifferentJvmDescriptor(descriptor) != null;
 
         Set<Bridge<Method>> bridgesToGenerate;
         if (!isSpecial) {
@@ -532,7 +532,7 @@ public class FunctionCodegen {
             if (!bridgesToGenerate.isEmpty()) {
                 PsiElement origin = descriptor.getKind() == DECLARATION ? getSourceFromDescriptor(descriptor) : null;
                 boolean isSpecialBridge =
-                        BuiltinMethodsWithSpecialJvmSignature.getOverriddenBuiltinFunctionWithErasedValueParametersInJava(descriptor) != null;
+                        BuiltinMethodsWithSpecialGenericSignature.getOverriddenBuiltinFunctionWithErasedValueParametersInJava(descriptor) != null;
 
                 for (Bridge<Method> bridge : bridgesToGenerate) {
                     generateBridge(origin, descriptor, bridge.getFrom(), bridge.getTo(), isSpecialBridge, false);
@@ -560,7 +560,7 @@ public class FunctionCodegen {
             }
 
             if (!descriptor.getKind().isReal() && isAbstractMethod(descriptor, OwnerKind.IMPLEMENTATION)) {
-                CallableDescriptor overridden = SpecialBuiltinMembers.getBuiltinSpecialOverridden(descriptor);
+                CallableDescriptor overridden = SpecialBuiltinMembers.getOverriddenBuiltinWithDifferentJvmDescriptor(descriptor);
                 assert overridden != null;
 
                 Method method = typeMapper.mapSignature(descriptor).getAsmMethod();
@@ -801,9 +801,10 @@ public class FunctionCodegen {
             @NotNull Method bridge,
             @NotNull Method delegateTo,
             boolean isSpecialBridge,
-            boolean superCallNeeded
+            boolean isStubDeclarationWithDelegationToSuper
     ) {
-        int flags = ACC_PUBLIC | ACC_BRIDGE | (!isSpecialBridge ? ACC_SYNTHETIC : 0) | (isSpecialBridge ? ACC_FINAL : 0); // TODO.
+        boolean isSpecialOrDelegationToSuper = isSpecialBridge || isStubDeclarationWithDelegationToSuper;
+        int flags = ACC_PUBLIC | ACC_BRIDGE | (!isSpecialOrDelegationToSuper ? ACC_SYNTHETIC : 0) | (isSpecialBridge ? ACC_FINAL : 0); // TODO.
 
         MethodVisitor mv =
                 v.newMethod(JvmDeclarationOriginKt.Bridge(descriptor, origin), flags, bridge.getName(), bridge.getDescriptor(), null, null);
@@ -826,7 +827,7 @@ public class FunctionCodegen {
             reg += argTypes[i].getSize();
         }
 
-        if (superCallNeeded) {
+        if (isStubDeclarationWithDelegationToSuper) {
             ClassDescriptor parentClass = getSuperClassDescriptor((ClassDescriptor) descriptor.getContainingDeclaration());
             assert parentClass != null;
             String parentInternalName = typeMapper.mapClass(parentClass).getInternalName();
@@ -848,9 +849,11 @@ public class FunctionCodegen {
             @NotNull Method bridge,
             @NotNull Method delegateTo
     ) {
-        if (BuiltinMethodsWithSpecialJvmSignature.getOverriddenBuiltinFunctionWithErasedValueParametersInJava(descriptor) == null) return;
+        if (BuiltinMethodsWithSpecialGenericSignature.getOverriddenBuiltinFunctionWithErasedValueParametersInJava(descriptor) == null) return;
 
         assert descriptor.getValueParameters().size() == 1 : "Should be descriptor with one value parameter, but found: " + descriptor;
+
+        if (bridge.getArgumentTypes()[0].getSort() != Type.OBJECT) return;
 
         iv.load(1, OBJECT_TYPE);
 
