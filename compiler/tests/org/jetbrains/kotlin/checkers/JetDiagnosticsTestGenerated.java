@@ -831,6 +831,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("annotationsOnNullableTypes.kt")
+            public void testAnnotationsOnNullableTypes() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/annotationsOnNullableTypes.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("atAnnotationResolve.kt")
             public void testAtAnnotationResolve() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/atAnnotationResolve.kt");
@@ -1345,6 +1351,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                     @TestMetadata("type.kt")
                     public void testType() throws Exception {
                         String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/options/targets/type.kt");
+                        doTest(fileName);
+                    }
+
+                    @TestMetadata("typeParams.kt")
+                    public void testTypeParams() throws Exception {
+                        String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/annotations/options/targets/typeParams.kt");
                         doTest(fileName);
                     }
 

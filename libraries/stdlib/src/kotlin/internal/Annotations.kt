@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kotlin
+package kotlin.internal
 
 /**
  * Specifies that the corresponding type should be ignored during type inference.
@@ -29,3 +29,17 @@ internal annotation class NoInfer
 @Target(AnnotationTarget.TYPE)
 @Retention(AnnotationRetention.SOURCE)
 internal annotation class Exact
+
+/**
+ * Specifies that a corresponding member has the lowest priority in overload resolution.
+ */
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.SOURCE)
+internal annotation class LowPriorityInOverloadResolution
+
+/**
+ * The value of this type parameter should be mentioned in input types (argument types, receiver type or expected type).
+ */
+@Target(AnnotationTarget.TYPE_PARAMETER)
+@Retention(AnnotationRetention.SOURCE)
+internal annotation class OnlyInputTypes

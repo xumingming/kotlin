@@ -360,12 +360,7 @@ public interface Errors {
     DiagnosticFactory0<JetSimpleNameExpression> BACKING_FIELD_OLD_SYNTAX = DiagnosticFactory0.create(ERROR);
     DiagnosticFactory0<JetSimpleNameExpression> BACKING_FIELD_USAGE_FORBIDDEN = DiagnosticFactory0.create(ERROR);
 
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER = DiagnosticFactory0.create(ERROR);
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER_IMMUTABLE = DiagnosticFactory0.create(ERROR);
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER_ABSTRACT_PROPERTY = DiagnosticFactory0.create(ERROR);
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER_PRIMARY_CONSTRUCTOR_PARAMETER = DiagnosticFactory0.create(ERROR);
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER_NULLABLE = DiagnosticFactory0.create(ERROR);
-    DiagnosticFactory0<PsiElement> INAPPLICABLE_LATEINIT_MODIFIER_PRIMITIVE = DiagnosticFactory0.create(ERROR);
+    DiagnosticFactory1<PsiElement, String> INAPPLICABLE_LATEINIT_MODIFIER = DiagnosticFactory1.create(ERROR);
 
     DiagnosticFactory2<JetModifierListOwner, String, ClassDescriptor> ABSTRACT_PROPERTY_IN_NON_ABSTRACT_CLASS = DiagnosticFactory2.create(ERROR, ABSTRACT_MODIFIER);
 
@@ -493,6 +488,7 @@ public interface Errors {
     DiagnosticFactory1<PsiElement, InferenceErrorData> TYPE_INFERENCE_CANNOT_CAPTURE_TYPES = DiagnosticFactory1.create(ERROR);
     DiagnosticFactory1<PsiElement, InferenceErrorData> TYPE_INFERENCE_PARAMETER_CONSTRAINT_ERROR = DiagnosticFactory1.create(ERROR);
     DiagnosticFactory0<PsiElement> TYPE_INFERENCE_INCORPORATION_ERROR = DiagnosticFactory0.create(ERROR);
+    DiagnosticFactory1<PsiElement, TypeParameterDescriptor> TYPE_INFERENCE_ONLY_INPUT_TYPES = DiagnosticFactory1.create(ERROR);
     DiagnosticFactory1<PsiElement, InferenceErrorData> TYPE_INFERENCE_UPPER_BOUND_VIOLATED = DiagnosticFactory1.create(ERROR);
     DiagnosticFactory2<JetExpression, JetType, JetType> TYPE_INFERENCE_EXPECTED_TYPE_MISMATCH = DiagnosticFactory2.create(ERROR);
 
@@ -555,7 +551,7 @@ public interface Errors {
     DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>> ITERATOR_AMBIGUITY = DiagnosticFactory1.create(ERROR);
 
     DiagnosticFactory2<JetExpression, String, JetType> DELEGATE_SPECIAL_FUNCTION_MISSING = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory3<JetExpression, FunctionDescriptor, JetType, String> DELEGATE_RESOLVED_TO_DEPRECATED_CONVENTION = DiagnosticFactory3.create(WARNING);
+    DiagnosticFactory3<PsiElement, FunctionDescriptor, JetType, String> DELEGATE_RESOLVED_TO_DEPRECATED_CONVENTION = DiagnosticFactory3.create(WARNING);
     DiagnosticFactory2<JetExpression, String, Collection<? extends ResolvedCall<?>>> DELEGATE_SPECIAL_FUNCTION_AMBIGUITY = DiagnosticFactory2.create(ERROR);
     DiagnosticFactory2<JetExpression, String, Collection<? extends ResolvedCall<?>>> DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE = DiagnosticFactory2.create(ERROR);
     DiagnosticFactory3<JetExpression, String, JetType, JetType> DELEGATE_SPECIAL_FUNCTION_RETURN_TYPE_MISMATCH = DiagnosticFactory3.create(ERROR);
