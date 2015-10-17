@@ -111,6 +111,13 @@ public object KotlinCompilerRunner {
                 val stream = ByteArrayOutputStream()
                 val out = PrintStream(stream)
 
+                // the property should be set by default for in-process builds to avoid parallel building problems
+                // but it cannot be currently set by default globally, because it seems breaks many tests
+                // TODO: find out how to get rid of the property and make it the default behavior
+                if (System.getProperty("kotlin.environment.keepalive") == null) {
+                    System.setProperty("kotlin.environment.keepalive", "true")
+                }
+
                 val rc = CompilerRunnerUtil.invokeExecMethod(compilerClassName, argsArray, environment, messageCollector, out)
 
                 // exec() returns an ExitCode object, class of which is loaded with a different class loader,
