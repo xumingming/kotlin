@@ -90,8 +90,8 @@ public class QuickFixRegistrar : QuickFixContributor {
         NON_MEMBER_FUNCTION_NO_BODY.registerFactory(addFunctionBodyFactory)
 
         NOTHING_TO_OVERRIDE.registerFactory( RemoveModifierFix.createRemoveModifierFromListOwnerFactory(OVERRIDE_KEYWORD),
-                                        ChangeMemberFunctionSignatureFix.createFactory(),
-                                        AddFunctionToSupertypeFix.createFactory())
+                                        ChangeMemberFunctionSignatureFix,
+                                        AddFunctionToSupertypeFix)
         VIRTUAL_MEMBER_HIDDEN.registerFactory(AddModifierFix.createFactory(OVERRIDE_KEYWORD))
 
         USELESS_CAST.registerFactory(RemoveRightPartOfBinaryExpressionFix.createRemoveTypeFromBinaryExpressionFactory("Remove cast"))
@@ -222,10 +222,10 @@ public class QuickFixRegistrar : QuickFixContributor {
         COMPARE_TO_TYPE_MISMATCH.registerFactory(ChangeFunctionReturnTypeFix.createFactoryForCompareToTypeMismatch())
         IMPLICIT_NOTHING_RETURN_TYPE.registerFactory(ChangeFunctionReturnTypeFix.createFactoryForChangingReturnTypeToNothing())
 
-        TOO_MANY_ARGUMENTS.registerFactory(ChangeFunctionSignatureFix.createFactory())
-        NO_VALUE_FOR_PARAMETER.registerFactory(ChangeFunctionSignatureFix.createFactory())
-        UNUSED_PARAMETER.registerFactory(ChangeFunctionSignatureFix.createFactoryForUnusedParameter())
-        EXPECTED_PARAMETERS_NUMBER_MISMATCH.registerFactory(ChangeFunctionSignatureFix.createFactoryForParametersNumberMismatch())
+        TOO_MANY_ARGUMENTS.registerFactory(ChangeFunctionSignatureFix)
+        NO_VALUE_FOR_PARAMETER.registerFactory(ChangeFunctionSignatureFix)
+        UNUSED_PARAMETER.registerFactory(RemoveUnusedFunctionParameterFix)
+        EXPECTED_PARAMETERS_NUMBER_MISMATCH.registerFactory(ChangeFunctionLiteralSignatureFix)
 
         EXPECTED_PARAMETER_TYPE_MISMATCH.registerFactory(ChangeTypeFix.createFactoryForExpectedParameterTypeMismatch())
 
@@ -277,7 +277,7 @@ public class QuickFixRegistrar : QuickFixContributor {
 
         SMARTCAST_IMPOSSIBLE.registerFactory(CastExpressionFix.createFactoryForSmartCastImpossible())
 
-        PLATFORM_CLASS_MAPPED_TO_KOTLIN.registerFactory(MapPlatformClassToKotlinFix.createFactory())
+        PLATFORM_CLASS_MAPPED_TO_KOTLIN.registerFactory(MapPlatformClassToKotlinFix)
 
         MANY_CLASSES_IN_SUPERTYPE_LIST.registerFactory(RemoveSupertypeFix.createFactory())
 

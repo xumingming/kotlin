@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.idea.JetBundle;
 import org.jetbrains.kotlin.psi.*;
 
-public abstract class ReplaceOperationInBinaryExpressionFix<T extends JetExpression> extends JetIntentionAction<T> {
+public abstract class ReplaceOperationInBinaryExpressionFix<T extends JetExpression> extends KotlinQuickFixAction<T> {
     private final String operation;
 
     public ReplaceOperationInBinaryExpressionFix(@NotNull T element, String operation) {
@@ -39,12 +39,12 @@ public abstract class ReplaceOperationInBinaryExpressionFix<T extends JetExpress
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, JetFile file) throws IncorrectOperationException {
-        if (element instanceof JetBinaryExpressionWithTypeRHS) {
-            JetExpression left = ((JetBinaryExpressionWithTypeRHS) element).getLeft();
-            JetTypeReference right = ((JetBinaryExpressionWithTypeRHS) element).getRight();
+        if (getElement() instanceof JetBinaryExpressionWithTypeRHS) {
+            JetExpression left = ((JetBinaryExpressionWithTypeRHS) getElement()).getLeft();
+            JetTypeReference right = ((JetBinaryExpressionWithTypeRHS) getElement()).getRight();
             if (right != null) {
                 JetExpression expression = JetPsiFactoryKt.JetPsiFactory(file).createExpression(left.getText() + operation + right.getText());
-                element.replace(expression);
+                getElement().replace(expression);
             }
         }
     }
