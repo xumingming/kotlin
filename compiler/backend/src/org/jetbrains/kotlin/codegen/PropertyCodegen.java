@@ -167,7 +167,7 @@ public class PropertyCodegen {
         if (isCompanionObject(descriptor.getContainingDeclaration())) return true;
 
         // Private class properties have accessors only in cases when those accessors are non-trivial
-        if (kind == OwnerKind.IMPLEMENTATION && Visibilities.isPrivate(descriptor.getVisibility())) {
+        if (Visibilities.isPrivate(descriptor.getVisibility())) {
             return !isDefaultAccessor;
         }
 
@@ -412,6 +412,10 @@ public class PropertyCodegen {
             @Nullable JetPropertyAccessor accessor,
             @NotNull PropertyAccessorDescriptor accessorDescriptor
     ) {
+        if (context instanceof MultifileClassFacadeContext && Visibilities.isPrivate(accessorDescriptor.getVisibility())) {
+            return;
+        }
+
         FunctionGenerationStrategy strategy;
         if (accessor == null || !accessor.hasBody()) {
             if (p instanceof JetProperty && ((JetProperty) p).hasDelegate()) {
