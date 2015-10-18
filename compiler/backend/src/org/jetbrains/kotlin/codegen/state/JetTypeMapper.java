@@ -174,10 +174,17 @@ public class JetTypeMapper {
 
     @NotNull
     private String internalNameForPackageMemberOwner(@NotNull CallableMemberDescriptor descriptor, boolean isImplementation) {
+        boolean isAccessor = descriptor instanceof AccessorForCallableDescriptor;
+        if (isAccessor) {
+            descriptor = ((AccessorForCallableDescriptor) descriptor).getCalleeDescriptor();
+        }
         JetFile file = DescriptorToSourceUtils.getContainingFile(descriptor);
         if (file != null) {
             Visibility visibility = descriptor.getVisibility();
-            if (isImplementation || descriptor instanceof PropertyDescriptor || Visibilities.isPrivate(visibility)) {
+            if (isImplementation ||
+                descriptor instanceof PropertyDescriptor ||
+                Visibilities.isPrivate(visibility) ||
+                isAccessor/*Cause of KT-9603*/) {
                 return FileClasses.getFileClassInternalName(fileClassesProvider, file);
             }
             else {
@@ -851,7 +858,7 @@ public class JetTypeMapper {
 
             boolean isAccessor = property instanceof AccessorForPropertyDescriptor;
             String propertyName = isAccessor
-                                  ? ((AccessorForPropertyDescriptor) property).getIndexedAccessorSuffix()
+                                  ? ((AccessorForPropertyDescriptor) property).getAccessorSuffix()
                                   : property.getName().asString();
 
             String accessorName = descriptor instanceof PropertyGetterDescriptor
