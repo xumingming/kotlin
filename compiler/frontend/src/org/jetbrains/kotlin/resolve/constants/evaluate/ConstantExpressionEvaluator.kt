@@ -238,7 +238,7 @@ private class ConstantExpressionEvaluatorVisitor(
         }
 
         val compileTimeConstant = expression.accept(this, expectedType ?: TypeUtils.NO_EXPECTED_TYPE)
-        if (compileTimeConstant != null) {
+        if (compileTimeConstant != null && compileTimeConstant.isPure) {
             trace.record(BindingContext.COMPILE_TIME_VALUE, expression, compileTimeConstant)
             return compileTimeConstant
         }
