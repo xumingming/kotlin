@@ -71,7 +71,6 @@ public class IncrementalCacheImpl(
         val MULTIFILE_CLASS_FACADES = "multifile-class-facades"
         val MULTIFILE_CLASS_PARTS = "multifile-class-parts"
         val SOURCE_TO_CLASSES = "source-to-classes"
-        val CLASS_TO_SOURCES = "class-to-sources"
         val DIRTY_OUTPUT_CLASSES = "dirty-output-classes"
         val DIRTY_INLINE_FUNCTIONS = "dirty-inline-functions"
         val INLINED_TO = "inlined-to"
@@ -98,7 +97,6 @@ public class IncrementalCacheImpl(
     private val multifileClassPartMap = registerMap(MultifileClassPartMap(MULTIFILE_CLASS_PARTS.storageFile))
     private val sourceToClassesMap = registerMap(SourceToClassesMap(SOURCE_TO_CLASSES.storageFile))
     private val dirtyOutputClassesMap = registerMap(DirtyOutputClassesMap(DIRTY_OUTPUT_CLASSES.storageFile))
-    // TODO: can be removed?
     private val dirtyInlineFunctionsMap = registerMap(DirtyInlineFunctionsMap(DIRTY_INLINE_FUNCTIONS.storageFile))
     private val inlinedTo = registerMap(InlineFunctionsFilesMap(INLINED_TO.storageFile))
 
@@ -134,17 +132,7 @@ public class IncrementalCacheImpl(
         val result = THashSet(FileUtil.PATH_HASHING_STRATEGY)
 
         for ((className, functions) in dirtyInlineFunctionsMap.getEntries()) {
-            val internalName =
-                if (packagePartMap.isPackagePart(className)) {
-                    val packageInternalName = PackageClassUtils.getPackageClassInternalName(className.packageFqName)
-                    val packageJvmName = JvmClassName.byInternalName(packageInternalName)
-                    packageJvmName.internalName
-                }
-                else {
-                    className.internalName
-                }
-
-            val classFilePath = getClassFilePath(internalName)
+            val classFilePath = getClassFilePath(className.internalName)
 
             fun addFilesAffectedByChangedInlineFuns(cache: IncrementalCacheImpl) {
                 val targetFiles = functions.flatMap { cache.inlinedTo[classFilePath, it] }
@@ -675,9 +663,14 @@ data class ChangesInfo(
 
 public fun BuildDataPaths.getKotlinCacheVersion(target: BuildTarget<*>): CacheFormatVersion = CacheFormatVersion(getTargetDataRoot(target))
 
-private data class KotlinIncrementalStorageProvider(
+private class KotlinIncrementalStorageProvider(
         private val target: ModuleBuildTarget
 ) : StorageProvider<IncrementalCacheImpl>() {
+
+    override fun equals(other: Any?) = other is KotlinIncrementalStorageProvider && target == other.target
+
+    override fun hashCode() = target.hashCode()
+
     override fun createStorage(targetDataDir: File): IncrementalCacheImpl =
             IncrementalCacheImpl(targetDataDir, target)
 }

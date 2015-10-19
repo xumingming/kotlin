@@ -119,6 +119,12 @@ public class ClsStubBuilderTestGenerated extends AbstractClsStubBuilderTest {
         doTest(fileName);
     }
 
+    @TestMetadata("NamedCompanionObject")
+    public void testNamedCompanionObject() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("idea/testData/decompiler/stubBuilder/NamedCompanionObject/");
+        doTest(fileName);
+    }
+
     @TestMetadata("NestedClasses")
     public void testNestedClasses() throws Exception {
         String fileName = JetTestUtils.navigationMetadata("idea/testData/decompiler/stubBuilder/NestedClasses/");
@@ -158,12 +164,6 @@ public class ClsStubBuilderTestGenerated extends AbstractClsStubBuilderTest {
     @TestMetadata("TopLevelMembersKt")
     public void testTopLevelMembersKt() throws Exception {
         String fileName = JetTestUtils.navigationMetadata("idea/testData/decompiler/stubBuilder/TopLevelMembersKt/");
-        doTest(fileName);
-    }
-
-    @TestMetadata("TopLevelMembersPackage")
-    public void testTopLevelMembersPackage() throws Exception {
-        String fileName = JetTestUtils.navigationMetadata("idea/testData/decompiler/stubBuilder/TopLevelMembersPackage/");
         doTest(fileName);
     }
 
