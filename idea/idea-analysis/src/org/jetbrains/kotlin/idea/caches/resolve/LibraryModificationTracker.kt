@@ -16,51 +16,67 @@
 
 package org.jetbrains.kotlin.idea.caches.resolve
 
-import com.intellij.openapi.util.SimpleModificationTracker
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.intellij.openapi.vfs.VirtualFileAdapter
-import com.intellij.openapi.vfs.VirtualFileEvent
-import com.intellij.openapi.vfs.VirtualFileMoveEvent
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
-import com.intellij.codeInsight.ExternalAnnotationsManager
-import com.intellij.codeInsight.ExternalAnnotationsListener
-import com.intellij.psi.PsiModifierListOwner
+import com.intellij.openapi.util.SimpleModificationTracker
+import com.intellij.openapi.vfs.JarFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 
 class LibraryModificationTracker(project: Project) : SimpleModificationTracker() {
     companion object {
         @JvmStatic
-        fun getInstance(project: Project) = ServiceManager.getService(project, javaClass<LibraryModificationTracker>())!!
+        fun getInstance(project: Project) = ServiceManager.getService(project, LibraryModificationTracker::class.java)!!
     }
 
     init {
-        val connection = project.getMessageBus().connect()
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, BulkVirtualFileListenerAdapter(
-                object : VirtualFileAdapter() {
-                    override fun fileCreated(event: VirtualFileEvent) = processEvent(event)
-                    override fun beforeFileMovement(event: VirtualFileMoveEvent) = processEvent(event)
-                    override fun beforeContentsChange(event: VirtualFileEvent) = processEvent(event)
-                    override fun beforeFileDeletion(event: VirtualFileEvent) = processEvent(event)
+        val connection = project.messageBus.connect()
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener.Adapter() {
+            override fun after(events: List<VFileEvent>) {
+                events.filterIsInstance<VFileCreateEvent>().let { createEvents ->
+                    if (createEvents.isNotEmpty()) {
+                        ApplicationManager.getApplication().invokeLater {
+                            processBulk(createEvents)
+                        }
+                    }
                 }
-        ))
-
-        connection.subscribe(ExternalAnnotationsManager.TOPIC, object : ExternalAnnotationsListener {
-            override fun afterExternalAnnotationChanging(owner: PsiModifierListOwner, annotationFQName: String, successful: Boolean) {
-                if (successful) incModificationCount()
             }
 
-            override fun externalAnnotationsChangedExternally() = incModificationCount()
+            override fun before(events: List<VFileEvent>) {
+                processBulk(events)
+            }
+
+            private fun processBulk(events: List<VFileEvent>) {
+                events.forEach { e ->
+                    if (processEvent(e)) {
+                        return
+                    }
+                }
+            }
         })
     }
 
-    val projectFileIndex = ProjectFileIndex.SERVICE.getInstance(project)
+    private val projectFileIndex = ProjectFileIndex.SERVICE.getInstance(project)
 
-    fun processEvent(event: VirtualFileEvent) {
-        if (projectFileIndex.isInLibraryClasses(event.getFile())) {
+    fun processEvent(event: VFileEvent): Boolean {
+        val file = event.file
+        if (file != null && (projectFileIndex.isInLibraryClasses(file) || isLibraryJarRoot(file))) {
             incModificationCount()
+            return true
         }
+        return false
+    }
+
+    private fun isLibraryJarRoot(virtualFile: VirtualFile): Boolean {
+        if (virtualFile.extension != "jar") return false
+
+        val jarRoot = JarFileSystem.getInstance().getJarRootForLocalFile(virtualFile) ?: return false
+        return projectFileIndex.isInLibraryClasses(jarRoot)
     }
 }
 
