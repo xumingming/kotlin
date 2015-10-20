@@ -125,7 +125,8 @@ public class DescriptorSerializer {
         ProtoBuf.Class.Builder builder = ProtoBuf.Class.newBuilder();
 
         int flags = Flags.getClassFlags(hasAnnotations(classDescriptor), classDescriptor.getVisibility(), classDescriptor.getModality(),
-                                        classDescriptor.getKind(), classDescriptor.isInner(), classDescriptor.isCompanionObject());
+                                        classDescriptor.getKind(), classDescriptor.isInner(), classDescriptor.isCompanionObject(),
+                                        classDescriptor.isData());
         if (flags != builder.getFlags()) {
             builder.setFlags(flags);
         }
@@ -138,7 +139,7 @@ public class DescriptorSerializer {
 
         if (!KotlinBuiltIns.isSpecialClassWithNoSupertypes(classDescriptor)) {
             // Special classes (Any, Nothing) have no supertypes
-            for (JetType supertype : classDescriptor.getTypeConstructor().getSupertypes()) {
+            for (KtType supertype : classDescriptor.getTypeConstructor().getSupertypes()) {
                 if (useTypeTable()) {
                     builder.addSupertypeId(typeId(supertype));
                 }
@@ -211,6 +212,7 @@ public class DescriptorSerializer {
                 hasAnnotations,
                 descriptor.getVisibility(),
                 descriptor.getModality(),
+                false,
                 false
         );
 
@@ -283,7 +285,8 @@ public class DescriptorSerializer {
 
         int flags = Flags.getFunctionFlags(
                 hasAnnotations(descriptor), descriptor.getVisibility(), descriptor.getModality(), descriptor.getKind(),
-                descriptor.isOperator(), descriptor.isInfix()
+                descriptor.isOperator(), descriptor.isInfix(), descriptor.isInline(), descriptor.isTailrec(),
+                descriptor.isExternal()
         );
         if (flags != builder.getFlags()) {
             builder.setFlags(flags);
@@ -355,7 +358,8 @@ public class DescriptorSerializer {
                 hasAnnotations(accessor),
                 accessor.getVisibility(),
                 accessor.getModality(),
-                !accessor.isDefault()
+                !accessor.isDefault(),
+                accessor.isExternal()
         );
     }
 
@@ -363,7 +367,8 @@ public class DescriptorSerializer {
     private ProtoBuf.ValueParameter.Builder valueParameter(@NotNull ValueParameterDescriptor descriptor) {
         ProtoBuf.ValueParameter.Builder builder = ProtoBuf.ValueParameter.newBuilder();
 
-        int flags = Flags.getValueParameterFlags(hasAnnotations(descriptor), descriptor.declaresDefaultValue());
+        int flags = Flags.getValueParameterFlags(hasAnnotations(descriptor), descriptor.declaresDefaultValue(),
+                                                 descriptor.isCrossinline(), descriptor.isNoinline());
         if (flags != builder.getFlags()) {
             builder.setFlags(flags);
         }
@@ -377,7 +382,7 @@ public class DescriptorSerializer {
             builder.setType(type(descriptor.getType()));
         }
 
-        JetType varargElementType = descriptor.getVarargElementType();
+        KtType varargElementType = descriptor.getVarargElementType();
         if (varargElementType != null) {
             if (useTypeTable()) {
                 builder.setVarargElementTypeId(typeId(varargElementType));
@@ -409,10 +414,10 @@ public class DescriptorSerializer {
         }
         extension.serializeTypeParameter(typeParameter, builder);
 
-        Set<JetType> upperBounds = typeParameter.getUpperBounds();
+        Set<KtType> upperBounds = typeParameter.getUpperBounds();
         if (upperBounds.size() == 1 && KotlinBuiltIns.isDefaultBound(CollectionsKt.single(upperBounds))) return builder;
 
-        for (JetType upperBound : upperBounds) {
+        for (KtType upperBound : upperBounds) {
             if (useTypeTable()) {
                 builder.addUpperBoundId(typeId(upperBound));
             }
@@ -436,12 +441,12 @@ public class DescriptorSerializer {
         throw new IllegalStateException("Unknown variance: " + variance);
     }
 
-    private int typeId(@NotNull JetType type) {
+    private int typeId(@NotNull KtType type) {
         return typeTable.get(type(type));
     }
 
     @NotNull
-    private ProtoBuf.Type.Builder type(@NotNull JetType type) {
+    private ProtoBuf.Type.Builder type(@NotNull KtType type) {
         assert !type.isError() : "Can't serialize error types: " + type; // TODO
 
         if (FlexibleTypesKt.isFlexible(type)) {

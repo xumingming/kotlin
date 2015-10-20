@@ -27,19 +27,17 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.descriptorUtil.parentsWithSelf
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.resolve.scopes.KtScope
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.*
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.LinkedHashSet
+import java.util.*
 import kotlin.properties.Delegates
 
 interface SamAdapterExtensionFunctionDescriptor : FunctionDescriptor {
     val sourceFunction: FunctionDescriptor
 }
 
-class SamAdapterFunctionsScope(storageManager: StorageManager) : JetScope by JetScope.Empty {
+class SamAdapterFunctionsScope(storageManager: StorageManager) : KtScope by KtScope.Empty {
     private val extensionForFunction = storageManager.createMemoizedFunctionWithNullableValues<FunctionDescriptor, FunctionDescriptor> { function ->
         extensionForFunctionNotCached(function)
     }
@@ -54,7 +52,7 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : JetScope by Jet
         return MyFunctionDescriptor.create(enhancedFunction)
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<JetType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
+    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KtType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
         var result: SmartList<FunctionDescriptor>? = null
         for (type in receiverTypes) {
             for (function in type.memberScope.getFunctions(name, location)) {
@@ -74,7 +72,7 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : JetScope by Jet
         }
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<JetType>): Collection<FunctionDescriptor> {
+    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KtType>): Collection<FunctionDescriptor> {
         return receiverTypes.flatMapTo(LinkedHashSet<FunctionDescriptor>()) { type ->
             type.memberScope.getDescriptors(DescriptorKindFilter.FUNCTIONS)
                     .filterIsInstance<FunctionDescriptor>()
@@ -151,15 +149,19 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : JetScope by Jet
                 newVisibility: Visibility,
                 newIsOperator: Boolean,
                 newIsInfix: Boolean,
+                newIsExternal: Boolean,
+                newIsInline: Boolean,
+                newIsTailrec: Boolean,
                 original: FunctionDescriptor?,
                 copyOverrides: Boolean,
                 kind: CallableMemberDescriptor.Kind,
                 newValueParameterDescriptors: MutableList<ValueParameterDescriptor>,
-                newExtensionReceiverParameterType: JetType?,
-                newReturnType: JetType
+                newExtensionReceiverParameterType: KtType?,
+                newReturnType: KtType
         ): FunctionDescriptor? {
             val descriptor = super<SimpleFunctionDescriptorImpl>.doSubstitute(
-                    originalSubstitutor, newOwner, newModality, newVisibility, newIsOperator, newIsInfix, original,
+                    originalSubstitutor, newOwner, newModality, newVisibility,
+                    newIsOperator, newIsInfix, newIsExternal, newIsInline, newIsTailrec, original,
                     copyOverrides, kind, newValueParameterDescriptors, newExtensionReceiverParameterType, newReturnType)
                 as MyFunctionDescriptor? ?: return null
 

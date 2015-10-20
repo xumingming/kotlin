@@ -29,10 +29,10 @@ import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.NameResolver
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf
-import org.jetbrains.kotlin.types.JetType
+import org.jetbrains.kotlin.types.KtType
 
 fun copyValueParameters(
-        newValueParametersTypes: Collection<JetType>,
+        newValueParametersTypes: Collection<KtType>,
         oldValueParameters: Collection<ValueParameterDescriptor>,
         newOwner: CallableDescriptor
 ): List<ValueParameterDescriptor> {
@@ -51,6 +51,8 @@ fun copyValueParameters(
                 oldParameter.getName(),
                 newType,
                 oldParameter.declaresDefaultValue(),
+                oldParameter.isCrossinline,
+                oldParameter.isNoinline,
                 if (oldParameter.getVarargElementType() != null) newOwner.module.builtIns.getArrayElementType(newType) else null,
                 oldParameter.getSource()
         )

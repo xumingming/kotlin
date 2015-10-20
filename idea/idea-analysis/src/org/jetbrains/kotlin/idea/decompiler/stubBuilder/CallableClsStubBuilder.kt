@@ -20,7 +20,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.StubElement
 import org.jetbrains.kotlin.idea.decompiler.stubBuilder.FlagsToModifiers.*
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.stubs.elements.JetStubElementTypes
+import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinFunctionStubImpl
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinPlaceHolderStubImpl
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinPropertyStubImpl
@@ -133,7 +133,7 @@ private class FunctionClsStubBuilder(
         val modalityModifier = if (isTopLevel) listOf() else listOf(MODALITY)
         val modifierListStubImpl = createModifierListStubForDeclaration(
                 callableStub, functionProto.flags,
-                listOf(VISIBILITY, OPERATOR, INFIX) + modalityModifier
+                listOf(VISIBILITY, OPERATOR, INFIX, EXTERNAL_FUN, INLINE, TAILREC) + modalityModifier
         )
 
         val annotationIds = c.components.annotationLoader.loadCallableAnnotations(
@@ -235,8 +235,8 @@ private class ConstructorClsStubBuilder(
 
     override fun doCreateCallableStub(parent: StubElement<out PsiElement>): StubElement<out PsiElement> {
         return if (Flags.IS_SECONDARY.get(constructorProto.flags))
-            KotlinPlaceHolderStubImpl(parent, JetStubElementTypes.SECONDARY_CONSTRUCTOR)
+            KotlinPlaceHolderStubImpl(parent, KtStubElementTypes.SECONDARY_CONSTRUCTOR)
         else
-            KotlinPlaceHolderStubImpl(parent, JetStubElementTypes.PRIMARY_CONSTRUCTOR)
+            KotlinPlaceHolderStubImpl(parent, KtStubElementTypes.PRIMARY_CONSTRUCTOR)
     }
 }

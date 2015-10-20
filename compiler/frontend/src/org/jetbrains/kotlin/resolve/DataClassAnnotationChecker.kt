@@ -16,23 +16,25 @@
 
 package org.jetbrains.kotlin.resolve
 
-import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.diagnostics.*
-import org.jetbrains.kotlin.builtins.*
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticSink
+import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtDeclaration
 
 
 public class DataClassAnnotationChecker : DeclarationChecker {
     override fun check(
-            declaration: JetDeclaration,
+            declaration: KtDeclaration,
             descriptor: DeclarationDescriptor,
             diagnosticHolder: DiagnosticSink,
             bindingContext: BindingContext
     ) {
         if (descriptor !is ClassDescriptor) return
-        if (declaration !is JetClassOrObject) return
+        if (declaration !is KtClassOrObject) return
 
-        if (KotlinBuiltIns.isData(descriptor)) {
+        if (descriptor.isData) {
             if (descriptor.unsubstitutedPrimaryConstructor == null && descriptor.constructors.isNotEmpty()) {
                 declaration.nameIdentifier?.let { diagnosticHolder.report(Errors.PRIMARY_CONSTRUCTOR_REQUIRED_FOR_DATA_CLASS.on(it)) }
             }

@@ -30,7 +30,7 @@ import org.jetbrains.kotlin.resolve.scopes.StaticScopeForKotlinClass
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.utils.toReadOnlyList
-import java.util.ArrayList
+import java.util.*
 
 /**
  * A [ClassDescriptor] representing the fictitious class for a function type, such as kotlin.Function1 or kotlin.reflect.KFunction2.
@@ -82,6 +82,7 @@ public class FunctionClassDescriptor(
     override fun getVisibility() = Visibilities.PUBLIC
     override fun isCompanionObject() = false
     override fun isInner() = false
+    override fun isData() = false
     override fun getAnnotations() = Annotations.EMPTY
     override fun getSource() = SourceElement.NO_SOURCE
 
@@ -107,7 +108,7 @@ public class FunctionClassDescriptor(
         }
 
         private val supertypes = storageManager.createLazyValue {
-            val result = ArrayList<JetType>(2)
+            val result = ArrayList<KtType>(2)
 
             fun add(packageFragment: PackageFragmentDescriptor, name: Name) {
                 val descriptor = packageFragment.getMemberScope().getClassifier(name, NoLookupLocation.FROM_BUILTINS) as? ClassDescriptor
@@ -120,7 +121,7 @@ public class FunctionClassDescriptor(
                     TypeProjectionImpl(it.getDefaultType())
                 }
 
-                result.add(JetTypeImpl.create(Annotations.EMPTY, descriptor, false, arguments))
+                result.add(KtTypeImpl.create(Annotations.EMPTY, descriptor, false, arguments))
             }
 
             // Add unnumbered base class, e.g. Function for Function{n}, KFunction for KFunction{n}
@@ -139,7 +140,7 @@ public class FunctionClassDescriptor(
 
         override fun getParameters() = parameters
 
-        override fun getSupertypes(): Collection<JetType> = supertypes()
+        override fun getSupertypes(): Collection<KtType> = supertypes()
 
         override fun getDeclarationDescriptor() = this@FunctionClassDescriptor
         override fun isDenotable() = true

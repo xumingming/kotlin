@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.types.KtType;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ public class ScriptCodeDescriptor extends FunctionDescriptorImpl {
     public void initialize(
             @NotNull ReceiverParameterDescriptor dispatchReceiverParameter,
             @NotNull List<ValueParameterDescriptor> valueParameters,
-            @NotNull JetType returnType) {
+            @NotNull KtType returnType) {
         super.initialize(null, dispatchReceiverParameter, Collections.<TypeParameterDescriptor>emptyList(), valueParameters, returnType,
                          Modality.FINAL, Visibilities.INTERNAL);
     }
@@ -54,5 +54,20 @@ public class ScriptCodeDescriptor extends FunctionDescriptorImpl {
     @Override
     public FunctionDescriptor copy(DeclarationDescriptor newOwner, Modality modality, Visibility visibility, Kind kind, boolean copyOverrides) {
         throw new IllegalStateException("no need to copy script code descriptor");
+    }
+
+    @Override
+    public boolean isExternal() {
+        return false;
+    }
+
+    @Override
+    public boolean isInline() {
+        return false;
+    }
+
+    @Override
+    public boolean isTailrec() {
+        return false;
     }
 }

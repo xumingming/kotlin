@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.FqNameBase
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.types.JetType
+import org.jetbrains.kotlin.types.KtType
 import org.jetbrains.kotlin.types.TypeConstructor
 import org.jetbrains.kotlin.types.TypeProjection
 
@@ -34,7 +34,7 @@ public abstract class DescriptorRenderer : Renderer<DeclarationDescriptor> {
         return DescriptorRendererImpl(options)
     }
 
-    public abstract fun renderType(type: JetType): String
+    public abstract fun renderType(type: KtType): String
 
     public abstract fun renderTypeArguments(typeArguments: List<TypeProjection>): String
 
@@ -152,7 +152,7 @@ public abstract class DescriptorRenderer : Renderer<DeclarationDescriptor> {
                 ClassKind.INTERFACE -> "interface"
                 ClassKind.ENUM_CLASS -> "enum class"
                 ClassKind.OBJECT -> "object"
-                ClassKind.ANNOTATION_CLASS -> "class"
+                ClassKind.ANNOTATION_CLASS -> "annotation class"
                 ClassKind.ENUM_ENTRY -> "enum entry"
             }
         }
@@ -184,12 +184,24 @@ public interface DescriptorRendererOptions {
     public var receiverAfterName: Boolean
     public var renderCompanionObjectName: Boolean
     public var withoutSuperTypes: Boolean
-    public var typeNormalizer: (JetType) -> JetType
+    public var typeNormalizer: (KtType) -> KtType
     public var renderDefaultValues: Boolean
     public var flexibleTypesForCode: Boolean
     public var secondaryConstructorsAsPrimary: Boolean
     public var renderAccessors: Boolean
     public var renderDefaultAnnotationArguments: Boolean
+}
+
+object ExcludedTypeAnnotations {
+    val annotationsForNullabilityAndMutability = setOf(
+            FqName("org.jetbrains.annotations.ReadOnly"),
+            FqName("org.jetbrains.annotations.Mutable"),
+            FqName("org.jetbrains.annotations.NotNull"),
+            FqName("org.jetbrains.annotations.Nullable"))
+
+    val internalAnnotationsForResolve = setOf(
+            FqName("kotlin.internal.NoInfer"),
+            FqName("kotlin.internal.Exact"))
 }
 
 public enum class RenderingFormat {
@@ -221,7 +233,8 @@ public enum class DescriptorRendererModifier(val includeByDefault: Boolean) {
     OVERRIDE(true),
     ANNOTATIONS(false),
     INNER(true),
-    MEMBER_KIND(true)
+    MEMBER_KIND(true),
+    DATA(true)
 
     ;
 

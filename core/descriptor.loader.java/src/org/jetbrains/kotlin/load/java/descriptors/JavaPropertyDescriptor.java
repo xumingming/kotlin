@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl;
 import org.jetbrains.kotlin.descriptors.impl.PropertyGetterDescriptorImpl;
 import org.jetbrains.kotlin.descriptors.impl.PropertySetterDescriptorImpl;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.types.KtType;
 
 import java.util.List;
 
@@ -55,9 +55,9 @@ public class JavaPropertyDescriptor extends PropertyDescriptorImpl implements Ja
     @NotNull
     @Override
     public JavaCallableMemberDescriptor enhance(
-            @Nullable JetType enhancedReceiverType,
-            @NotNull List<JetType> enhancedValueParametersTypes,
-            @NotNull JetType enhancedReturnType
+            @Nullable KtType enhancedReceiverType,
+            @NotNull List<KtType> enhancedValueParametersTypes,
+            @NotNull KtType enhancedReturnType
     ) {
         JavaPropertyDescriptor enhanced = new JavaPropertyDescriptor(
                 getContainingDeclaration(),
@@ -76,7 +76,7 @@ public class JavaPropertyDescriptor extends PropertyDescriptorImpl implements Ja
         if (getter != null) {
             newGetter = new PropertyGetterDescriptorImpl(
                     enhanced, getter.getAnnotations(), getter.getModality(), getter.getVisibility(),
-                    getter.hasBody(), getter.isDefault(), getKind(), getter, SourceElement.NO_SOURCE);
+                    getter.hasBody(), getter.isDefault(), getter.isExternal(), getKind(), getter, SourceElement.NO_SOURCE);
             newGetter.initialize(enhancedReturnType);
         }
 
@@ -85,7 +85,7 @@ public class JavaPropertyDescriptor extends PropertyDescriptorImpl implements Ja
         if (setter != null) {
             newSetter = new PropertySetterDescriptorImpl(
                     enhanced, setter.getAnnotations(), setter.getModality(), setter.getVisibility(),
-                    setter.hasBody(), setter.isDefault(), getKind(), setter, SourceElement.NO_SOURCE);
+                    setter.hasBody(), setter.isDefault(), setter.isExternal(), getKind(), setter, SourceElement.NO_SOURCE);
             newSetter.initialize(setter.getValueParameters().get(0));
         }
 

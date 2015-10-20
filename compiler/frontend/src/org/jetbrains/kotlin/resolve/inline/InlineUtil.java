@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.descriptors.*;
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.BindingTrace;
@@ -31,14 +30,11 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilKt;
 import org.jetbrains.kotlin.resolve.calls.model.ArgumentMapping;
 import org.jetbrains.kotlin.resolve.calls.model.ArgumentMatch;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
-import org.jetbrains.kotlin.resolve.constants.ConstantValue;
-import org.jetbrains.kotlin.resolve.constants.EnumValue;
-
-import static kotlin.CollectionsKt.firstOrNull;
 
 public class InlineUtil {
     public static boolean isInlineLambdaParameter(@NotNull ParameterDescriptor valueParameterOrReceiver) {
-        return !KotlinBuiltIns.isNoinline(valueParameterOrReceiver) &&
+        return !(valueParameterOrReceiver instanceof ValueParameterDescriptor
+                 && ((ValueParameterDescriptor) valueParameterOrReceiver).isNoinline()) &&
                KotlinBuiltIns.isExactFunctionOrExtensionFunctionType(valueParameterOrReceiver.getOriginal().getType());
     }
 
@@ -48,28 +44,20 @@ public class InlineUtil {
 
     @NotNull
     public static InlineStrategy getInlineStrategy(@NotNull DeclarationDescriptor descriptor) {
-        AnnotationDescriptor annotation = descriptor.getAnnotations().findAnnotation(KotlinBuiltIns.FQ_NAMES.inline);
-        if (annotation == null) {
-            return InlineStrategy.NOT_INLINE;
-        }
-        ConstantValue<?> argument = firstOrNull(annotation.getAllValueArguments().values());
-        if (argument == null) {
+        if (descriptor instanceof FunctionDescriptor &&
+            ((FunctionDescriptor) descriptor).isInline()) {
             return InlineStrategy.AS_FUNCTION;
         }
-        assert argument instanceof EnumValue : "Inline annotation parameter should be enum entry but was: " + argument;
-        return InlineStrategy.valueOf(((EnumValue) argument).getValue().getName().asString());
-    }
 
-    public static boolean hasOnlyLocalReturn(@NotNull ValueParameterDescriptor descriptor) {
-        return descriptor.getAnnotations().findAnnotation(KotlinBuiltIns.FQ_NAMES.crossinline) != null;
+        return InlineStrategy.NOT_INLINE;
     }
 
     public static boolean checkNonLocalReturnUsage(
             @NotNull DeclarationDescriptor fromFunction,
-            @NotNull JetExpression startExpression,
+            @NotNull KtExpression startExpression,
             @NotNull BindingTrace trace
     ) {
-        PsiElement containingFunction = PsiTreeUtil.getParentOfType(startExpression, JetClassOrObject.class, JetDeclarationWithBody.class);
+        PsiElement containingFunction = PsiTreeUtil.getParentOfType(startExpression, KtClassOrObject.class, KtDeclarationWithBody.class);
         if (containingFunction == null) {
             return false;
         }
@@ -82,7 +70,7 @@ public class InlineUtil {
         BindingContext bindingContext = trace.getBindingContext();
 
         while (canBeInlineArgument(containingFunction) && fromFunction != containingFunctionDescriptor) {
-            if (!isInlinedArgument((JetFunction) containingFunction, bindingContext, true)) {
+            if (!isInlinedArgument((KtFunction) containingFunction, bindingContext, true)) {
                 return false;
             }
 
@@ -97,13 +85,13 @@ public class InlineUtil {
     }
 
     public static boolean isInlinedArgument(
-            @NotNull JetFunction argument,
+            @NotNull KtFunction argument,
             @NotNull BindingContext bindingContext,
             boolean checkNonLocalReturn
     ) {
         if (!canBeInlineArgument(argument)) return false;
 
-        JetExpression call = JetPsiUtil.getParentCallIfPresent(argument);
+        KtExpression call = KtPsiUtil.getParentCallIfPresent(argument);
         if (call != null) {
             ResolvedCall<?> resolvedCall = CallUtilKt.getResolvedCall(call, bindingContext);
             if (resolvedCall != null && isInline(resolvedCall.getResultingDescriptor())) {
@@ -123,7 +111,7 @@ public class InlineUtil {
     }
 
     public static boolean canBeInlineArgument(@Nullable PsiElement functionalExpression) {
-        return functionalExpression instanceof JetFunctionLiteral || functionalExpression instanceof JetNamedFunction;
+        return functionalExpression instanceof KtFunctionLiteral || functionalExpression instanceof KtNamedFunction;
     }
 
     @Nullable
@@ -141,7 +129,7 @@ public class InlineUtil {
 
     public static boolean allowsNonLocalReturns(@NotNull CallableDescriptor lambda) {
         if (lambda instanceof ValueParameterDescriptor) {
-            if (hasOnlyLocalReturn((ValueParameterDescriptor) lambda)) {
+            if (((ValueParameterDescriptor) lambda).isCrossinline()) {
                 //annotated
                 return false;
             }

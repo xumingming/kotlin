@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.types.KtType;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -42,12 +42,13 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
             @NotNull Visibility visibility,
             boolean hasBody,
             boolean isDefault,
+            boolean isExternal,
             @NotNull Kind kind,
             @Nullable PropertySetterDescriptor original,
             @NotNull SourceElement source
     ) {
         super(modality, visibility, correspondingProperty, annotations, Name.special("<set-" + correspondingProperty.getName() + ">"),
-              hasBody, isDefault, kind, source);
+              hasBody, isDefault, isExternal, kind, source);
         this.original = original != null ? original : this;
     }
 
@@ -63,10 +64,14 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
 
     public static ValueParameterDescriptorImpl createSetterParameter(
             @NotNull PropertySetterDescriptor setterDescriptor,
-            @NotNull JetType type
+            @NotNull KtType type
     ) {
         return new ValueParameterDescriptorImpl(
-                setterDescriptor, null, 0, Annotations.Companion.getEMPTY(), Name.special("<set-?>"), type, false, null, SourceElement.NO_SOURCE
+                setterDescriptor, null, 0, Annotations.Companion.getEMPTY(), Name.special("<set-?>"), type,
+                /* declaresDefaultValue = */ false,
+                /* isCrossinline = */ false,
+                /* isNoinline = */ false,
+                null, SourceElement.NO_SOURCE
         );
     }
 
@@ -88,7 +93,7 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
 
     @NotNull
     @Override
-    public JetType getReturnType() {
+    public KtType getReturnType() {
         return getBuiltIns(this).getUnitType();
     }
 

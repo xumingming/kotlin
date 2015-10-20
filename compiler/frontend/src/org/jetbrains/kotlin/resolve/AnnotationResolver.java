@@ -18,14 +18,10 @@ package org.jetbrains.kotlin.resolve;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.*;
 import org.jetbrains.kotlin.diagnostics.Errors;
-import org.jetbrains.kotlin.lexer.JetModifierKeywordToken;
-import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.*;
-import org.jetbrains.kotlin.resolve.annotations.AnnotationUtilKt;
 import org.jetbrains.kotlin.resolve.calls.CallResolver;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
 import org.jetbrains.kotlin.resolve.calls.results.OverloadResolutionResults;
@@ -40,7 +36,7 @@ import org.jetbrains.kotlin.resolve.scopes.LexicalScope;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.kotlin.storage.StorageManager;
 import org.jetbrains.kotlin.types.ErrorUtils;
-import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.types.KtType;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -55,19 +51,14 @@ public class AnnotationResolver {
     @NotNull private TypeResolver typeResolver;
     @NotNull private final ConstantExpressionEvaluator constantExpressionEvaluator;
 
-    @NotNull private final List<AnnotationDescriptor> modifiersAnnotations;
-
     public AnnotationResolver(
             @NotNull CallResolver callResolver,
             @NotNull ConstantExpressionEvaluator constantExpressionEvaluator,
-            @NotNull StorageManager storageManager,
-            @NotNull KotlinBuiltIns kotlinBuiltIns
+            @NotNull StorageManager storageManager
     ) {
         this.callResolver = callResolver;
         this.constantExpressionEvaluator = constantExpressionEvaluator;
         this.storageManager = storageManager;
-
-        modifiersAnnotations = AnnotationUtilKt.buildMigrationAnnotationDescriptors(kotlinBuiltIns);
     }
 
 
@@ -80,7 +71,7 @@ public class AnnotationResolver {
     @NotNull
     public Annotations resolveAnnotationsWithoutArguments(
             @NotNull LexicalScope scope,
-            @Nullable JetModifierList modifierList,
+            @Nullable KtModifierList modifierList,
             @NotNull BindingTrace trace
     ) {
         return resolveAnnotations(scope, modifierList, trace, false);
@@ -89,7 +80,7 @@ public class AnnotationResolver {
     @NotNull
     public Annotations resolveAnnotationsWithArguments(
             @NotNull LexicalScope scope,
-            @Nullable JetModifierList modifierList,
+            @Nullable KtModifierList modifierList,
             @NotNull BindingTrace trace
     ) {
         return resolveAnnotations(scope, modifierList, trace, true);
@@ -98,7 +89,7 @@ public class AnnotationResolver {
     @NotNull
     public Annotations resolveAnnotationsWithoutArguments(
             @NotNull LexicalScope scope,
-            @NotNull List<JetAnnotationEntry> annotationEntries,
+            @NotNull List<KtAnnotationEntry> annotationEntries,
             @NotNull BindingTrace trace
     ) {
         return resolveAnnotationEntries(scope, annotationEntries, trace, false);
@@ -107,7 +98,7 @@ public class AnnotationResolver {
     @NotNull
     public Annotations resolveAnnotationsWithArguments(
             @NotNull LexicalScope scope,
-            @NotNull List<JetAnnotationEntry> annotationEntries,
+            @NotNull List<KtAnnotationEntry> annotationEntries,
             @NotNull BindingTrace trace
     ) {
         return resolveAnnotationEntries(scope, annotationEntries, trace, true);
@@ -115,7 +106,7 @@ public class AnnotationResolver {
 
     private Annotations resolveAnnotations(
             @NotNull LexicalScope scope,
-            @Nullable JetModifierList modifierList,
+            @Nullable KtModifierList modifierList,
             @NotNull BindingTrace trace,
             boolean shouldResolveArguments
     ) {
@@ -123,43 +114,19 @@ public class AnnotationResolver {
             return Annotations.Companion.getEMPTY();
         }
 
-        List<JetAnnotationEntry> annotationEntryElements = modifierList.getAnnotationEntries();
-
-        return resolveAndAppendAnnotationsFromModifiers(
-                resolveAnnotationEntries(scope, annotationEntryElements, trace, shouldResolveArguments),
-                modifierList
-        );
-    }
-
-    @NotNull
-    public Annotations resolveAndAppendAnnotationsFromModifiers(
-            @NotNull Annotations annotations,
-            @NotNull JetModifierList modifierList
-    ) {
-        List<AnnotationDescriptor> annotationFromModifiers = new ArrayList<AnnotationDescriptor>();
-
-        for (int i = 0; i < JetTokens.ANNOTATION_MODIFIERS_KEYWORDS_ARRAY.length; i++) {
-            JetModifierKeywordToken modifier = JetTokens.ANNOTATION_MODIFIERS_KEYWORDS_ARRAY[i];
-            if (modifierList.hasModifier(modifier)) {
-                annotationFromModifiers.add(modifiersAnnotations.get(i));
-            }
-        }
-
-        if (annotationFromModifiers.isEmpty()) return annotations;
-
-        return new CompositeAnnotations(annotations, new AnnotationsImpl(annotationFromModifiers));
+        return resolveAnnotationEntries(scope, modifierList.getAnnotationEntries(), trace, shouldResolveArguments);
     }
 
     private Annotations resolveAnnotationEntries(
             @NotNull LexicalScope scope,
-            @NotNull List<JetAnnotationEntry> annotationEntryElements,
+            @NotNull List<KtAnnotationEntry> annotationEntryElements,
             @NotNull BindingTrace trace,
             boolean shouldResolveArguments
     ) {
         if (annotationEntryElements.isEmpty()) return Annotations.Companion.getEMPTY();
         List<AnnotationWithTarget> result = new ArrayList<AnnotationWithTarget>(0);
 
-        for (JetAnnotationEntry entryElement : annotationEntryElements) {
+        for (KtAnnotationEntry entryElement : annotationEntryElements) {
             AnnotationDescriptor descriptor = trace.get(BindingContext.ANNOTATION, entryElement);
             if (descriptor == null) {
                 descriptor = new LazyAnnotationDescriptor(new LazyAnnotationsContextImpl(this, storageManager, trace, scope), entryElement);
@@ -168,7 +135,7 @@ public class AnnotationResolver {
                 ForceResolveUtil.forceResolveAllContents(descriptor);
             }
 
-            JetAnnotationUseSiteTarget target = entryElement.getUseSiteTarget();
+            KtAnnotationUseSiteTarget target = entryElement.getUseSiteTarget();
             if (target != null) {
                 result.add(new AnnotationWithTarget(descriptor, target.getAnnotationUseSiteTarget()));
             }
@@ -180,13 +147,13 @@ public class AnnotationResolver {
     }
 
     @NotNull
-    public JetType resolveAnnotationType(@NotNull LexicalScope scope, @NotNull JetAnnotationEntry entryElement, @NotNull BindingTrace trace) {
-        JetTypeReference typeReference = entryElement.getTypeReference();
+    public KtType resolveAnnotationType(@NotNull LexicalScope scope, @NotNull KtAnnotationEntry entryElement, @NotNull BindingTrace trace) {
+        KtTypeReference typeReference = entryElement.getTypeReference();
         if (typeReference == null) {
             return ErrorUtils.createErrorType("No type reference: " + entryElement.getText());
         }
 
-        JetType type = typeResolver.resolveType(scope, typeReference, trace, true);
+        KtType type = typeResolver.resolveType(scope, typeReference, trace, true);
         if (!(type.getConstructor().getDeclarationDescriptor() instanceof ClassDescriptor)) {
             return ErrorUtils.createErrorType("Not an annotation: " + type);
         }
@@ -194,7 +161,7 @@ public class AnnotationResolver {
     }
 
     public static void checkAnnotationType(
-            @NotNull JetAnnotationEntry entryElement,
+            @NotNull KtAnnotationEntry entryElement,
             @NotNull BindingTrace trace,
             @NotNull OverloadResolutionResults<FunctionDescriptor> results
     ) {
@@ -216,7 +183,7 @@ public class AnnotationResolver {
 
     @NotNull
     public OverloadResolutionResults<FunctionDescriptor> resolveAnnotationCall(
-            JetAnnotationEntry annotationEntry,
+            KtAnnotationEntry annotationEntry,
             LexicalScope scope,
             BindingTrace trace
     ) {
@@ -229,11 +196,11 @@ public class AnnotationResolver {
         );
     }
 
-    public static void reportUnsupportedAnnotationForTypeParameter(@NotNull JetTypeParameter jetTypeParameter, @NotNull BindingTrace trace) {
-        JetModifierList modifierList = jetTypeParameter.getModifierList();
+    public static void reportUnsupportedAnnotationForTypeParameter(@NotNull KtTypeParameter jetTypeParameter, @NotNull BindingTrace trace) {
+        KtModifierList modifierList = jetTypeParameter.getModifierList();
         if (modifierList == null) return;
 
-        for (JetAnnotationEntry annotationEntry : modifierList.getAnnotationEntries()) {
+        for (KtAnnotationEntry annotationEntry : modifierList.getAnnotationEntries()) {
             trace.report(Errors.UNSUPPORTED.on(annotationEntry, "Annotations for type parameters are not supported yet"));
         }
     }

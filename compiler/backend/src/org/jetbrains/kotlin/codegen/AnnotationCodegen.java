@@ -62,9 +62,7 @@ public abstract class AnnotationCodegen {
 
     public static final List<JvmFlagAnnotation> METHOD_FLAGS = Arrays.asList(
             new JvmFlagAnnotation("kotlin.jvm.Strictfp", Opcodes.ACC_STRICT),
-            new JvmFlagAnnotation("kotlin.jvm.Synchronized", Opcodes.ACC_SYNCHRONIZED),
-            new JvmFlagAnnotation("kotlin.jvm.native", Opcodes.ACC_NATIVE),
-            new JvmFlagAnnotation("kotlin.external", Opcodes.ACC_NATIVE)
+            new JvmFlagAnnotation("kotlin.jvm.Synchronized", Opcodes.ACC_SYNCHRONIZED)
     );
 
     private static final AnnotationVisitor NO_ANNOTATION_VISITOR = new AnnotationVisitor(Opcodes.ASM5) {};
@@ -159,7 +157,7 @@ public abstract class AnnotationCodegen {
         return false;
     }
 
-    private void generateNullabilityAnnotation(@Nullable JetType type, @NotNull Set<String> annotationDescriptorsAlreadyPresent) {
+    private void generateNullabilityAnnotation(@Nullable KtType type, @NotNull Set<String> annotationDescriptorsAlreadyPresent) {
         if (type == null) return;
 
         if (isBareTypeParameterWithNullableUpperBound(type)) {
@@ -255,12 +253,12 @@ public abstract class AnnotationCodegen {
         }
     }
 
-    private static boolean isBareTypeParameterWithNullableUpperBound(@NotNull JetType type) {
+    private static boolean isBareTypeParameterWithNullableUpperBound(@NotNull KtType type) {
         ClassifierDescriptor classifier = type.getConstructor().getDeclarationDescriptor();
         return !type.isMarkedNullable() && classifier instanceof TypeParameterDescriptor && TypeUtils.hasNullableSuperType(type);
     }
 
-    public void generateAnnotationDefaultValue(@NotNull ConstantValue<?> value, @NotNull JetType expectedType) {
+    public void generateAnnotationDefaultValue(@NotNull ConstantValue<?> value, @NotNull KtType expectedType) {
         AnnotationVisitor visitor = visitAnnotation(null, false);  // Parameters are unimportant
         genCompileTimeValue(null, value, visitor);
         visitor.visitEnd();
@@ -420,7 +418,7 @@ public abstract class AnnotationCodegen {
                     for (ConstantValue<?> value : values) {
                         if (value instanceof EnumValue) {
                             ClassDescriptor enumEntry = ((EnumValue) value).getValue();
-                            JetType classObjectType = DescriptorUtilsKt.getClassObjectType(enumEntry);
+                            KtType classObjectType = DescriptorUtilsKt.getClassObjectType(enumEntry);
                             if (classObjectType != null) {
                                 if ("java/lang/annotation/ElementType".equals(typeMapper.mapType(classObjectType).getInternalName())) {
                                     result.add(ElementType.valueOf(enumEntry.getName().asString()));
@@ -448,7 +446,7 @@ public abstract class AnnotationCodegen {
                 ConstantValue<?> compileTimeConstant = valueArguments.iterator().next();
                 if (compileTimeConstant instanceof EnumValue) {
                     ClassDescriptor enumEntry = ((EnumValue) compileTimeConstant).getValue();
-                    JetType classObjectType = DescriptorUtilsKt.getClassObjectType(enumEntry);
+                    KtType classObjectType = DescriptorUtilsKt.getClassObjectType(enumEntry);
                     if (classObjectType != null) {
                         if ("java/lang/annotation/RetentionPolicy".equals(typeMapper.mapType(classObjectType).getInternalName())) {
                             return RetentionPolicy.valueOf(enumEntry.getName().asString());

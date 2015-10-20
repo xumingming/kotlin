@@ -24,14 +24,16 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
-import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.types.KtType;
 import org.jetbrains.kotlin.types.TypeSubstitutor;
 
 import java.util.Collection;
 
 public class ValueParameterDescriptorImpl extends VariableDescriptorImpl implements ValueParameterDescriptor {
     private final boolean declaresDefaultValue;
-    private final JetType varargElementType;
+    private final boolean isCrossinline;
+    private final boolean isNoinline;
+    private final KtType varargElementType;
     private final int index;
     private final ValueParameterDescriptor original;
 
@@ -41,15 +43,19 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
             int index,
             @NotNull Annotations annotations,
             @NotNull Name name,
-            @NotNull JetType outType,
+            @NotNull KtType outType,
             boolean declaresDefaultValue,
-            @Nullable JetType varargElementType,
+            boolean isCrossinline,
+            boolean isNoinline,
+            @Nullable KtType varargElementType,
             @NotNull SourceElement source
     ) {
         super(containingDeclaration, annotations, name, outType, source);
         this.original = original == null ? this : original;
         this.index = index;
         this.declaresDefaultValue = declaresDefaultValue;
+        this.isCrossinline = isCrossinline;
+        this.isNoinline = isNoinline;
         this.varargElementType = varargElementType;
     }
 
@@ -69,9 +75,19 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
         return declaresDefaultValue && ((CallableMemberDescriptor) getContainingDeclaration()).getKind().isReal();
     }
 
+    @Override
+    public boolean isCrossinline() {
+        return isCrossinline;
+    }
+
+    @Override
+    public boolean isNoinline() {
+        return isNoinline;
+    }
+
     @Nullable
     @Override
-    public JetType getVarargElementType() {
+    public KtType getVarargElementType() {
         return varargElementType;
     }
 
@@ -108,7 +124,7 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
     @Override
     public ValueParameterDescriptor copy(@NotNull CallableDescriptor newOwner, @NotNull Name newName) {
         return new ValueParameterDescriptorImpl(
-                newOwner, null, index, getAnnotations(), newName, getType(), declaresDefaultValue(), varargElementType,
+                newOwner, null, index, getAnnotations(), newName, getType(), declaresDefaultValue(), isCrossinline(), isNoinline(), varargElementType,
                 SourceElement.NO_SOURCE
         );
     }
