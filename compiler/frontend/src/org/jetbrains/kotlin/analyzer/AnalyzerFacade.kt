@@ -42,6 +42,7 @@ public class ResolverForModule(
 
 abstract class ResolverForProject<M : ModuleInfo> {
     fun resolverForModule(moduleInfo: M): ResolverForModule = resolverForModuleDescriptor(descriptorForModule(moduleInfo))
+    abstract fun tryGetResolverForModule(moduleInfo: M): ResolverForModule?
     abstract fun descriptorForModule(moduleInfo: M): ModuleDescriptor
     abstract fun resolverForModuleDescriptor(descriptor: ModuleDescriptor): ResolverForModule
 
@@ -55,6 +56,7 @@ public class EmptyResolverForProject<M : ModuleInfo> : ResolverForProject<M>() {
     override val name: String
         get() = "Empty resolver"
 
+    override fun tryGetResolverForModule(moduleInfo: M): ResolverForModule? = null
     override fun resolverForModuleDescriptor(descriptor: ModuleDescriptor): ResolverForModule = throw IllegalStateException("$descriptor is not contained in this resolver")
     override fun descriptorForModule(moduleInfo: M) = throw IllegalStateException("Should not be called for $moduleInfo")
     override val allModules: Collection<M> = listOf()
@@ -65,6 +67,8 @@ public class ResolverForProjectImpl<M : ModuleInfo>(
         val descriptorByModule: Map<M, ModuleDescriptorImpl>,
         val delegateResolver: ResolverForProject<M> = EmptyResolverForProject()
 ) : ResolverForProject<M>() {
+    override fun tryGetResolverForModule(moduleInfo: M): ResolverForModule? = if (isCorrectModuleInfo(moduleInfo)) resolverForModule(moduleInfo) else null
+
     val resolverByModuleDescriptor: MutableMap<ModuleDescriptor, () -> ResolverForModule> = HashMap()
 
     override val allModules: Collection<M> by lazy {
@@ -75,10 +79,12 @@ public class ResolverForProjectImpl<M : ModuleInfo>(
         get() = "Resolver for '$debugName'"
 
     private fun assertCorrectModuleInfo(moduleInfo: M) {
-        if (moduleInfo !in allModules) {
+        if (!isCorrectModuleInfo(moduleInfo)) {
             throw AssertionError("$name does not know how to resolve $moduleInfo")
         }
     }
+
+    private fun isCorrectModuleInfo(moduleInfo: M) = moduleInfo in allModules
 
     override fun resolverForModuleDescriptor(descriptor: ModuleDescriptor): ResolverForModule {
         val computation = resolverByModuleDescriptor[descriptor] ?: return delegateResolver.resolverForModuleDescriptor(descriptor)

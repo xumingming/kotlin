@@ -63,8 +63,12 @@ public object JvmAnalyzerFacade : AnalyzerFacade<JvmPlatformParameters>() {
         )
 
         val moduleClassResolver = ModuleClassResolverImpl { javaClass ->
-            val moduleInfo = platformParameters.moduleByJavaClass(javaClass)
-            resolverForProject.resolverForModule(moduleInfo as M).componentProvider.get<JavaDescriptorResolver>()
+            val referencedClassModule = platformParameters.moduleByJavaClass(javaClass)
+            val resolverForReferencedModule = resolverForProject.tryGetResolverForModule(referencedClassModule as M)
+            // in case referenced class lies outside of our resolver, resolve the class as if it is inside our module
+            // TODO_R: comment
+            val resolverForModule = resolverForReferencedModule ?: resolverForProject.resolverForModule(moduleInfo)
+            resolverForModule.componentProvider.get<JavaDescriptorResolver>()
         }
         val container = createContainerForLazyResolveWithJava(
                 moduleContext,
