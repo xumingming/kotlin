@@ -191,6 +191,24 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
             doTestWithJava(fileName);
         }
 
+        @TestMetadata("implementCollectionThroughKotlin")
+        public void testImplementCollectionThroughKotlin() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/collections/implementCollectionThroughKotlin/");
+            doTestWithJava(fileName);
+        }
+
+        @TestMetadata("irrelevantRemoveAtOverrideInJava")
+        public void testIrrelevantRemoveAtOverrideInJava() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/collections/irrelevantRemoveAtOverrideInJava/");
+            doTestWithJava(fileName);
+        }
+
+        @TestMetadata("irrelevantSizeOverrideInJava")
+        public void testIrrelevantSizeOverrideInJava() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/collections/irrelevantSizeOverrideInJava/");
+            doTestWithJava(fileName);
+        }
+
         @TestMetadata("mutableList")
         public void testMutableList() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxWithJava/collections/mutableList/");

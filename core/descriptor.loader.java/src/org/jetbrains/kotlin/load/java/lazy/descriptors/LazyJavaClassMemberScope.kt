@@ -151,8 +151,12 @@ public class LazyJavaClassMemberScope(
     }
 
     private fun PropertyDescriptor.findGetterOverride(): JavaMethodDescriptor? {
-        val specialGetterName = getter?.getOverriddenBuiltinWithDifferentJvmName()?.getBuiltinSpecialPropertyGetterName()
-        if (specialGetterName != null) {
+        val overriddenBuiltinProperty = getter?.getOverriddenBuiltinWithDifferentJvmName()
+        val specialGetterName = overriddenBuiltinProperty?.getBuiltinSpecialPropertyGetterName()
+        if (specialGetterName != null
+                && !this@LazyJavaClassMemberScope.getContainingDeclaration().hasRealKotlinSuperClassWithOverrideOf(
+                overriddenBuiltinProperty!!)
+        ) {
             return findGetterByName(specialGetterName)
         }
 
@@ -294,6 +298,11 @@ public class LazyJavaClassMemberScope(
                     overriddenProperty.findSetterOverride()!!
                 else
                     null
+
+        assert(setterMethod?.let { it.modality == getterMethod.modality } ?: true) {
+            "Different accessors modalities when creating overrides for $overriddenProperty in ${getContainingDeclaration()}" +
+            "for getter is ${getterMethod.modality}, but for setter is ${setterMethod?.modality}"
+        }
 
         val propertyDescriptor = JavaPropertyDescriptor(
                 getContainingDeclaration(), Annotations.EMPTY, getterMethod.modality, getterMethod.visibility,
