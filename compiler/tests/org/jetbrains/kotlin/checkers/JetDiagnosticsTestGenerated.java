@@ -9319,6 +9319,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                     String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/removeAtInt.kt");
                     doTest(fileName);
                 }
+
+                @TestMetadata("sizeFromKotlinOverriddenInJava.kt")
+                public void testSizeFromKotlinOverriddenInJava() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/j+k/collectionOverrides/sizeFromKotlinOverriddenInJava.kt");
+                    doTest(fileName);
+                }
             }
 
             @TestMetadata("compiler/testData/diagnostics/tests/j+k/properties")
@@ -11922,6 +11928,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("RedeclaredTypeParameters.kt")
             public void testRedeclaredTypeParameters() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/redeclarations/RedeclaredTypeParameters.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("RedeclaringPrivateToFile.kt")
+            public void testRedeclaringPrivateToFile() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/redeclarations/RedeclaringPrivateToFile.kt");
                 doTest(fileName);
             }
 
