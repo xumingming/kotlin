@@ -105,7 +105,9 @@ public class ReplOutputProcessor(
 
     fun highlightCompilerErrors(compilerMessages: List<SeverityDetails>) = WriteCommandAction.runWriteCommandAction(project) {
         val commandHistory = runner.commandHistory
-        val lastCommandStartOffset = historyDocument.textLength - commandHistory[commandHistory.size - 1].entryText.length - 1
+        val lastUnprocessedHistoryEntry = commandHistory.lastUnprocessedEntry()
+                ?: return@runWriteCommandAction logError(ReplOutputProcessor::class.java, "")
+        val lastCommandStartOffset = lastUnprocessedHistoryEntry.rangeInHistoryDocument.startOffset
         val lastCommandStartLine = historyDocument.getLineNumber(lastCommandStartOffset)
         val historyCommandRunIndicator = historyMarkup.allHighlighters.filter {
             historyDocument.getLineNumber(it.startOffset) == lastCommandStartLine && it.gutterIconRenderer != null
