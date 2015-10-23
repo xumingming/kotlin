@@ -213,7 +213,7 @@ public abstract class LazyJavaScope(
                     varargElementType,
                     c.components.sourceElementFactory.source(javaParameter)
             )
-        }.toList()
+        }.toReadOnlyList()
         return ResolvedValueParameters(descriptors, synthesizedNames)
     }
 

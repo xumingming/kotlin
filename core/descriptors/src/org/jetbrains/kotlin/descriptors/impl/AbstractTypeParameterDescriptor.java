@@ -38,6 +38,9 @@ import java.util.Set;
 import static org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt.getBuiltIns;
 
 public abstract class AbstractTypeParameterDescriptor extends DeclarationDescriptorNonRootImpl implements TypeParameterDescriptor {
+    private static final Set<KotlinType> FALLBACK_UPPER_BOUNDS_ON_RECURSION =
+            Collections.singleton(ErrorUtils.createErrorType("Recursion while calculating upper bounds"));
+
     private final Variance variance;
     private final boolean reified;
     private final int index;
@@ -87,7 +90,7 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
             public Set<KotlinType> invoke() {
                 return resolveUpperBounds();
             }
-        }, Collections.singleton(ErrorUtils.createErrorType("Recursion while calculating upper bounds")));
+        }, FALLBACK_UPPER_BOUNDS_ON_RECURSION);
         this.upperBoundsAsType = storageManager.createLazyValue(new Function0<KotlinType>() {
             @Override
             public KotlinType invoke() {

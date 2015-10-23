@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.descriptors.impl.ClassDescriptorBase;
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation;
 import org.jetbrains.kotlin.lexer.KtTokens;
+import org.jetbrains.kotlin.name.FqNameUnsafe;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.*;
@@ -114,7 +115,10 @@ public class LazyClassDescriptor extends ClassDescriptorBase implements ClassDes
         if (classOrObject != null) {
             this.c.getTrace().record(BindingContext.CLASS, classOrObject, this);
         }
-        this.c.getTrace().record(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, DescriptorUtils.getFqName(this), this);
+        FqNameUnsafe fqName = DescriptorUtils.getFqName(this);
+        if (fqName.isSafe()) {
+            this.c.getTrace().record(BindingContext.FQ_NAME_TO_CLASS_DESCRIPTOR, fqName.toSafe(), this);
+        }
 
         this.declarationProvider = c.getDeclarationProviderFactory().getClassMemberDeclarationProvider(classLikeInfo);
 

@@ -30,12 +30,9 @@ import org.jetbrains.kotlin.types.TypeSubstitutor;
 import java.util.Collection;
 
 public class ValueParameterDescriptorImpl extends VariableDescriptorImpl implements ValueParameterDescriptor {
-    private final boolean declaresDefaultValue;
-    private final boolean isCrossinline;
-    private final boolean isNoinline;
-    private final KotlinType varargElementType;
     private final int index;
     private final ValueParameterDescriptor original;
+    private final Data data;
 
     public ValueParameterDescriptorImpl(
             @NotNull CallableDescriptor containingDeclaration,
@@ -53,10 +50,7 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
         super(containingDeclaration, annotations, name, outType, source);
         this.original = original == null ? this : original;
         this.index = index;
-        this.declaresDefaultValue = declaresDefaultValue;
-        this.isCrossinline = isCrossinline;
-        this.isNoinline = isNoinline;
-        this.varargElementType = varargElementType;
+        this.data = Data.create(declaresDefaultValue, isCrossinline, isNoinline, varargElementType);
     }
 
     @NotNull
@@ -72,23 +66,23 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
 
     @Override
     public boolean declaresDefaultValue() {
-        return declaresDefaultValue && ((CallableMemberDescriptor) getContainingDeclaration()).getKind().isReal();
+        return data.declaresDefaultValue && ((CallableMemberDescriptor) getContainingDeclaration()).getKind().isReal();
     }
 
     @Override
     public boolean isCrossinline() {
-        return isCrossinline;
+        return data.isCrossinline;
     }
 
     @Override
     public boolean isNoinline() {
-        return isNoinline;
+        return data.isNoinline;
     }
 
     @Nullable
     @Override
     public KotlinType getVarargElementType() {
-        return varargElementType;
+        return data.varargElementType;
     }
 
     @NotNull
@@ -124,8 +118,8 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
     @Override
     public ValueParameterDescriptor copy(@NotNull CallableDescriptor newOwner, @NotNull Name newName) {
         return new ValueParameterDescriptorImpl(
-                newOwner, null, index, getAnnotations(), newName, getType(), declaresDefaultValue(), isCrossinline(), isNoinline(), varargElementType,
-                SourceElement.NO_SOURCE
+                newOwner, null, index, getAnnotations(), newName, getType(), declaresDefaultValue(), isCrossinline(), isNoinline(),
+                getVarargElementType(), SourceElement.NO_SOURCE
         );
     }
 
@@ -146,5 +140,34 @@ public class ValueParameterDescriptorImpl extends VariableDescriptorImpl impleme
                         return descriptor.getValueParameters().get(getIndex());
                     }
                 });
+    }
+
+    private static class Data {
+        public static final Data DEFAULT = new Data(false, false, false, null);
+
+        private final boolean declaresDefaultValue;
+        private final boolean isCrossinline;
+        private final boolean isNoinline;
+        private final KotlinType varargElementType;
+
+        private Data(boolean declaresDefaultValue, boolean isCrossinline, boolean isNoinline, @Nullable KotlinType varargElementType) {
+            this.declaresDefaultValue = declaresDefaultValue;
+            this.isCrossinline = isCrossinline;
+            this.isNoinline = isNoinline;
+            this.varargElementType = varargElementType;
+        }
+
+        public static Data create(
+                boolean declaresDefaultValue, boolean isCrossinline, boolean isNoinline, @Nullable KotlinType varargElementType
+        ) {
+            if (declaresDefaultValue == DEFAULT.declaresDefaultValue &&
+                isCrossinline == DEFAULT.isCrossinline &&
+                isNoinline == DEFAULT.isNoinline &&
+                varargElementType == DEFAULT.varargElementType) {
+                return DEFAULT;
+            }
+
+            return new Data(declaresDefaultValue, isCrossinline, isNoinline, varargElementType);
+        }
     }
 }

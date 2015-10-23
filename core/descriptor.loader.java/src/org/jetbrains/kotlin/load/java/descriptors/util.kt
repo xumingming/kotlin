@@ -30,13 +30,14 @@ import org.jetbrains.kotlin.serialization.deserialization.NameResolver
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.utils.toReadOnlyList
 
 fun copyValueParameters(
         newValueParametersTypes: Collection<KotlinType>,
         oldValueParameters: Collection<ValueParameterDescriptor>,
         newOwner: CallableDescriptor
 ): List<ValueParameterDescriptor> {
-    assert(newValueParametersTypes.size() == oldValueParameters.size()) {
+    assert(newValueParametersTypes.size == oldValueParameters.size) {
         "Different value parameters sizes: Enhanced = ${newValueParametersTypes.size}, Old = ${oldValueParameters.size}"
     }
 
@@ -56,7 +57,7 @@ fun copyValueParameters(
                 if (oldParameter.getVarargElementType() != null) newOwner.module.builtIns.getArrayElementType(newType) else null,
                 oldParameter.getSource()
         )
-    }
+    }.toReadOnlyList()
 }
 
 fun ClassDescriptor.getParentJavaStaticClassScope(): LazyJavaStaticClassScope? {

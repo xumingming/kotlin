@@ -63,12 +63,12 @@ public abstract class TypeConstructorSubstitution : TypeSubstitution() {
 }
 
 public class IndexedParametersSubstitution(
-    private val parameters: Array<TypeParameterDescriptor>,
-    private val arguments: Array<TypeProjection>
+    private val parameters: List<TypeParameterDescriptor>,
+    private val arguments: List<TypeProjection>
 ) : TypeSubstitution() {
     init {
-        assert(parameters.size() <= arguments.size()) {
-            "Number of arguments should not be less then number of parameters, but: parameters=${parameters.size()}, args=${arguments.size()}"
+        assert(parameters.size <= arguments.size) {
+            "Number of arguments should not be less then number of parameters, but: parameters=${parameters.size}, args=${arguments.size}"
         }
     }
 
@@ -76,17 +76,13 @@ public class IndexedParametersSubstitution(
             typeConstructor: TypeConstructor, argumentsList: List<TypeProjection>
     ) : this(typeConstructor.parameters, argumentsList)
 
-    constructor(
-            parameters: List<TypeParameterDescriptor>, argumentsList: List<TypeProjection>
-    ) : this(parameters.toTypedArray(), argumentsList.toTypedArray())
-
     override fun isEmpty(): Boolean = arguments.isEmpty()
 
     override fun get(key: KotlinType): TypeProjection? {
         val parameter = key.constructor.declarationDescriptor as? TypeParameterDescriptor ?: return null
         val index = parameter.index
 
-        if (index < parameters.size() && parameters[index].typeConstructor == parameter.typeConstructor) {
+        if (index < parameters.size && parameters[index].typeConstructor == parameter.typeConstructor) {
             return arguments[index]
         }
 
