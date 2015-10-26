@@ -24,8 +24,8 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.getResolutionFacade
-import org.jetbrains.kotlin.idea.core.getResolutionScope
 import org.jetbrains.kotlin.idea.resolve.frontendService
+import org.jetbrains.kotlin.idea.util.getResolutionScope
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.load.java.descriptors.SamAdapterDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.SamConstructorDescriptor
@@ -41,7 +41,7 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.isReallySuccess
 import org.jetbrains.kotlin.resolve.calls.util.DelegatingCall
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.resolve.scopes.utils.getFileScope
+import org.jetbrains.kotlin.resolve.scopes.utils.collectAllFromImportingScopes
 import org.jetbrains.kotlin.synthetic.SamAdapterExtensionFunctionDescriptor
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.utils.addToStdlib.check
@@ -114,7 +114,7 @@ public class RedundantSamConstructorInspection : AbstractKotlinInspection() {
             val context = parentCall.analyze(BodyResolveMode.PARTIAL)
 
             val calleeExpression = parentCall.calleeExpression ?: return false
-            val scope = context[BindingContext.LEXICAL_SCOPE, calleeExpression] ?: return false
+            val scope = calleeExpression.getResolutionScope(context, calleeExpression.getResolutionFacade())
 
             val originalCall = parentCall.getResolvedCall(context) ?: return false
 
@@ -178,12 +178,13 @@ public class RedundantSamConstructorInspection : AbstractKotlinInspection() {
             }
 
             // SAM adapters for member functions
-            val resolutionScope = functionCall.getResolutionScope(bindingContext, functionCall.getResolutionFacade()).getFileScope()
-            val syntheticExtensions = resolutionScope.getSyntheticExtensionFunctions(
-                    containingClass.defaultType.singletonList(),
-                    functionResolvedCall.resultingDescriptor.name,
-                    NoLookupLocation.FROM_IDE
-            )
+            val resolutionScope = functionCall.getResolutionScope(bindingContext, functionCall.getResolutionFacade())
+            val syntheticExtensions = resolutionScope.collectAllFromImportingScopes {
+                it.getContributedSyntheticExtensionFunctions(
+                        containingClass.defaultType.singletonList(),
+                        functionResolvedCall.resultingDescriptor.name,
+                        NoLookupLocation.FROM_IDE)
+            }
             for (syntheticExtension in syntheticExtensions) {
                 val samAdapter = syntheticExtension as? SamAdapterExtensionFunctionDescriptor ?: continue
                 if (isSamAdapterSuitableForCall(samAdapter, originalFunctionDescriptor, samConstructorCalls.size())) {

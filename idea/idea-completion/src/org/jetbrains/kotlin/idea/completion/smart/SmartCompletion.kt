@@ -80,7 +80,7 @@ class SmartCompletion(
     private val callableTypeExpectedInfo = expectedInfos.filterCallableExpected()
 
     public val smartCastCalculator: SmartCastCalculator by lazy(LazyThreadSafetyMode.NONE) {
-        SmartCastCalculator(bindingContext, resolutionFacade.moduleDescriptor, expression)
+        SmartCastCalculator(bindingContext, resolutionFacade.moduleDescriptor, expression, resolutionFacade)
     }
 
     public val descriptorFilter: ((DeclarationDescriptor) -> Collection<LookupElement>)?
@@ -204,7 +204,8 @@ class SmartCompletion(
                         .addTo(items, inheritanceSearchers, expectedInfos)
 
                 if (expression is KtSimpleNameExpression) {
-                    StaticMembers(bindingContext, lookupElementFactory).addToCollection(items, expectedInfos, expression, descriptorsToSkip)
+                    StaticMembers(bindingContext, lookupElementFactory, resolutionFacade)
+                            .addToCollection(items, expectedInfos, expression, descriptorsToSkip)
                 }
 
                 ClassLiteralItems.addToCollection(items, expectedInfos, lookupElementFactory, isJvmModule)
@@ -228,7 +229,8 @@ class SmartCompletion(
                     }
                 }
 
-                MultipleArgumentsItemProvider(bindingContext, smartCastCalculator).addToCollection(items, expectedInfos, expression)
+                MultipleArgumentsItemProvider(bindingContext, smartCastCalculator, resolutionFacade)
+                        .addToCollection(items, expectedInfos, expression)
             }
         }
 

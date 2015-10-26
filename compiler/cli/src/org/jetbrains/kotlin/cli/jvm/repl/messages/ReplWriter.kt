@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.console.gutter
+package org.jetbrains.kotlin.cli.jvm.repl.messages
 
-import com.intellij.openapi.editor.markup.GutterIconRenderer
-
-public class KotlinConsoleIndicatorRenderer(iconWithTooltip: IconWithTooltip) : GutterIconRenderer() {
-    private val icon = iconWithTooltip.icon
-    private val tooltip = iconWithTooltip.tooltip
-
-    override fun getIcon() = icon
-    override fun getTooltipText() = tooltip
-
-    override fun hashCode() = icon.hashCode()
-    override fun equals(other: Any?) = icon == (other as? KotlinConsoleIndicatorRenderer)?.icon ?: null
+interface ReplWriter {
+    fun printlnWelcomeMessage(x: String)
+    fun printlnHelpMessage(x: String)
+    fun outputCommandResult(x: Any?)
+    fun notifyReadLineStart()
+    fun notifyReadLineEnd()
+    fun notifyIncomplete()
+    fun notifyCommandSuccess()
+    fun outputCompileError(x: String)
+    fun outputRuntimeError(x: String)
+    fun sendInternalErrorReport(x: String)
 }

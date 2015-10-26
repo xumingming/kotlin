@@ -270,8 +270,8 @@ public class ResolveElementCache(
             is KtInitializerList -> delegationSpecifierAdditionalResolve(resolveSession, resolveElement, resolveElement.getParent() as KtEnumEntry, file)
 
             is KtImportList -> {
-                val scope = resolveSession.getFileScopeProvider().getFileScope(resolveElement.getContainingJetFile())
-                scope.forceResolveAllImports()
+                val resolver = resolveSession.fileScopeProvider.getImportResolver(resolveElement.getContainingJetFile())
+                resolver.forceResolveAllImports()
                 resolveSession.trace
             }
 
@@ -307,11 +307,6 @@ public class ResolveElementCache(
 
         if (ktElement is KtSimpleNameExpression) {
             val header = ktElement.getParentOfType<KtPackageDirective>(true)!!
-
-            if (trace.getBindingContext()[BindingContext.RESOLUTION_SCOPE, ktElement] == null) {
-                val scope = resolveSession.getModuleDescriptor().getPackage(header.getFqName(ktElement).parent()).memberScope
-                trace.record(BindingContext.RESOLUTION_SCOPE, ktElement, scope)
-            }
 
             if (Name.isValidIdentifier(ktElement.getReferencedName())) {
                 if (trace.getBindingContext()[BindingContext.REFERENCE_TARGET, ktElement] == null) {

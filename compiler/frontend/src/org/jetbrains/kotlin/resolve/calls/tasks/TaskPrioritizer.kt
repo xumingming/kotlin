@@ -31,22 +31,20 @@ import org.jetbrains.kotlin.resolve.calls.callResolverUtil.isOrOverridesSynthesi
 import org.jetbrains.kotlin.resolve.calls.context.BasicCallResolutionContext
 import org.jetbrains.kotlin.resolve.calls.context.ResolutionContext
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
-import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind.BOTH_RECEIVERS
-import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind.DISPATCH_RECEIVER
-import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind.EXTENSION_RECEIVER
-import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind.NO_EXPLICIT_RECEIVER
+import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind.*
 import org.jetbrains.kotlin.resolve.calls.tasks.collectors.CallableDescriptorCollector
 import org.jetbrains.kotlin.resolve.calls.tasks.collectors.CallableDescriptorCollectors
 import org.jetbrains.kotlin.resolve.calls.tasks.collectors.filtered
 import org.jetbrains.kotlin.resolve.calls.util.FakeCallableDescriptorForObject
 import org.jetbrains.kotlin.resolve.descriptorUtil.hasLowPriorityInOverloadResolution
+import org.jetbrains.kotlin.resolve.scopes.ImportingScope
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue.NO_RECEIVER
-import org.jetbrains.kotlin.resolve.scopes.utils.asJetScope
+import org.jetbrains.kotlin.resolve.scopes.utils.asKtScope
 import org.jetbrains.kotlin.resolve.scopes.utils.getImplicitReceiversHierarchy
-import org.jetbrains.kotlin.resolve.scopes.utils.memberScopeAsFileScope
+import org.jetbrains.kotlin.resolve.scopes.utils.memberScopeAsImportingScope
 import org.jetbrains.kotlin.resolve.validation.InfixValidator
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.ErrorUtils
@@ -74,7 +72,7 @@ public class TaskPrioritizer(
 
         if (explicitReceiver is QualifierReceiver) {
             val qualifierReceiver: QualifierReceiver = explicitReceiver
-            val receiverScope = qualifierReceiver.getNestedClassesAndPackageMembersScope().memberScopeAsFileScope()
+            val receiverScope = qualifierReceiver.getNestedClassesAndPackageMembersScope().memberScopeAsImportingScope()
             doComputeTasks(NO_RECEIVER, taskPrioritizerContext.replaceScope(receiverScope))
             computeTasksForClassObjectReceiver(qualifierReceiver, taskPrioritizerContext)
         }
@@ -205,7 +203,7 @@ public class TaskPrioritizer(
             //extensions
             c.result.addCandidates {
                 val extensions = callableDescriptorCollector.getExtensionsByName(
-                        c.scope.asJetScope(), c.name, explicitReceiver.types, createLookupLocation(c))
+                        c.scope.asKtScope(), c.name, explicitReceiver.types, createLookupLocation(c))
                 val filteredExtensions = if (filter == null) extensions else extensions.filter(filter)
 
                 convertWithImpliedThis(
@@ -326,8 +324,8 @@ public class TaskPrioritizer(
         //nonlocals
         c.callableDescriptorCollectors.forEach {
             c.result.addCandidates {
-                val descriptors = it.getNonExtensionsByName(c.scope.asJetScope(), c.name, lookupLocation)
-                        .filter { !ExpressionTypingUtils.isLocal(c.scope.ownerDescriptor, it) }
+                val descriptors = it.getNonExtensionsByName(c.scope.asKtScope(), c.name, lookupLocation)
+                        .filter { c.scope is ImportingScope || !ExpressionTypingUtils.isLocal(c.scope.ownerDescriptor, it) }
                 convertWithImpliedThisAndNoReceiver(c.scope, descriptors, c.context.call)
             }
         }

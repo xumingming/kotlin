@@ -27,9 +27,10 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.descriptorUtil.parentsWithSelf
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.resolve.scopes.KtScope
+import org.jetbrains.kotlin.resolve.scopes.ImportingScope
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.utils.Printer
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -37,7 +38,7 @@ interface SamAdapterExtensionFunctionDescriptor : FunctionDescriptor {
     val sourceFunction: FunctionDescriptor
 }
 
-class SamAdapterFunctionsScope(storageManager: StorageManager) : KtScope by KtScope.Empty {
+class SamAdapterFunctionsScope(storageManager: StorageManager) : ImportingScope by ImportingScope.Empty {
     private val extensionForFunction = storageManager.createMemoizedFunctionWithNullableValues<FunctionDescriptor, FunctionDescriptor> { function ->
         extensionForFunctionNotCached(function)
     }
@@ -52,7 +53,7 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : KtScope by KtSc
         return MyFunctionDescriptor.create(enhancedFunction)
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
+    override fun getContributedSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
         var result: SmartList<FunctionDescriptor>? = null
         for (type in receiverTypes) {
             for (function in type.memberScope.getFunctions(name, location)) {
@@ -72,13 +73,17 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : KtScope by KtSc
         }
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>): Collection<FunctionDescriptor> {
+    override fun getContributedSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>): Collection<FunctionDescriptor> {
         return receiverTypes.flatMapTo(LinkedHashSet<FunctionDescriptor>()) { type ->
             type.memberScope.getDescriptors(DescriptorKindFilter.FUNCTIONS)
                     .filterIsInstance<FunctionDescriptor>()
                     .map { extensionForFunction(it.original) }
                     .filterNotNull()
         }
+    }
+
+    override fun printStructure(p: Printer) {
+        p.println(javaClass.simpleName)
     }
 
     private class MyFunctionDescriptor(
