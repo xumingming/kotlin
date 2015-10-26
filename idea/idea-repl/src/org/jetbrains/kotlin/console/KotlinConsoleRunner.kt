@@ -67,7 +67,7 @@ public class KotlinConsoleRunner(
         title: String,
         path: String?
 ) : AbstractConsoleRunnerWithHistory<LanguageConsoleView>(myProject, title, path) {
-    internal val commandHistory = CommandHistory()
+    val commandHistory = CommandHistory()
 
     private var consoleEditorHighlighter by Delegates.notNull<RangeHighlighter>()
     private var disposableDescriptor by Delegates.notNull<RunContentDescriptor>()
