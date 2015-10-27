@@ -50,4 +50,7 @@ class DeserializedTypeParameterDescriptor(
         }
         return result
     }
+
+    override fun reportCycleError() = throw IllegalStateException(
+            "There should be no cycles for deserialized type parameters, but found for: $this")
 }

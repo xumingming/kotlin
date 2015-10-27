@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.resolve.lazy.descriptors;
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.descriptors.impl.AbstractLazyTypeParameterDescriptor;
+import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingContext;
@@ -55,6 +56,11 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
         this.c.getTrace().record(BindingContext.TYPE_PARAMETER, jetTypeParameter, this);
     }
 
+    @Override
+    protected void reportCycleError() {
+        c.getTrace().report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(jetTypeParameter));
+    }
+
     @NotNull
     @Override
     protected Set<KotlinType> resolveUpperBounds() {
@@ -64,8 +70,7 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
 
         KtTypeReference extendsBound = jetTypeParameter.getExtendsBound();
         if (extendsBound != null) {
-            KotlinType boundType = c.getDescriptorResolver().resolveTypeParameterExtendsBound(
-                    this, extendsBound, getContainingDeclaration().getScopeForClassHeaderResolution(), c.getTrace());
+            KotlinType boundType = resolveBoundType(extendsBound);
             upperBounds.add(boundType);
         }
 

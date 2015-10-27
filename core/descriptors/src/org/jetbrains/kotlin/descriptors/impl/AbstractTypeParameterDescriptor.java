@@ -16,7 +16,9 @@
 
 package org.jetbrains.kotlin.descriptors.impl;
 
+import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.ReadOnly;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
@@ -82,12 +84,36 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
                                        )));
             }
         });
-        this.upperBounds = storageManager.createRecursionTolerantLazyValue(new Function0<Set<KotlinType>>() {
-            @Override
-            public Set<KotlinType> invoke() {
-                return resolveUpperBounds();
-            }
-        }, Collections.singleton(ErrorUtils.createErrorType("Recursion while calculating upper bounds")));
+        this.upperBounds = storageManager.createLazyValueWithPostCompute(
+                new Function0<Set<KotlinType>>() {
+                    @Override
+                    public Set<KotlinType> invoke() {
+                        return resolveUpperBounds();
+                    }
+                },
+                new Function1<Boolean, Set<KotlinType>>() {
+                    @Override
+                    public Set<KotlinType> invoke(Boolean aBoolean) {
+                        return Collections.singleton(ErrorUtils.createErrorType("Recursion while calculating upper bounds"));
+                    }
+                },
+                new Function1<Set<KotlinType>, Unit>() {
+                    @Override
+                    public Unit invoke(Set<KotlinType> types) {
+                        TypeParameterLoops.findAndDisconnectLoopsInBounds(
+                            AbstractTypeParameterDescriptor.this,
+                            types,
+                            new Function0<Unit>() {
+                                @Override
+                                public Unit invoke() {
+                                    reportCycleError();
+                                    return null;
+                                }
+                            }
+                        );
+                        return null;
+                    }
+                });
         this.upperBoundsAsType = storageManager.createLazyValue(new Function0<KotlinType>() {
             @Override
             public KotlinType invoke() {
@@ -95,6 +121,8 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
             }
         });
     }
+
+    protected abstract void reportCycleError();
 
     @NotNull
     @ReadOnly

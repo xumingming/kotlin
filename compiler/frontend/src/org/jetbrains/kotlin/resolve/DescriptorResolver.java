@@ -406,9 +406,9 @@ public class DescriptorResolver {
             DeclarationDescriptor containingDescriptor,
             LexicalWritableScope extensibleScope,
             LexicalScope scopeForAnnotationsResolve,
-            KtTypeParameter typeParameter,
+            final KtTypeParameter typeParameter,
             int index,
-            BindingTrace trace
+            final BindingTrace trace
     ) {
         if (typeParameter.getVariance() != Variance.INVARIANT) {
             assert !(containingDescriptor instanceof ClassifierDescriptor) : "This method is intended for functions/properties";
@@ -425,7 +425,14 @@ public class DescriptorResolver {
                 typeParameter.getVariance(),
                 KtPsiUtil.safeName(typeParameter.getName()),
                 index,
-                KotlinSourceElementKt.toSourceElement(typeParameter)
+                KotlinSourceElementKt.toSourceElement(typeParameter),
+                new Function0<Void>() {
+                    @Override
+                    public Void invoke() {
+                        trace.report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(typeParameter));
+                        return null;
+                    }
+                }
         );
         trace.record(BindingContext.TYPE_PARAMETER, typeParameter, typeParameterDescriptor);
         extensibleScope.addClassifierDescriptor(typeParameterDescriptor);
@@ -457,20 +464,6 @@ public class DescriptorResolver {
         }
     }
 
-    public KotlinType resolveTypeParameterExtendsBound(
-            @NotNull TypeParameterDescriptor typeParameterDescriptor,
-            @NotNull KtTypeReference extendsBound,
-            LexicalScope scope,
-            BindingTrace trace
-    ) {
-        KotlinType type = typeResolver.resolveType(scope, extendsBound, trace, false);
-        if (type.getConstructor().equals(typeParameterDescriptor.getTypeConstructor())) {
-            trace.report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(extendsBound));
-            type = ErrorUtils.createErrorType("Cyclic upper bound: " + type);
-        }
-        return type;
-    }
-
     public void resolveGenericBounds(
             @NotNull KtTypeParameterListOwner declaration,
             @NotNull DeclarationDescriptor descriptor,
@@ -490,7 +483,7 @@ public class DescriptorResolver {
 
             KtTypeReference extendsBound = jetTypeParameter.getExtendsBound();
             if (extendsBound != null) {
-                KotlinType type = resolveTypeParameterExtendsBound(typeParameterDescriptor, extendsBound, scope, trace);
+                KotlinType type = typeResolver.resolveType(scope, extendsBound, trace, false);
                 typeParameterDescriptor.addUpperBound(type);
                 deferredUpperBoundCheckerTasks.add(new UpperBoundCheckerTask(extendsBound, type));
             }

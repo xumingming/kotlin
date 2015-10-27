@@ -16,7 +16,9 @@
 
 package org.jetbrains.kotlin.descriptors.impl;
 
+import kotlin.jvm.functions.Function0;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
@@ -36,6 +38,8 @@ import java.util.Set;
 import static org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt.getBuiltIns;
 
 public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor {
+    @Nullable
+    private final Function0<Void> reportCycleError;
     public static TypeParameterDescriptor createWithDefaultBound(
             @NotNull DeclarationDescriptor containingDeclaration,
             @NotNull Annotations annotations,
@@ -60,7 +64,21 @@ public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor
             int index,
             @NotNull SourceElement source
     ) {
-        return new TypeParameterDescriptorImpl(containingDeclaration, annotations, reified, variance, name, index, source);
+        return createForFurtherModification(containingDeclaration, annotations, reified, variance, name, index, source,
+                                            /* reportCycleError = */ null);
+    }
+
+    public static TypeParameterDescriptorImpl createForFurtherModification(
+            @NotNull DeclarationDescriptor containingDeclaration,
+            @NotNull Annotations annotations,
+            boolean reified,
+            @NotNull Variance variance,
+            @NotNull Name name,
+            int index,
+            @NotNull SourceElement source,
+            @Nullable Function0<Void> reportCycleError
+    ) {
+        return new TypeParameterDescriptorImpl(containingDeclaration, annotations, reified, variance, name, index, source, reportCycleError);
     }
 
     private final Set<KotlinType> upperBounds = SmartSet.create();
@@ -73,9 +91,11 @@ public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor
             @NotNull Variance variance,
             @NotNull Name name,
             int index,
-            @NotNull SourceElement source
+            @NotNull SourceElement source,
+            @Nullable Function0<Void> reportCycleError
     ) {
         super(LockBasedStorageManager.NO_LOCKS, containingDeclaration, annotations, name, variance, reified, index, source);
+        this.reportCycleError = reportCycleError;
     }
 
     @NotNull
@@ -128,6 +148,21 @@ public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor
         if (upperBounds.isEmpty()) {
             doAddUpperBound(getBuiltIns(getContainingDeclaration()).getDefaultBound());
         }
+    }
+
+    @NotNull
+    @Override
+    public Set<KotlinType> getUpperBounds() {
+        if (!initialized) {
+            return Collections.singleton(getBuiltIns(getContainingDeclaration()).getDefaultBound());
+        }
+        return super.getUpperBounds();
+    }
+
+    @Override
+    protected void reportCycleError() {
+        if (reportCycleError == null) return;
+        reportCycleError.invoke();
     }
 
     @NotNull

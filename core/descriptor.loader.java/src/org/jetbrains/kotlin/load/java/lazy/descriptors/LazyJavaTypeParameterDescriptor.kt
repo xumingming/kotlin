@@ -60,4 +60,7 @@ class LazyJavaTypeParameterDescriptor(
         }
     }
 
+    override fun reportCycleError() {
+        // Do nothing
+    }
 }

@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.types.Variance.OUT_VARIANCE
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import org.jetbrains.kotlin.types.typeUtil.createProjection
 import org.jetbrains.kotlin.types.typeUtil.replaceAnnotations
+import org.jetbrains.kotlin.utils.SmartSet
 import org.jetbrains.kotlin.utils.sure
 import java.util.*
 
