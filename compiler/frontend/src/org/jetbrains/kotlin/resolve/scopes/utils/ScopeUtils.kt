@@ -140,15 +140,6 @@ public fun LexicalScope.asKtScope(): KtScope {
 @JvmOverloads
 public fun KtScope.memberScopeAsImportingScope(parentScope: ImportingScope? = null): ImportingScope = MemberScopeToImportingScopeAdapter(parentScope, this)
 
-@Deprecated("Remove this method after scope refactoring")
-public fun KtScope.asLexicalScope(): LexicalScope
-        = if (this is LexicalToKtScopeAdapter) {
-            lexicalScope
-        }
-        else {
-            memberScopeAsImportingScope()
-        }
-
 private class LexicalToKtScopeAdapter(lexicalScope: LexicalScope): KtScope {
     val lexicalScope = lexicalScope.takeSnapshot()
 
@@ -296,28 +287,22 @@ inline fun <T: Any> LexicalScope.findFirstFromImportingScopes(fetch: (ImportingS
     return findFirstFromMeAndParent { if (it is ImportingScope) fetch(it) else null }
 }
 
-fun LexicalScope.addImportScopes(importScopes: Collection<ImportingScope>): LexicalScope {
-    return importScopes.fold(this) { scope, importingScope -> scope.addImportScope(importingScope) }
-}
-
-fun LexicalScope.addImportScope(importScope: ImportingScope): LexicalScope {
-    assert(importScope.parent == null)
+fun LexicalScope.addImportingScopes(importScopes: List<ImportingScope>): LexicalScope {
     if (this is ImportingScope) {
-        return importScope.withParent(this)
+        return chainImportingScopes(importScopes, this)!!
     }
     else {
         val lastNonImporting = parentsWithSelf.last { it !is ImportingScope }
         val firstImporting = lastNonImporting.parent as ImportingScope?
-        return LexicalScopeWrapper(this, importScope.withParent(firstImporting))
+        val newFirstImporting = chainImportingScopes(importScopes, firstImporting)
+        return LexicalScopeWrapper(this, newFirstImporting)
     }
 }
 
-fun ImportingScope.withParent(newParent: ImportingScope?): ImportingScope {
-    // TODO: it's a hack for Repl
-    if (this is MemberScopeToImportingScopeAdapter) {
-        return MemberScopeToImportingScopeAdapter(newParent, memberScope)
-    }
+fun LexicalScope.addImportingScope(importScope: ImportingScope): LexicalScope
+        = addImportingScopes(listOf(importScope))
 
+fun ImportingScope.withParent(newParent: ImportingScope?): ImportingScope {
     return object: ImportingScope by this {
         override val parent: ImportingScope?
             get() = newParent
@@ -326,7 +311,7 @@ fun ImportingScope.withParent(newParent: ImportingScope?): ImportingScope {
 
 fun LexicalScope.replaceImportingScopes(importingScopeChain: ImportingScope?): LexicalScope {
     return if (this is ImportingScope)
-        importingScopeChain!!
+        importingScopeChain ?: ImportingScope.Empty
     else
         LexicalScopeWrapper(this, importingScopeChain)
 }
@@ -345,9 +330,9 @@ private class LexicalScopeWrapper(val delegate: LexicalScope, val newImportingSc
     }
 }
 
-fun chainImportingScopes(scopes: List<ImportingScope>): ImportingScope? {
+fun chainImportingScopes(scopes: List<ImportingScope>, tail: ImportingScope? = null): ImportingScope? {
     return scopes.asReversed()
-            .fold<ImportingScope, ImportingScope?>(null) { current, scope ->
+            .fold(tail) { current, scope ->
                 assert(scope.parent == null)
                 scope.withParent(current)
             }
