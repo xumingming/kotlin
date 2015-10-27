@@ -28,6 +28,8 @@ import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.types.typeUtil.boundClosure
 import org.jetbrains.kotlin.types.typeUtil.constituentTypes
 import org.jetbrains.kotlin.utils.DFS
+import org.jetbrains.kotlin.utils.Graph
+import org.jetbrains.kotlin.utils.isInCycle
 
 public object FiniteBoundRestrictionChecker {
     @JvmStatic
@@ -102,35 +104,5 @@ public object FiniteBoundRestrictionChecker {
         }
     }
 
-    private interface  Graph<T> {
-        val nodes: Set<T>
-        fun getNeighbors(node: T): List<T>
-    }
 
-    private fun <T> Graph<T>.isInCycle(from: T): Boolean {
-        var result = false
-
-        val visited = object : DFS.VisitedWithSet<T>() {
-            override fun checkAndMarkVisited(current: T): Boolean {
-                val added = super.checkAndMarkVisited(current)
-                if (!added && current == from) {
-                    result = true
-                }
-                return added
-            }
-
-        }
-
-        val handler = object : DFS.AbstractNodeHandler<T, Unit>() {
-            override fun result() {}
-        }
-
-        val neighbors = object : DFS.Neighbors<T> {
-            override fun getNeighbors(current: T) = this@isInCycle.getNeighbors(current)
-        }
-
-        DFS.dfs(listOf(from), neighbors, visited, handler)
-
-        return result
-    }
 }
