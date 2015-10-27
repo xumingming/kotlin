@@ -89,6 +89,12 @@ public class JetDiagnosticsTestWithStdLibGenerated extends AbstractJetDiagnostic
         doTest(fileName);
     }
 
+    @TestMetadata("setterVisibilitiesDelegatedProperty.kt")
+    public void testSetterVisibilitiesDelegatedProperty() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/setterVisibilitiesDelegatedProperty.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("compiler/testData/diagnostics/testsWithStdLib/annotations")
     @TestDataPath("$PROJECT_ROOT")
     @RunWith(JUnit3RunnerWithInners.class)
