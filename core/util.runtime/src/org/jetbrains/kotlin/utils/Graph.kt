@@ -17,7 +17,7 @@
 package org.jetbrains.kotlin.utils
 
 interface Edges<T> {
-    fun getNeighbors(node: T): List<T>
+    fun getNeighbors(node: T): Iterable<T>
 }
 
 interface Graph<T> : Edges<T> {
