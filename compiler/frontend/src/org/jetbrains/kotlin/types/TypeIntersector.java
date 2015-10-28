@@ -34,6 +34,7 @@ import java.util.*;
 
 import static org.jetbrains.kotlin.resolve.calls.inference.ConstraintSystemImplKt.registerTypeVariables;
 import static org.jetbrains.kotlin.resolve.calls.inference.constraintPosition.ConstraintPositionKind.SPECIAL;
+import static org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt.getBuiltIns;
 
 public class TypeIntersector {
 
@@ -42,11 +43,8 @@ public class TypeIntersector {
     }
 
     @Nullable
-    public static KotlinType intersectTypes(
-            @NotNull KotlinTypeChecker typeChecker,
-            @NotNull Set<KotlinType> types
-    ) {
-        assert (!types.isEmpty()) : "Attempting to intersect empty set of types, this case should be dealt with on the call site.";
+    public static KotlinType intersectTypes(@NotNull KotlinTypeChecker typeChecker, @NotNull Collection<KotlinType> types) {
+        assert !types.isEmpty() : "Attempting to intersect empty collection of types, this case should be dealt with on the call site.";
 
         if (types.size() == 1) {
             return types.iterator().next();
@@ -73,7 +71,7 @@ public class TypeIntersector {
 
         if (nullabilityStripped.isEmpty()) {
             // All types were errors
-            return ErrorUtils.createErrorType("Intersection of errors types: " + types);
+            return ErrorUtils.createErrorType("Intersection of error types: " + types);
         }
 
         // Now we remove types that have subtypes in the list
@@ -95,7 +93,6 @@ public class TypeIntersector {
                     if (!type.equals(other) && typeChecker.isSubtypeOf(other, type)) {
                         continue outer;
                     }
-
                 }
             }
 
@@ -143,7 +140,20 @@ public class TypeIntersector {
         );
     }
 
-    // TODO : check intersectibility, don't use a chanied scope
+    /**
+     * Note: this method was used in overload and override bindings to approximate type parameters with several bounds,
+     * but as it turned out at some point, that logic was inconsistent with Java rules, so it was simplified.
+     * Most of the other usages of this method are left untouched but probably should be investigated closely if they're still valid.
+     */
+    @NotNull
+    public static KotlinType getUpperBoundsAsType(@NotNull TypeParameterDescriptor descriptor) {
+        List<KotlinType> upperBounds = descriptor.getUpperBounds();
+        assert !upperBounds.isEmpty() : "Upper bound list is empty: " + descriptor;
+        KotlinType upperBoundsAsType = intersectTypes(KotlinTypeChecker.DEFAULT, upperBounds);
+        return upperBoundsAsType != null ? upperBoundsAsType : getBuiltIns(descriptor).getNothingType();
+    }
+
+    // TODO: check intersectability, don't use a chained scope
     private static class IntersectionScope extends ChainedScope {
         public IntersectionScope(@NotNull TypeConstructor constructor, @NotNull KtScope[] scopes) {
             super(null, "member scope for intersection type " + constructor, scopes);
