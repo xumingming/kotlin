@@ -343,6 +343,18 @@ public class KotlinSteppingTestGenerated extends AbstractKotlinSteppingTest {
             doStepOverTest(fileName);
         }
 
+        @TestMetadata("inlineFunctionSameLines.kt")
+        public void testInlineFunctionSameLines() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/stepOver/inlineFunctionSameLines.kt");
+            doStepOverTest(fileName);
+        }
+
+        @TestMetadata("stepOverForWithInline.kt")
+        public void testStepOverForWithInline() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/stepOver/stepOverForWithInline.kt");
+            doStepOverTest(fileName);
+        }
+
         @TestMetadata("stepOverIfWithInline.kt")
         public void testStepOverIfWithInline() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/stepOver/stepOverIfWithInline.kt");
@@ -394,6 +406,12 @@ public class KotlinSteppingTestGenerated extends AbstractKotlinSteppingTest {
         @TestMetadata("stepOverWhenWithInline.kt")
         public void testStepOverWhenWithInline() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/stepOver/stepOverWhenWithInline.kt");
+            doStepOverTest(fileName);
+        }
+
+        @TestMetadata("stepOverWhileWithInline.kt")
+        public void testStepOverWhileWithInline() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/stepOver/stepOverWhileWithInline.kt");
             doStepOverTest(fileName);
         }
     }
@@ -520,6 +538,18 @@ public class KotlinSteppingTestGenerated extends AbstractKotlinSteppingTest {
         @TestMetadata("severalFunLiteralsInClass.kt")
         public void testSeveralFunLiteralsInClass() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/custom/severalFunLiteralsInClass.kt");
+            doCustomTest(fileName);
+        }
+
+        @TestMetadata("smartStepIntoInlinedFunLiteral.kt")
+        public void testSmartStepIntoInlinedFunLiteral() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/custom/smartStepIntoInlinedFunLiteral.kt");
+            doCustomTest(fileName);
+        }
+
+        @TestMetadata("smartStepIntoInlinedFunctionalExpression.kt")
+        public void testSmartStepIntoInlinedFunctionalExpression() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/debugger/tinyApp/src/stepping/custom/smartStepIntoInlinedFunctionalExpression.kt");
             doCustomTest(fileName);
         }
 

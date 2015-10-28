@@ -24,6 +24,7 @@ import com.intellij.debugger.impl.DebuggerContextImpl
 import com.intellij.debugger.impl.JvmSteppingCommandProvider
 import com.intellij.psi.PsiElement
 import com.intellij.xdebugger.impl.XSourcePositionImpl
+import com.sun.jdi.AbsentInformationException
 import com.sun.jdi.Location
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.idea.util.DebuggerUtils
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import org.jetbrains.kotlin.psi.psiUtil.parents
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.inline.InlineUtil
@@ -68,7 +70,7 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
         val file = sourcePosition.file as? KtFile ?: return null
         if (sourcePosition.line < 0) return null
 
-        val containingFunction = sourcePosition.elementAt.getParentOfType<KtNamedFunction>(false) ?: return null
+        val containingFunction = sourcePosition.elementAt.parents.firstOrNull { it is KtNamedFunction && !it.isLocal } ?: return null
 
         val startLineNumber = containingFunction.getLineNumber(true)
         val endLineNumber = containingFunction.getLineNumber(false)
@@ -168,6 +170,12 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
             }
         }
 
+        val whileParent = getParentOfType<KtWhileExpression>(false)
+        if (whileParent != null) {
+            // last statement in while
+            return (whileParent.body as? KtBlockExpression)?.statements?.lastOrNull()?.getLineNumber() == elementAt.getLineNumber()
+        }
+
         return false
     }
 
@@ -221,11 +229,12 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
     private fun getInlineArgumentsIfAny(inlineFunctionCalls: List<KtCallExpression>): List<KtFunction> {
         return inlineFunctionCalls.flatMap {
             it.valueArguments
-                    .map { it.getArgumentExpression()  }
-                    .filterIsInstance<KtFunctionLiteralExpression>()
-                    .map { it.functionLiteral }
+                    .map { getArgumentExpression(it)  }
+                    .filterIsInstance<KtFunction>()
         }
     }
+
+    private fun getArgumentExpression(it: ValueArgument) = (it.getArgumentExpression() as? KtFunctionLiteralExpression)?.functionLiteral ?: it.getArgumentExpression()
 
     private fun getInlineFunctionCallsIfAny(sourcePosition: SourcePosition): List<KtCallExpression> {
         val file = sourcePosition.file as? KtFile ?: return emptyList()
@@ -283,10 +292,23 @@ fun getStepOutPosition(
 ): XSourcePositionImpl? {
     val computedReferenceType = location.declaringType() ?: return null
 
+    fun isLocationSuitable(nextLocation: Location): Boolean {
+        if (nextLocation.method() != location.method() || nextLocation.lineNumber() !in range) {
+            return false
+        }
+
+        return try {
+            nextLocation.sourceName("Kotlin") == file.name
+        }
+        catch(e: AbsentInformationException) {
+            return true
+        }
+    }
+
     val locations = computedReferenceType.allLineLocations()
             .dropWhile { it != location }
             .drop(1)
-            .filter { it.method() == location.method() && it.lineNumber() in range }
+            .filter { isLocationSuitable(it) }
             .dropWhile { it.lineNumber() == location.lineNumber() }
 
     for (locationAtLine in locations) {
