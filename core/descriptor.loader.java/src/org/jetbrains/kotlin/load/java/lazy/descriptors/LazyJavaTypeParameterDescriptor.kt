@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.load.java.components.TypeUsage
 import org.jetbrains.kotlin.load.java.lazy.LazyJavaResolverContext
 import org.jetbrains.kotlin.load.java.lazy.types.toAttributes
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.descriptors.SupertypeLoopsResolver
 import org.jetbrains.kotlin.load.java.lazy.types.LazyJavaTypeResolver
 import org.jetbrains.kotlin.load.java.lazy.types.toFlexible
 
@@ -60,7 +61,9 @@ class LazyJavaTypeParameterDescriptor(
         }
     }
 
-    override fun reportCycleError() {
+    override fun getSupertypeLoopsResolver() = c.components.supertypeLoopsResolver
+
+    override fun reportCycleError(type: KotlinType) {
         // Do nothing
     }
 }

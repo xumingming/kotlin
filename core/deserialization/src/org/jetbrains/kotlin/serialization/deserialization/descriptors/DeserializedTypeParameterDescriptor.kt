@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.serialization.deserialization.descriptors
 
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.descriptors.SupertypeLoopsResolver
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationWithTarget
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.impl.AbstractLazyTypeParameterDescriptor
@@ -51,6 +52,8 @@ class DeserializedTypeParameterDescriptor(
         return result
     }
 
-    override fun reportCycleError() = throw IllegalStateException(
+    override fun getSupertypeLoopsResolver() = SupertypeLoopsResolver.EMPTY
+
+    override fun reportCycleError(type: KotlinType) = throw IllegalStateException(
             "There should be no cycles for deserialized type parameters, but found for: $this")
 }

@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.resolve.lazy.descriptors;
 
 import com.google.common.collect.Sets;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.descriptors.SupertypeLoopsResolver;
 import org.jetbrains.kotlin.descriptors.impl.AbstractLazyTypeParameterDescriptor;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.lexer.KtTokens;
@@ -28,7 +29,11 @@ import org.jetbrains.kotlin.resolve.lazy.LazyClassContext;
 import org.jetbrains.kotlin.resolve.lazy.LazyEntity;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElementKt;
 import org.jetbrains.kotlin.types.KotlinType;
+import org.jetbrains.kotlin.utils.CollectionsKt;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescriptor implements LazyEntity {
@@ -56,9 +61,20 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
         this.c.getTrace().record(BindingContext.TYPE_PARAMETER, jetTypeParameter, this);
     }
 
+    @NotNull
     @Override
-    protected void reportCycleError() {
-        c.getTrace().report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(jetTypeParameter));
+    protected SupertypeLoopsResolver getSupertypeLoopsResolver() {
+        return c.getSupertypeLoopsResolver();
+    }
+
+    @Override
+    protected void reportCycleError(@NotNull KotlinType type) {
+        for (KtTypeReference typeReference : getAllUpperBounds()) {
+            if (resolveBoundType(typeReference).getConstructor().equals(type.getConstructor())) {
+                c.getTrace().report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(typeReference));
+                return;
+            }
+        }
     }
 
     @NotNull
@@ -66,15 +82,9 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
     protected Set<KotlinType> resolveUpperBounds() {
         Set<KotlinType> upperBounds = Sets.newLinkedHashSet();
 
-        KtTypeParameter jetTypeParameter = this.jetTypeParameter;
-
-        KtTypeReference extendsBound = jetTypeParameter.getExtendsBound();
-        if (extendsBound != null) {
-            KotlinType boundType = resolveBoundType(extendsBound);
-            upperBounds.add(boundType);
+        for (KtTypeReference typeReference : getAllUpperBounds()) {
+            upperBounds.add(resolveBoundType(typeReference));
         }
-
-        resolveUpperBoundsFromWhereClause(upperBounds);
 
         if (upperBounds.isEmpty()) {
             upperBounds.add(c.getModuleDescriptor().getBuiltIns().getDefaultBound());
@@ -83,7 +93,18 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
         return upperBounds;
     }
 
-    private void resolveUpperBoundsFromWhereClause(Set<KotlinType> upperBounds) {
+    private Collection<KtTypeReference> getAllUpperBounds() {
+        return kotlin.CollectionsKt.plus(
+                jetTypeParameter.getExtendsBound() != null
+                ? Collections.singletonList(jetTypeParameter.getExtendsBound())
+                : Collections.<KtTypeReference>emptyList(),
+                getUpperBoundsFromWhereClause()
+        );
+    }
+
+    private Collection<KtTypeReference> getUpperBoundsFromWhereClause() {
+        Collection<KtTypeReference> result = new ArrayList<KtTypeReference>();
+
         KtClassOrObject classOrObject = KtStubbedPsiUtil.getPsiOrStubParent(jetTypeParameter, KtClassOrObject.class, true);
         if (classOrObject instanceof KtClass) {
             KtClass ktClass = (KtClass) classOrObject;
@@ -95,14 +116,14 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
 
                         KtTypeReference boundTypeReference = jetTypeConstraint.getBoundTypeReference();
                         if (boundTypeReference != null) {
-                            KotlinType boundType = resolveBoundType(boundTypeReference);
-                            upperBounds.add(boundType);
+                            result.add(boundTypeReference);
                         }
                     }
                 }
             }
         }
 
+        return result;
     }
 
     private KotlinType resolveBoundType(@NotNull KtTypeReference boundTypeReference) {

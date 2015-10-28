@@ -53,7 +53,6 @@ public class DescriptorSubstitutor {
                     index++,
                     SourceElement.NO_SOURCE
             );
-            substituted.setInitialized();
 
             mutableSubstitution.put(descriptor.getTypeConstructor(), new TypeProjectionImpl(substituted.getDefaultType()));
 
@@ -68,8 +67,9 @@ public class DescriptorSubstitutor {
         for (TypeParameterDescriptor descriptor : typeParameters) {
             TypeParameterDescriptorImpl substituted = substitutedMap.get(descriptor);
             for (KotlinType upperBound : descriptor.getUpperBounds()) {
-                substituted.getUpperBounds().add(substitutor.substitute(upperBound, Variance.INVARIANT));
+                substituted.addUpperBound(substitutor.substitute(upperBound, Variance.INVARIANT));
             }
+            substituted.setInitialized();
         }
 
         return substitutor;

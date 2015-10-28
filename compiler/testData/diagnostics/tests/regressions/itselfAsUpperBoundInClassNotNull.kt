@@ -1,1 +1,1 @@
-class MyClass<<!CYCLIC_GENERIC_UPPER_BOUND!>T: T<!>>
+class MyClass<T: <!CYCLIC_GENERIC_UPPER_BOUND!>T<!>>

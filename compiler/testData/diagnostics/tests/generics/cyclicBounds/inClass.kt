@@ -1,7 +1,7 @@
-class A1<T : F?, <!CYCLIC_GENERIC_UPPER_BOUND!>F : T?<!>>
+class A1<T : F?, F : <!CYCLIC_GENERIC_UPPER_BOUND!>T?<!>>
 
-class A2<T : F?, F : E, <!CYCLIC_GENERIC_UPPER_BOUND!>E : F?<!>>
+class A2<T : F?, F : E, E : <!CYCLIC_GENERIC_UPPER_BOUND!>F?<!>>
 
-class A3<T, <!CYCLIC_GENERIC_UPPER_BOUND!>F<!>> where T : F?, F : T?
+class A3<T, F> where T : F?, F : <!CYCLIC_GENERIC_UPPER_BOUND!>T?<!>
 
-class A4<T, F, <!CYCLIC_GENERIC_UPPER_BOUND!>E<!>> where T : F?, F : E, E : F
+class A4<T, F, E> where T : F?, F : E, E : <!CYCLIC_GENERIC_UPPER_BOUND!>F<!>

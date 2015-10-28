@@ -21,10 +21,7 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.ReadOnly;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptorVisitor;
-import org.jetbrains.kotlin.descriptors.SourceElement;
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
+import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.scopes.KtScope;
@@ -100,17 +97,28 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
                 new Function1<Set<KotlinType>, Unit>() {
                     @Override
                     public Unit invoke(Set<KotlinType> types) {
-                        TypeParameterLoops.findAndDisconnectLoopsInBounds(
-                            AbstractTypeParameterDescriptor.this,
-                            types,
-                            new Function0<Unit>() {
-                                @Override
-                                public Unit invoke() {
-                                    reportCycleError();
-                                    return null;
+                        getSupertypeLoopsResolver().findLoopsInSupertypesAndDisconnect(
+                                getTypeConstructor(),
+                                types,
+                                new Function1<TypeConstructor, Iterable<? extends KotlinType>>() {
+                                    @Override
+                                    public Iterable<? extends KotlinType> invoke(TypeConstructor typeConstructor) {
+                                        return typeConstructor.getSupertypes();
+                                    }
+                                },
+                                new Function1<KotlinType, Unit>() {
+                                    @Override
+                                    public Unit invoke(KotlinType type) {
+                                        reportCycleError(type);
+                                        return Unit.INSTANCE;
+                                    }
                                 }
-                            }
                         );
+
+                        if (types.isEmpty()) {
+                            types.add(ErrorUtils.createErrorType("Cyclic upper bounds"));
+                        }
+
                         return null;
                     }
                 });
@@ -122,7 +130,9 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
         });
     }
 
-    protected abstract void reportCycleError();
+    @NotNull
+    protected abstract SupertypeLoopsResolver getSupertypeLoopsResolver();
+    protected abstract void reportCycleError(@NotNull KotlinType type);
 
     @NotNull
     @ReadOnly

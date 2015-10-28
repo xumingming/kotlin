@@ -23,6 +23,7 @@ import com.intellij.psi.PsiElement;
 import kotlin.CollectionsKt;
 import kotlin.SetsKt;
 import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
@@ -62,7 +63,8 @@ import java.util.*;
 import static org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget.*;
 import static org.jetbrains.kotlin.diagnostics.Errors.*;
 import static org.jetbrains.kotlin.lexer.KtTokens.*;
-import static org.jetbrains.kotlin.resolve.BindingContext.*;
+import static org.jetbrains.kotlin.resolve.BindingContext.CONSTRUCTOR;
+import static org.jetbrains.kotlin.resolve.BindingContext.PACKAGE_TO_FILES;
 import static org.jetbrains.kotlin.resolve.DescriptorUtils.*;
 import static org.jetbrains.kotlin.resolve.ModifiersChecker.resolveModalityFromModifiers;
 import static org.jetbrains.kotlin.resolve.ModifiersChecker.resolveVisibilityFromModifiers;
@@ -77,6 +79,7 @@ public class DescriptorResolver {
     @NotNull private final StorageManager storageManager;
     @NotNull private final KotlinBuiltIns builtIns;
     @NotNull private final ConstantExpressionEvaluator constantExpressionEvaluator;
+    @NotNull private final SupertypeLoopsResolver supertypeLoopsResolver;
 
     public DescriptorResolver(
             @NotNull AnnotationResolver annotationResolver,
@@ -85,7 +88,8 @@ public class DescriptorResolver {
             @NotNull ExpressionTypingServices expressionTypingServices,
             @NotNull StorageManager storageManager,
             @NotNull TypeResolver typeResolver,
-            @NotNull ConstantExpressionEvaluator constantExpressionEvaluator
+            @NotNull ConstantExpressionEvaluator constantExpressionEvaluator,
+            @NotNull SupertypeLoopsResolver supertypeLoopsResolver
     ) {
         this.annotationResolver = annotationResolver;
         this.builtIns = builtIns;
@@ -94,6 +98,7 @@ public class DescriptorResolver {
         this.storageManager = storageManager;
         this.typeResolver = typeResolver;
         this.constantExpressionEvaluator = constantExpressionEvaluator;
+        this.supertypeLoopsResolver = supertypeLoopsResolver;
     }
 
     public List<KotlinType> resolveSupertypes(
@@ -426,14 +431,15 @@ public class DescriptorResolver {
                 KtPsiUtil.safeName(typeParameter.getName()),
                 index,
                 KotlinSourceElementKt.toSourceElement(typeParameter),
-                new Function0<Void>() {
+                new Function1<KotlinType, Void>() {
                     @Override
-                    public Void invoke() {
+                    public Void invoke(KotlinType type) {
                         trace.report(Errors.CYCLIC_GENERIC_UPPER_BOUND.on(typeParameter));
                         return null;
                     }
-                }
-        );
+                },
+                supertypeLoopsResolver
+                );
         trace.record(BindingContext.TYPE_PARAMETER, typeParameter, typeParameterDescriptor);
         extensibleScope.addClassifierDescriptor(typeParameterDescriptor);
         return typeParameterDescriptor;
