@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.synthetic
 import com.intellij.util.SmartList
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
+import org.jetbrains.kotlin.descriptors.impl.FunctionDescriptorImpl
 import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.load.java.sam.SingleAbstractMethodUtils
@@ -107,7 +108,7 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : BaseImportingSc
                                                       sourceFunction.annotations,
                                                       sourceFunction.name,
                                                       CallableMemberDescriptor.Kind.SYNTHESIZED,
-                                                      sourceFunction.source)
+                                                      sourceFunction.original.source)
                 descriptor.sourceFunction = sourceFunction
 
                 val sourceTypeParams = (sourceFunction.typeParameters).toArrayList()
@@ -141,8 +142,16 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : BaseImportingSc
         override fun hasStableParameterNames() = sourceFunction.hasStableParameterNames()
         override fun hasSynthesizedParameterNames() = sourceFunction.hasSynthesizedParameterNames()
 
-        override fun createSubstitutedCopy(newOwner: DeclarationDescriptor, original: FunctionDescriptor?, kind: CallableMemberDescriptor.Kind): MyFunctionDescriptor {
-            return MyFunctionDescriptor(containingDeclaration, original as SimpleFunctionDescriptor?, annotations, name, kind, source).apply {
+        override fun createSubstitutedCopy(
+                newOwner: DeclarationDescriptor,
+                original: FunctionDescriptor?,
+                kind: CallableMemberDescriptor.Kind,
+                newName: Name?,
+                preserveSource: Boolean
+        ): MyFunctionDescriptor {
+            return MyFunctionDescriptor(
+                    containingDeclaration, original as SimpleFunctionDescriptor?, annotations, newName ?: name, kind, source
+            ).apply {
                 sourceFunction = this@MyFunctionDescriptor.sourceFunction
             }
         }
@@ -162,13 +171,17 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : BaseImportingSc
                 kind: CallableMemberDescriptor.Kind,
                 newValueParameterDescriptors: MutableList<ValueParameterDescriptor>,
                 newExtensionReceiverParameterType: KotlinType?,
-                newReturnType: KotlinType
+                newReturnType: KotlinType,
+                name: Name?,
+                preserveSource: Boolean,
+                signatureChange: Boolean
         ): FunctionDescriptor? {
-            val descriptor = super<SimpleFunctionDescriptorImpl>.doSubstitute(
+            val descriptor = super.doSubstitute(
                     originalSubstitutor, newOwner, newModality, newVisibility,
                     newIsOperator, newIsInfix, newIsExternal, newIsInline, newIsTailrec, original,
-                    copyOverrides, kind, newValueParameterDescriptors, newExtensionReceiverParameterType, newReturnType)
-                as MyFunctionDescriptor? ?: return null
+                    copyOverrides, kind, newValueParameterDescriptors, newExtensionReceiverParameterType, newReturnType, name,
+                    preserveSource, signatureChange)
+                    as MyFunctionDescriptor? ?: return null
 
             if (original == null) {
                 throw UnsupportedOperationException("doSubstitute with no original should not be called for synthetic extension")
