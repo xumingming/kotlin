@@ -134,7 +134,7 @@ sealed class KotlinLightMethodImpl(
             containingClass == other.containingClass &&
             delegate == other.getDelegate()
 
-    override fun hashCode(): Int = ((name.hashCode() * 31 + (origin?.hashCode() ?: 0)) * 31 + containingClass!!.hashCode()) * 31 + delegate.hashCode()
+    override fun hashCode(): Int = ((name.hashCode() * 31 + (origin?.hashCode() ?: 0)) * 31 + containingClass.hashCode()) * 31 + delegate.hashCode()
 
     override fun toString(): String = "${this.javaClass.simpleName}:$name"
 
