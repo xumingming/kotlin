@@ -26,19 +26,27 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.utils.sure
-import java.util.LinkedHashSet
+import java.util.*
 
 public class ModuleDescriptorImpl(
         moduleName: Name,
         private val storageManager: StorageManager,
         private val moduleParameters: ModuleParameters,
-        override val builtIns: KotlinBuiltIns
+        override val builtIns: KotlinBuiltIns,
+        private val capabilities: (ModuleDescriptor.Capability<*>) -> Any?
 ) : DeclarationDescriptorImpl(Annotations.EMPTY, moduleName), ModuleDescriptor, ModuleParameters by moduleParameters {
     init {
         if (!moduleName.isSpecial()) {
             throw IllegalArgumentException("Module name must be special: $moduleName")
         }
     }
+
+    constructor(
+            moduleName: Name,
+            storageManager: StorageManager,
+            moduleParameters: ModuleParameters,
+            builtIns: KotlinBuiltIns
+    ) : this(moduleName, storageManager, moduleParameters, builtIns, { null })
 
     private var dependencies: ModuleDependencies? = null
     private var packageFragmentProviderForModuleContent: PackageFragmentProvider? = null
@@ -102,6 +110,9 @@ public class ModuleDescriptorImpl(
         assert(friend != this) { "Attempt to make module $id a friend to itself" }
         friendModules.add(friend)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> getCapability(capability: ModuleDescriptor.Capability<T>) = capabilities(capability) as? T
 }
 
 public interface ModuleDependencies {
