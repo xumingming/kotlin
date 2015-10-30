@@ -6282,6 +6282,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("kt3343.kt")
+            public void testKt3343() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionLiterals/kt3343.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("kt4529.kt")
             public void testKt4529() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionLiterals/kt4529.kt");
@@ -6537,6 +6543,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("kt1575-Function.kt")
             public void testKt1575_Function() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/generics/kt1575-Function.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("kt5508.kt")
+            public void testKt5508() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/generics/kt5508.kt");
                 doTest(fileName);
             }
 
