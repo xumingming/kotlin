@@ -2014,7 +2014,6 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
 
             boolean directToField = isSyntheticField && contextKind() != OwnerKind.DEFAULT_IMPLS;
             ClassDescriptor superCallTarget = resolvedCall == null ? null : getSuperCallTarget(resolvedCall.getCall());
-            propertyDescriptor = context.accessibleDescriptor(propertyDescriptor, superCallTarget);
 
             if (directToField) {
                 receiver = StackValue.receiverWithoutReceiverArgument(receiver);
@@ -2201,6 +2200,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
         DeclarationDescriptor ownerDescriptor = containingDeclaration;
         boolean skipPropertyAccessors;
 
+        PropertyDescriptor originalPropertyDescriptor = DescriptorUtils.unwrapFakeOverride(propertyDescriptor);
         if (fieldAccessorKind != FieldAccessorKind.NORMAL) {
             int flags = AsmUtil.getVisibilityForSpecialPropertyBackingField(propertyDescriptor, isDelegatedProperty);
             skipPropertyAccessors = (flags & ACC_PRIVATE) == 0 || skipAccessorsForPrivateFieldInOuterClass;
@@ -2259,7 +2259,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
         if (isExtensionProperty && !isDelegatedProperty) {
             fieldName = null;
         }
-        else if (propertyDescriptor.getContainingDeclaration() == backingFieldContext.getContextDescriptor()) {
+        else if (originalPropertyDescriptor.getContainingDeclaration() == backingFieldContext.getContextDescriptor()) {
             assert backingFieldContext instanceof FieldOwnerContext
                     : "Actual context is " + backingFieldContext + " but should be instance of FieldOwnerContext";
             fieldName = ((FieldOwnerContext) backingFieldContext).getFieldName(propertyDescriptor, isDelegatedProperty);
@@ -2793,7 +2793,7 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
         assert state.getReflectionTypes().getKClass().getTypeConstructor().equals(type.getConstructor())
                 : "::class expression should be type checked to a KClass: " + type;
 
-        return generateClassLiteralReference(typeMapper, CollectionsKt.single(type.getArguments()).getType());
+        return generateClassLiteralReference(typeMapper, CollectionsKt.single(type.getArguments()).getType(), this);
     }
 
     @Override
@@ -2839,7 +2839,12 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
     }
 
     @NotNull
-    public static StackValue generateClassLiteralReference(@NotNull final JetTypeMapper typeMapper, @NotNull final KotlinType type) {
+    public static StackValue generateClassLiteralReference(@NotNull JetTypeMapper typeMapper, @NotNull KotlinType type) {
+        return generateClassLiteralReference(typeMapper, type, null);
+    }
+
+    @NotNull
+    private static StackValue generateClassLiteralReference(@NotNull final JetTypeMapper typeMapper, @NotNull final KotlinType type, @Nullable final ExpressionCodegen codegen) {
         return StackValue.operation(K_CLASS_TYPE, new Function1<InstructionAdapter, Unit>() {
             @Override
             public Unit invoke(InstructionAdapter v) {
@@ -2849,11 +2854,9 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
                     TypeParameterDescriptor typeParameterDescriptor = (TypeParameterDescriptor) descriptor;
                     assert typeParameterDescriptor.isReified() :
                             "Non-reified type parameter under ::class should be rejected by type checker: " + typeParameterDescriptor;
-                    v.visitLdcInsn(typeParameterDescriptor.getName().asString());
-                    v.invokestatic(
-                            IntrinsicMethods.INTRINSICS_CLASS_NAME, ReifiedTypeInliner.JAVA_CLASS_MARKER_METHOD_NAME,
-                            Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)), false
-                    );
+                    assert codegen != null :
+                            "Reference to member of reified type should be rejected by type checker " + typeParameterDescriptor;
+                    codegen.putReifierMarkerIfTypeIsReifiedParameter(type, ReifiedTypeInliner.JAVA_CLASS_MARKER_METHOD_NAME);
                 }
 
                 putJavaLangClassInstance(v, classAsmType);
