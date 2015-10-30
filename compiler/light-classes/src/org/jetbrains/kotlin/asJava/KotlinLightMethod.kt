@@ -142,7 +142,7 @@ sealed class KotlinLightMethodImpl(
             delegate: PsiMethod, origin: KtDeclaration?, containingClass: KotlinLightClass
     ) : KotlinLightMethodImpl(delegate, origin, containingClass)
 
-    private class KotlinAnnotationLightMethod(
+    private class KotlinLightAnnotationMethod(
             delegate: PsiAnnotationMethod,
             origin: KtDeclaration?,
             containingClass: KotlinLightClass
@@ -156,7 +156,7 @@ sealed class KotlinLightMethodImpl(
                 delegate: PsiMethod, origin: KtDeclaration?, containingClass: KotlinLightClass
         ): KotlinLightMethodImpl {
             return when (delegate) {
-                is PsiAnnotationMethod -> KotlinAnnotationLightMethod(delegate, origin, containingClass)
+                is PsiAnnotationMethod -> KotlinLightAnnotationMethod(delegate, origin, containingClass)
                 else -> KotlinLightMethodForDeclaration(delegate, origin, containingClass)
             }
         }
