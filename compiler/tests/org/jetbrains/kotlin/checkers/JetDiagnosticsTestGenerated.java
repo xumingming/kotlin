@@ -14298,6 +14298,24 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("comparisonUnderAnd.kt")
+            public void testComparisonUnderAnd() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/comparisonUnderAnd.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("complexComparison.kt")
+            public void testComplexComparison() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/complexComparison.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("complexConditionsWithExcl.kt")
+            public void testComplexConditionsWithExcl() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/complexConditionsWithExcl.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("dataFlowInfoForArguments.kt")
             public void testDataFlowInfoForArguments() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/dataFlowInfoForArguments.kt");
@@ -14331,6 +14349,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("elvisRHS.kt")
             public void testElvisRHS() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/elvisRHS.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("exclUnderAnd.kt")
+            public void testExclUnderAnd() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/exclUnderAnd.kt");
                 doTest(fileName);
             }
 
@@ -15191,6 +15215,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 @TestMetadata("property.kt")
                 public void testProperty() throws Exception {
                     String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/safecalls/property.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("propertyChain.kt")
+                public void testPropertyChain() throws Exception {
+                    String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/safecalls/propertyChain.kt");
                     doTest(fileName);
                 }
 
