@@ -27,8 +27,6 @@ class LookupMap(storage: File) : BasicMap<IntPair, Set<Int>>(storage, INT_PAIR_K
         storage.append(HashPair(name, scope)) { out -> out.writeInt(fileId) }
     }
 
-    public operator fun get(name: String, scope: String): Set<Int>? = storage[HashPair(name, scope)]
-
     public operator fun get(lookupHash: IntPair): Set<Int>? = storage[lookupHash]
 
     public operator fun set(key: IntPair, fileIds: Set<Int>) {
