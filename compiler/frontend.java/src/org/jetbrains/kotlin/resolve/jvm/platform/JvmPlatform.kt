@@ -48,6 +48,8 @@ private val DEFAULT_IMPORTS_FOR_JVM = ArrayList<ImportPath>().apply {
     add(ImportPath("kotlin.*"))
     add(ImportPath("kotlin.annotation.*"))
     add(ImportPath("kotlin.jvm.*"))
+    add(ImportPath("kotlin.collections.*"))
+    add(ImportPath("kotlin.text.*"))
     add(ImportPath("kotlin.io.*"))
 
     fun addAllClassifiersFromScope(scope: KtScope) {
