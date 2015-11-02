@@ -389,7 +389,13 @@ public abstract class AnnotationCodegen {
             }
 
             private Void visitUnsupportedValue(ConstantValue<?> value) {
-                throw new IllegalStateException("Don't know how to compile annotation value " + value);
+                if (typeMapper.getClassBuilderMode() == ClassBuilderMode.FULL) {
+                    throw new IllegalStateException("Don't know how to compile annotation value " + value);
+                }
+                else {
+                    assert typeMapper.getClassBuilderMode() == ClassBuilderMode.LIGHT_CLASSES;
+                    return null;
+                }
             }
         };
 
