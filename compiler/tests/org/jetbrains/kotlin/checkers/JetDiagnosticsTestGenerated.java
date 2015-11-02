@@ -14637,6 +14637,18 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("typeDegradation.kt")
+            public void testTypeDegradation() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/typeDegradation.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("typeInComparison.kt")
+            public void testTypeInComparison() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/typeInComparison.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("varChangedInInitializer.kt")
             public void testVarChangedInInitializer() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/smartCasts/varChangedInInitializer.kt");
