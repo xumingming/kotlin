@@ -54,8 +54,6 @@ public class IncrementalCacheImpl(
         private val target: ModuleBuildTarget
 ) : BasicMapsOwner(), IncrementalCache {
     companion object {
-        val CACHE_EXTENSION = ".tab"
-
         val PROTO_MAP = "proto"
         val CONSTANTS_MAP = "constants"
         val INLINE_FUNCTIONS = "inline-functions"
@@ -73,7 +71,7 @@ public class IncrementalCacheImpl(
     private val baseDir = File(targetDataRoot, CACHE_DIRECTORY_NAME)
 
     private val String.storageFile: File
-        get() = File(baseDir, this + CACHE_EXTENSION)
+        get() = File(baseDir, this + "." + CACHE_EXTENSION)
 
     private val protoMap = registerMap(ProtoMap(PROTO_MAP.storageFile))
     private val constantsMap = registerMap(ConstantsMap(CONSTANTS_MAP.storageFile))

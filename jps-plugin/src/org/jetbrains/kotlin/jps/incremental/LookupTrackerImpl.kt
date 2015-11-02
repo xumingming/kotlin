@@ -47,7 +47,7 @@ class LookupTrackerImpl(private val targetDataDir: File) : BasicMapsOwner(), Loo
     }
 
     private val String.storageFile: File
-        get() = File(targetDataDir, this + IncrementalCacheImpl.CACHE_EXTENSION)
+        get() = File(targetDataDir, this + "." + CACHE_EXTENSION)
 
     private val countersFile = "counters".storageFile
     private val idToFile = registerMap(IdToFileMap("id-to-file".storageFile))
