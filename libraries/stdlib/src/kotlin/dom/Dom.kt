@@ -2,7 +2,6 @@
 @file:kotlin.jvm.JvmName("DomKt")
 package kotlin.dom
 
-import kotlin.support.*
 import java.util.*
 import org.w3c.dom.*
 

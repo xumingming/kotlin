@@ -1,7 +1,7 @@
 @file:kotlin.jvm.JvmMultifileClass
 @file:kotlin.jvm.JvmName("CollectionsKt")
 
-package kotlin
+package kotlin.collections
 
 /**
  * Checks if all elements in the specified collection are contained in this collection.
