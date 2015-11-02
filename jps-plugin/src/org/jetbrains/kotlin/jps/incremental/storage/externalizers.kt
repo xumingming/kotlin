@@ -30,17 +30,18 @@ import java.io.File
 import java.util.*
 
 object IntPairKeyDescriptor : KeyDescriptor<IntPair> {
-    override fun read(`in`: DataInput): IntPair {
-        val first = `in`.readInt()
-        val second = `in`.readInt()
+    override fun read(input: DataInput): IntPair {
+        val first = input.readInt()
+        val second = input.readInt()
+
         return IntPair(first, second)
     }
 
-    override fun save(out: DataOutput, value: IntPair?) {
+    override fun save(output: DataOutput, value: IntPair?) {
         if (value == null) return
 
-        out.writeInt(value.first)
-        out.writeInt(value.second)
+        output.writeInt(value.first)
+        output.writeInt(value.second)
     }
 
     override fun getHashCode(value: IntPair?): Int = value?.hashCode() ?: 0
@@ -50,65 +51,64 @@ object IntPairKeyDescriptor : KeyDescriptor<IntPair> {
 
 
 object PathFunctionPairKeyDescriptor : KeyDescriptor<PathFunctionPair> {
-    override fun getHashCode(value: PathFunctionPair): Int =
-            value.hashCode()
-
-    override fun isEqual(val1: PathFunctionPair, val2: PathFunctionPair): Boolean =
-            val1 == val2
-
-    override fun read(`in`: DataInput): PathFunctionPair {
-        val path = IOUtil.readUTF(`in`)
-        val function = IOUtil.readUTF(`in`)
+    override fun read(input: DataInput): PathFunctionPair {
+        val path = IOUtil.readUTF(input)
+        val function = IOUtil.readUTF(input)
         return PathFunctionPair(path, function)
     }
 
-    override fun save(out: DataOutput, value: PathFunctionPair) {
-        IOUtil.writeUTF(out, value.path)
-        IOUtil.writeUTF(out, value.function)
+    override fun save(output: DataOutput, value: PathFunctionPair) {
+        IOUtil.writeUTF(output, value.path)
+        IOUtil.writeUTF(output, value.function)
     }
+
+    override fun getHashCode(value: PathFunctionPair): Int = value.hashCode()
+
+    override fun isEqual(val1: PathFunctionPair, val2: PathFunctionPair): Boolean = val1 == val2
 }
 
 
 object ProtoMapValueExternalizer : DataExternalizer<ProtoMapValue> {
-    override fun save(out: DataOutput, value: ProtoMapValue) {
-        out.writeBoolean(value.isPackageFacade)
-        out.writeInt(value.bytes.size())
-        out.write(value.bytes)
-        out.writeInt(value.strings.size())
+    override fun save(output: DataOutput, value: ProtoMapValue) {
+        output.writeBoolean(value.isPackageFacade)
+        output.writeInt(value.bytes.size())
+        output.write(value.bytes)
+        output.writeInt(value.strings.size())
+
         for (string in value.strings) {
-            out.writeUTF(string)
+            output.writeUTF(string)
         }
     }
 
-    override fun read(`in`: DataInput): ProtoMapValue {
-        val isPackageFacade = `in`.readBoolean()
-        val bytesLength = `in`.readInt()
+    override fun read(input: DataInput): ProtoMapValue {
+        val isPackageFacade = input.readBoolean()
+        val bytesLength = input.readInt()
         val bytes = ByteArray(bytesLength)
-        `in`.readFully(bytes, 0, bytesLength)
-        val stringsLength = `in`.readInt()
-        val strings = Array<String>(stringsLength) { `in`.readUTF() }
+        input.readFully(bytes, 0, bytesLength)
+        val stringsLength = input.readInt()
+        val strings = Array<String>(stringsLength) { input.readUTF() }
         return ProtoMapValue(isPackageFacade, bytes, strings)
     }
 }
 
 
 abstract class StringMapExternalizer<T> : DataExternalizer<Map<String, T>> {
-    override fun save(out: DataOutput, map: Map<String, T>?) {
-        out.writeInt(map!!.size())
+    override fun save(output: DataOutput, map: Map<String, T>?) {
+        output.writeInt(map!!.size())
 
         for ((key, value) in map.entrySet()) {
-            IOUtil.writeString(key, out)
-            writeValue(out, value)
+            IOUtil.writeString(key, output)
+            writeValue(output, value)
         }
     }
 
-    override fun read(`in`: DataInput): Map<String, T>? {
-        val size = `in`.readInt()
+    override fun read(input: DataInput): Map<String, T>? {
+        val size = input.readInt()
         val map = HashMap<String, T>(size)
 
         repeat(size) {
-            val name = IOUtil.readString(`in`)!!
-            map[name] = readValue(`in`)
+            val name = IOUtil.readString(input)!!
+            map[name] = readValue(input)
         }
 
         return map
@@ -120,8 +120,7 @@ abstract class StringMapExternalizer<T> : DataExternalizer<Map<String, T>> {
 
 
 object StringToLongMapExternalizer : StringMapExternalizer<Long>() {
-    override fun readValue(input: DataInput): Long =
-            input.readLong()
+    override fun readValue(input: DataInput): Long = input.readLong()
 
     override fun writeValue(output: DataOutput, value: Long) {
         output.writeLong(value)
@@ -130,85 +129,90 @@ object StringToLongMapExternalizer : StringMapExternalizer<Long>() {
 
 
 object StringListExternalizer : DataExternalizer<List<String>> {
-    override fun save(out: DataOutput, value: List<String>) {
-        value.forEach { IOUtil.writeUTF(out, it) }
+    override fun save(output: DataOutput, value: List<String>) {
+        value.forEach { IOUtil.writeUTF(output, it) }
     }
 
-    override fun read(`in`: DataInput): List<String> {
+    override fun read(input: DataInput): List<String> {
         val result = ArrayList<String>()
-        while ((`in` as DataInputStream).available() > 0) {
-            result.add(IOUtil.readUTF(`in`))
+
+        while ((input as DataInputStream).available() > 0) {
+            result.add(IOUtil.readUTF(input))
         }
+
         return result
     }
 }
 
 
 object PathCollectionExternalizer : DataExternalizer<Collection<String>> {
-    override fun save(out: DataOutput, value: Collection<String>) {
+    override fun save(output: DataOutput, value: Collection<String>) {
         for (str in value) {
-            IOUtil.writeUTF(out, str)
+            IOUtil.writeUTF(output, str)
         }
     }
 
-    override fun read(`in`: DataInput): Collection<String> {
+    override fun read(input: DataInput): Collection<String> {
         val result = THashSet(FileUtil.PATH_HASHING_STRATEGY)
-        val stream = `in` as DataInputStream
+        val stream = input as DataInputStream
+
         while (stream.available() > 0) {
             val str = IOUtil.readUTF(stream)
             result.add(str)
         }
+
         return result
     }
 }
 
 object ConstantsMapExternalizer : DataExternalizer<Map<String, Any>> {
-    override fun save(out: DataOutput, map: Map<String, Any>?) {
-        out.writeInt(map!!.size())
+    override fun save(output: DataOutput, map: Map<String, Any>?) {
+        output.writeInt(map!!.size())
         for (name in map.keySet().sorted()) {
-            IOUtil.writeString(name, out)
+            IOUtil.writeString(name, output)
             val value = map[name]!!
             when (value) {
                 is Int -> {
-                    out.writeByte(Kind.INT.ordinal())
-                    out.writeInt(value)
+                    output.writeByte(Kind.INT.ordinal())
+                    output.writeInt(value)
                 }
                 is Float -> {
-                    out.writeByte(Kind.FLOAT.ordinal())
-                    out.writeFloat(value)
+                    output.writeByte(Kind.FLOAT.ordinal())
+                    output.writeFloat(value)
                 }
                 is Long -> {
-                    out.writeByte(Kind.LONG.ordinal())
-                    out.writeLong(value)
+                    output.writeByte(Kind.LONG.ordinal())
+                    output.writeLong(value)
                 }
                 is Double -> {
-                    out.writeByte(Kind.DOUBLE.ordinal())
-                    out.writeDouble(value)
+                    output.writeByte(Kind.DOUBLE.ordinal())
+                    output.writeDouble(value)
                 }
                 is String -> {
-                    out.writeByte(Kind.STRING.ordinal())
-                    IOUtil.writeString(value, out)
+                    output.writeByte(Kind.STRING.ordinal())
+                    IOUtil.writeString(value, output)
                 }
                 else -> throw IllegalStateException("Unexpected constant class: ${value.javaClass}")
             }
         }
     }
 
-    override fun read(`in`: DataInput): Map<String, Any>? {
-        val size = `in`.readInt()
+    override fun read(input: DataInput): Map<String, Any>? {
+        val size = input.readInt()
         val map = HashMap<String, Any>(size)
 
         repeat(size) {
-            val name = IOUtil.readString(`in`)!!
+            val name = IOUtil.readString(input)!!
+            val kind = Kind.values()[input.readByte().toInt()]
 
-            val kind = Kind.values()[`in`.readByte().toInt()]
-            val value = when (kind) {
-                Kind.INT -> `in`.readInt()
-                Kind.FLOAT -> `in`.readFloat()
-                Kind.LONG -> `in`.readLong()
-                Kind.DOUBLE -> `in`.readDouble()
-                Kind.STRING -> IOUtil.readString(`in`)!!
+            val value: Any = when (kind) {
+                Kind.INT -> input.readInt()
+                Kind.FLOAT -> input.readFloat()
+                Kind.LONG -> input.readLong()
+                Kind.DOUBLE -> input.readDouble()
+                Kind.STRING -> IOUtil.readString(input)!!
             }
+
             map[name] = value
         }
 
@@ -222,13 +226,13 @@ object ConstantsMapExternalizer : DataExternalizer<Map<String, Any>> {
 
 
 object IntSetExternalizer : DataExternalizer<Set<Int>> {
-    override fun save(out: DataOutput, value: Set<Int>) {
-        value.forEach { out.writeInt(it) }
+    override fun save(output: DataOutput, value: Set<Int>) {
+        value.forEach { output.writeInt(it) }
     }
 
-    override fun read(`in`: DataInput): Set<Int> {
+    override fun read(input: DataInput): Set<Int> {
         val result = TIntHashSet()
-        val stream = `in` as DataInputStream
+        val stream = input as DataInputStream
 
         while (stream.available() > 0) {
             val str = stream.readInt()
@@ -240,26 +244,26 @@ object IntSetExternalizer : DataExternalizer<Set<Int>> {
 }
 
 object IntExternalizer : DataExternalizer<Int> {
-    override fun read(`in`: DataInput): Int = `in`.readInt()
+    override fun read(input: DataInput): Int = input.readInt()
 
-    override fun save(out: DataOutput, value: Int) {
-        out.writeInt(value)
+    override fun save(output: DataOutput, value: Int) {
+        output.writeInt(value)
     }
 }
 
 object FileExternalizer : DataExternalizer<File> {
-    override fun read(`in`: DataInput): File = File(`in`.readUTF())
+    override fun read(input: DataInput): File = File(input.readUTF())
 
-    override fun save(out: DataOutput, value: File) {
-        out.writeUTF(value.canonicalPath)
+    override fun save(output: DataOutput, value: File) {
+        output.writeUTF(value.canonicalPath)
     }
 }
 
 object FileKeyDescriptor : KeyDescriptor<File> {
-    override fun read(`in`: DataInput): File = File(`in`.readUTF())
+    override fun read(input: DataInput): File = File(input.readUTF())
 
-    override fun save(out: DataOutput, value: File) {
-        out.writeUTF(value.canonicalPath)
+    override fun save(output: DataOutput, value: File) {
+        output.writeUTF(value.canonicalPath)
     }
 
     override fun getHashCode(value: File?): Int =
