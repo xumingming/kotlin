@@ -122,22 +122,7 @@ public abstract class KotlinWrappingLightClass extends AbstractLightClass implem
             @Override
             public PsiField fun(PsiField field) {
                 KtDeclaration declaration = ClsWrapperStubPsiFactory.getOriginalDeclaration(field);
-                if (declaration instanceof KtEnumEntry) {
-                    assert field instanceof PsiEnumConstant : "Field delegate should be an enum constant (" + field.getName() + "):\n" +
-                                                              PsiUtilsKt.getElementTextWithContext(declaration);
-                    KtEnumEntry enumEntry = (KtEnumEntry) declaration;
-                    PsiEnumConstant enumConstant = (PsiEnumConstant) field;
-                    FqName enumConstantFqName = new FqName(getFqName().asString() + "." + enumEntry.getName());
-                    KotlinLightClassForEnumEntry initializingClass =
-                            enumEntry.getDeclarations().isEmpty()
-                            ? null
-                            : new KotlinLightClassForEnumEntry(myManager, enumConstantFqName, enumEntry, enumConstant);
-                    return new KotlinLightEnumConstant(myManager, enumEntry, enumConstant, KotlinWrappingLightClass.this, initializingClass);
-                }
-                if (declaration != null) {
-                    return new KotlinLightFieldForDeclaration(myManager, declaration, field, KotlinWrappingLightClass.this);
-                }
-                return new KotlinNoOriginLightField(myManager, field, KotlinWrappingLightClass.this);
+                return KotlinLightFieldImpl.Factory.create(declaration, field, KotlinWrappingLightClass.this);
             }
         });
     }
@@ -153,13 +138,7 @@ public abstract class KotlinWrappingLightClass extends AbstractLightClass implem
                     declaration = PsiTreeUtil.getParentOfType(declaration, KtProperty.class);
                 }
 
-                if (declaration != null) {
-                    return !isTraitFakeOverride(declaration) ?
-                           new KotlinLightMethodForDeclaration(myManager, method, declaration, KotlinWrappingLightClass.this) :
-                           new KotlinLightMethodForTraitFakeOverride(myManager, method, declaration, KotlinWrappingLightClass.this);
-                }
-
-                return new KotlinNoOriginLightMethod(myManager, method, KotlinWrappingLightClass.this);
+                return KotlinLightMethodImpl.Factory.create(method, declaration, KotlinWrappingLightClass.this);
             }
         });
     }
@@ -185,20 +164,6 @@ public abstract class KotlinWrappingLightClass extends AbstractLightClass implem
     @Override
     public Language getLanguage() {
         return KotlinLanguage.INSTANCE;
-    }
-
-    private boolean isTraitFakeOverride(@NotNull KtDeclaration originMethodDeclaration) {
-        if (!(originMethodDeclaration instanceof KtNamedFunction ||
-              originMethodDeclaration instanceof KtPropertyAccessor ||
-              originMethodDeclaration instanceof KtProperty)) {
-            return false;
-        }
-
-        KtClassOrObject parentOfMethodOrigin = PsiTreeUtil.getParentOfType(originMethodDeclaration, KtClassOrObject.class);
-        KtClassOrObject thisClassDeclaration = getOrigin();
-
-        // Method was generated from declaration in some other trait
-        return (parentOfMethodOrigin != null && thisClassDeclaration != parentOfMethodOrigin && KtPsiUtil.isTrait(parentOfMethodOrigin));
     }
 
     @Override

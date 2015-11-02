@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.asJava
+package org.jetbrains.kotlin.checkers
 
-import com.intellij.psi.*
-import org.jetbrains.kotlin.psi.KtDeclaration
-
-class KotlinLightFieldForDeclaration(
-        manager: PsiManager,
-        origin: KtDeclaration,
-        field: PsiField,
-        containingClass: PsiClass
-) : KotlinLightField<KtDeclaration, PsiField>(manager, origin, field, containingClass) {
-    override fun copy() = KotlinLightFieldForDeclaration(getManager()!!, getOrigin(), getDelegate(), getContainingClass()!!)
+abstract class AbstractJavaAgainstKotlinSourceCheckerTest : AbstractJavaAgainstKotlinCheckerTest()  {
+    fun doTest(path: String) {
+        doTest(true, true, path.replace(".kt", ".java"), path)
+    }
 }
