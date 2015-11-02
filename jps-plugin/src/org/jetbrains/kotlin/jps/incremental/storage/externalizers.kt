@@ -29,24 +29,24 @@ import java.io.DataOutput
 import java.io.File
 import java.util.*
 
-object IntPairKeyDescriptor : KeyDescriptor<IntPair> {
-    override fun read(input: DataInput): IntPair {
+object LookupHashPairKeyDescriptor : KeyDescriptor<LookupHashPair> {
+    override fun read(input: DataInput): LookupHashPair {
         val first = input.readInt()
         val second = input.readInt()
 
-        return IntPair(first, second)
+        return LookupHashPair(first, second)
     }
 
-    override fun save(output: DataOutput, value: IntPair?) {
+    override fun save(output: DataOutput, value: LookupHashPair?) {
         if (value == null) return
 
-        output.writeInt(value.first)
-        output.writeInt(value.second)
+        output.writeInt(value.nameHash)
+        output.writeInt(value.scopeHash)
     }
 
-    override fun getHashCode(value: IntPair?): Int = value?.hashCode() ?: 0
+    override fun getHashCode(value: LookupHashPair?): Int = value?.hashCode() ?: 0
 
-    override fun isEqual(val1: IntPair?, val2: IntPair?): Boolean = val1 == val2
+    override fun isEqual(val1: LookupHashPair?, val2: LookupHashPair?): Boolean = val1 == val2
 }
 
 
