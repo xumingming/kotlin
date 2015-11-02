@@ -37,16 +37,14 @@ object LookupHashPairKeyDescriptor : KeyDescriptor<LookupHashPair> {
         return LookupHashPair(first, second)
     }
 
-    override fun save(output: DataOutput, value: LookupHashPair?) {
-        if (value == null) return
-
+    override fun save(output: DataOutput, value: LookupHashPair) {
         output.writeInt(value.nameHash)
         output.writeInt(value.scopeHash)
     }
 
-    override fun getHashCode(value: LookupHashPair?): Int = value?.hashCode() ?: 0
+    override fun getHashCode(value: LookupHashPair): Int = value.hashCode()
 
-    override fun isEqual(val1: LookupHashPair?, val2: LookupHashPair?): Boolean = val1 == val2
+    override fun isEqual(val1: LookupHashPair, val2: LookupHashPair): Boolean = val1 == val2
 }
 
 
