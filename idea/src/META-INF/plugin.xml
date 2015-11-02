@@ -305,6 +305,7 @@
 
     <lang.foldingBuilder language="kotlin" implementationClass="org.jetbrains.kotlin.idea.KotlinFoldingBuilder"/>
     <lang.formatter language="kotlin" implementationClass="org.jetbrains.kotlin.idea.formatter.JetFormattingModelBuilder"/>
+    <preFormatProcessor implementation="org.jetbrains.kotlin.idea.formatter.KotlinPreFormatProcessor"/>
     <lang.findUsagesProvider language="kotlin" implementationClass="org.jetbrains.kotlin.idea.findUsages.JetFindUsagesProvider"/>
     <lang.elementManipulator forClass="org.jetbrains.kotlin.psi.KtStringTemplateExpression"
                              implementationClass="org.jetbrains.kotlin.psi.psiUtil.KtStringTemplateExpressionManipulator"/>
@@ -334,7 +335,9 @@
         implementationClass="org.jetbrains.kotlin.idea.refactoring.move.MoveJavaInnerClassKotlinUsagesHandler"
         language="kotlin" />
     <refactoring.copyHandler implementation="org.jetbrains.kotlin.idea.refactoring.copy.CopyKotlinFileHandler" order="first" />
-    <refactoring.changeSignatureUsageProcessor implementation="org.jetbrains.kotlin.idea.refactoring.changeSignature.JetChangeSignatureUsageProcessor"/>
+    <refactoring.changeSignatureUsageProcessor
+        implementation="org.jetbrains.kotlin.idea.refactoring.changeSignature.JetChangeSignatureUsageProcessor"
+        order="after javaProcessor" />
     <refactoring.introduceParameterMethodUsagesProcessor
         implementation="org.jetbrains.kotlin.idea.refactoring.introduce.introduceParameter.KotlinIntroduceParameterMethodUsageProcessor"/>
     <inlineActionHandler implementation="org.jetbrains.kotlin.idea.refactoring.inline.KotlinInlineValHandler"/>
