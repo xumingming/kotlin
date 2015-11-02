@@ -29,7 +29,7 @@ import java.io.DataOutput
 import java.io.File
 import java.util.*
 
-object INT_PAIR_KEY_DESCRIPTOR : KeyDescriptor<IntPair> {
+object IntPairKeyDescriptor : KeyDescriptor<IntPair> {
     override fun read(`in`: DataInput): IntPair {
         val first = `in`.readInt()
         val second = `in`.readInt()
@@ -49,7 +49,7 @@ object INT_PAIR_KEY_DESCRIPTOR : KeyDescriptor<IntPair> {
 }
 
 
-object PATH_FUNCTION_PAIR_KEY_DESCRIPTOR : KeyDescriptor<PathFunctionPair> {
+object PathFunctionPairKeyDescriptor : KeyDescriptor<PathFunctionPair> {
     override fun getHashCode(value: PathFunctionPair): Int =
             value.hashCode()
 
@@ -69,7 +69,7 @@ object PATH_FUNCTION_PAIR_KEY_DESCRIPTOR : KeyDescriptor<PathFunctionPair> {
 }
 
 
-object PROTO_MAP_VALUE_EXTERNALIZER : DataExternalizer<ProtoMapValue> {
+object ProtoMapValueExternalizer : DataExternalizer<ProtoMapValue> {
     override fun save(out: DataOutput, value: ProtoMapValue) {
         out.writeBoolean(value.isPackageFacade)
         out.writeInt(value.bytes.size())
@@ -119,7 +119,7 @@ abstract class StringMapExternalizer<T> : DataExternalizer<Map<String, T>> {
 }
 
 
-object STRING_TO_LONG_MAP_EXTERNALIZER : StringMapExternalizer<Long>() {
+object StringToLongMapExternalizer : StringMapExternalizer<Long>() {
     override fun readValue(input: DataInput): Long =
             input.readLong()
 
@@ -129,7 +129,7 @@ object STRING_TO_LONG_MAP_EXTERNALIZER : StringMapExternalizer<Long>() {
 }
 
 
-object STRING_LIST_EXTERNALIZER : DataExternalizer<List<String>> {
+object StringListExternalizer : DataExternalizer<List<String>> {
     override fun save(out: DataOutput, value: List<String>) {
         value.forEach { IOUtil.writeUTF(out, it) }
     }
@@ -144,7 +144,7 @@ object STRING_LIST_EXTERNALIZER : DataExternalizer<List<String>> {
 }
 
 
-object PATH_COLLECTION_EXTERNALIZER : DataExternalizer<Collection<String>> {
+object PathCollectionExternalizer : DataExternalizer<Collection<String>> {
     override fun save(out: DataOutput, value: Collection<String>) {
         for (str in value) {
             IOUtil.writeUTF(out, str)
@@ -162,7 +162,7 @@ object PATH_COLLECTION_EXTERNALIZER : DataExternalizer<Collection<String>> {
     }
 }
 
-object CONSTANTS_MAP_EXTERNALIZER : DataExternalizer<Map<String, Any>> {
+object ConstantsMapExternalizer : DataExternalizer<Map<String, Any>> {
     override fun save(out: DataOutput, map: Map<String, Any>?) {
         out.writeInt(map!!.size())
         for (name in map.keySet().sorted()) {
@@ -221,7 +221,7 @@ object CONSTANTS_MAP_EXTERNALIZER : DataExternalizer<Map<String, Any>> {
 }
 
 
-object INT_SET_EXTERNALIZER : DataExternalizer<Set<Int>> {
+object IntSetExternalizer : DataExternalizer<Set<Int>> {
     override fun save(out: DataOutput, value: Set<Int>) {
         value.forEach { out.writeInt(it) }
     }
@@ -239,7 +239,7 @@ object INT_SET_EXTERNALIZER : DataExternalizer<Set<Int>> {
     }
 }
 
-object INT_EXTERNALIZER : DataExternalizer<Int> {
+object IntExternalizer : DataExternalizer<Int> {
     override fun read(`in`: DataInput): Int = `in`.readInt()
 
     override fun save(out: DataOutput, value: Int) {
@@ -247,7 +247,7 @@ object INT_EXTERNALIZER : DataExternalizer<Int> {
     }
 }
 
-object FILE_EXTERNALIZER : DataExternalizer<File> {
+object FileExternalizer : DataExternalizer<File> {
     override fun read(`in`: DataInput): File = File(`in`.readUTF())
 
     override fun save(out: DataOutput, value: File) {
@@ -255,7 +255,7 @@ object FILE_EXTERNALIZER : DataExternalizer<File> {
     }
 }
 
-object FILE_KEY_DESCRIPTOR : KeyDescriptor<File> {
+object FileKeyDescriptor : KeyDescriptor<File> {
     override fun read(`in`: DataInput): File = File(`in`.readUTF())
 
     override fun save(out: DataOutput, value: File) {
