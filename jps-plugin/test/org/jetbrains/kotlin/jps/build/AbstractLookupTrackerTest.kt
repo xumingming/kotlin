@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.jps.build
 
 import com.intellij.openapi.util.io.FileUtil
+import org.jetbrains.kotlin.incremental.components.LocationInfo
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.incremental.components.ScopeKind
 import org.jetbrains.kotlin.test.JetTestUtils
@@ -35,11 +36,10 @@ abstract class AbstractLookupTrackerTest : AbstractIncrementalJpsTest(
 
     override fun createLookupTracker(): LookupTracker = TestLookupTracker()
 
-    override fun checkLookups(modifications: List<Modification>, lookupTracker: LookupTracker) {
+    override fun checkLookups(lookupTracker: LookupTracker, compiledFiles: Set<File>) {
         if (lookupTracker !is TestLookupTracker) throw AssertionError("Expected TestLookupTracker, but: ${lookupTracker.javaClass}")
 
         val fileToLookups = lookupTracker.lookups.groupBy { it.lookupContainingFile }
-        val workSrcDir = File(workDir, "src")
 
         fun checkLookupsInFile(expectedFile: File, actualFile: File) {
 
@@ -55,8 +55,8 @@ abstract class AbstractLookupTrackerTest : AbstractIncrementalJpsTest(
 
             val lines = text.lines().toArrayList()
 
-            for ((line, lookupsFromLine) in lookupsFromFile.groupBy { it.lookupLine!! }) {
-                val columnToLookups = lookupsFromLine.groupBy { it.lookupColumn!! }.toList().sortedBy { it.first }
+            for ((line, lookupsFromLine) in lookupsFromFile.groupBy { it.lookupLine }) {
+                val columnToLookups = lookupsFromLine.groupBy { it.lookupColumn }.toList().sortedBy { it.first }
 
                 val lineContent = lines[line - 1]
                 val parts = ArrayList<CharSequence>(columnToLookups.size * 2)
@@ -95,25 +95,10 @@ abstract class AbstractLookupTrackerTest : AbstractIncrementalJpsTest(
             JetTestUtils.assertEqualsToFile(expectedFile, actual)
         }
 
-        if (modifications.isNotEmpty()) {
-            for (modification in modifications) {
-                if (modification !is ModifyContent) continue
+        for (actualFile in compiledFiles) {
+            val expectedFile = mapWorkingToOriginalFile[actualFile]!!
 
-                val expectedFile = modification.dataFile
-                val actualFile = File(workDir, modification.path)
-
-                checkLookupsInFile(expectedFile, actualFile)
-            }
-        }
-        else {
-            for (actualFile in workSrcDir.walkTopDown()) {
-                if (!actualFile.isFile) continue
-
-                val independentFilePath = FileUtil.toSystemIndependentName(actualFile.path)
-                val expectedFile = File(testDataDir, independentFilePath.replace(".*/src/".toRegex(), ""))
-
-                checkLookupsInFile(expectedFile, actualFile)
-            }
+            checkLookupsInFile(expectedFile, actualFile)
         }
     }
 
@@ -135,8 +120,8 @@ abstract class AbstractLookupTrackerTest : AbstractIncrementalJpsTest(
 
 private data class LookupInfo(
         val lookupContainingFile: String,
-        val lookupLine: Int?,
-        val lookupColumn: Int?,
+        val lookupLine: Int,
+        val lookupColumn: Int,
         val scopeFqName: String,
         val scopeKind: ScopeKind,
         val name: String
@@ -145,14 +130,9 @@ private data class LookupInfo(
 private class TestLookupTracker : LookupTracker {
     val lookups = arrayListOf<LookupInfo>()
 
-    override val requiresLookupLineAndColumn: Boolean
-        get() = true
-
-    override fun record(
-            lookupContainingFile: String, lookupLine: Int?, lookupColumn: Int?,
-            scopeFqName: String, scopeKind: ScopeKind, name: String
-    ) {
-        lookups.add(LookupInfo(lookupContainingFile, lookupLine, lookupColumn, scopeFqName, scopeKind, name))
+    override fun record(locationInfo: LocationInfo, scopeFqName: String, scopeKind: ScopeKind, name: String) {
+        val (line, column) = locationInfo.position
+        lookups.add(LookupInfo(locationInfo.filePath, line, column, scopeFqName, scopeKind, name))
     }
 }
 
