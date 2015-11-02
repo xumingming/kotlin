@@ -249,14 +249,6 @@ object IntExternalizer : DataExternalizer<Int> {
     }
 }
 
-object FileExternalizer : DataExternalizer<File> {
-    override fun read(input: DataInput): File = File(input.readUTF())
-
-    override fun save(output: DataOutput, value: File) {
-        output.writeUTF(value.canonicalPath)
-    }
-}
-
 object FileKeyDescriptor : KeyDescriptor<File> {
     override fun read(input: DataInput): File = File(input.readUTF())
 
