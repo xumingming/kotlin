@@ -166,6 +166,11 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
         return index;
     }
 
+    @Override
+    public boolean isCopyFromOuterDeclaration() {
+        return false;
+    }
+
     @NotNull
     @Override
     public List<KotlinType> getUpperBounds() {
