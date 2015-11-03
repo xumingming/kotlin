@@ -76,5 +76,4 @@ public class LookupTrackerTestGenerated extends AbstractLookupTrackerTest {
         String fileName = JetTestUtils.navigationMetadata("jps-plugin/testData/incremental/lookupTracker/syntheticProperties/");
         doTest(fileName);
     }
-
 }
