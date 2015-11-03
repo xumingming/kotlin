@@ -1389,6 +1389,12 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
                 doTest(fileName);
             }
 
+            @TestMetadata("ContextVariables3.kt")
+            public void testContextVariables3() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/highOrderFunctions/ContextVariables3.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("ContextVariablesFilter.kt")
             public void testContextVariablesFilter() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/highOrderFunctions/ContextVariablesFilter.kt");
@@ -1920,6 +1926,12 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
             @TestMetadata("InInitializer6.kt")
             public void testInInitializer6() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/shadowing/InInitializer6.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("InInitializer7.kt")
+            public void testInInitializer7() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/shadowing/InInitializer7.kt");
                 doTest(fileName);
             }
 
