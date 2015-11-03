@@ -2720,6 +2720,12 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/defaultArguments/convention/kt9140.kt");
                 doTest(fileName);
             }
+
+            @TestMetadata("plusAssignWithDefaultInGetter.kt")
+            public void testPlusAssignWithDefaultInGetter() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/box/defaultArguments/convention/plusAssignWithDefaultInGetter.kt");
+                doTest(fileName);
+            }
         }
 
         @TestMetadata("compiler/testData/codegen/box/defaultArguments/function")

@@ -769,7 +769,7 @@ public abstract class StackValue {
         private final boolean isGetter;
         private final ExpressionCodegen codegen;
         private final ArgumentGenerator argumentGenerator;
-        private final List<ResolvedValueArgument> valueArguments;
+        final List<ResolvedValueArgument> valueArguments;
         private final FrameMap frame;
         private final StackValue receiver;
         private final ResolvedCall<FunctionDescriptor> resolvedGetCall;
@@ -948,7 +948,17 @@ public abstract class StackValue {
             Type[] argumentTypes = setter.getParameterTypes();
             coerce(topOfStackType, argumentTypes[argumentTypes.length - 1], v);
             CallGenerator callGenerator = codegen.defaultCallGenerator;
-            callGenerator.genCall(setter, resolvedSetCall, genDefaultMaskIfPresent(callGenerator), codegen);
+            ResolvedValueArgument argument = resolvedGetCall.getValueArgumentsByIndex().get(0);
+            if (argument )
+            ///*Convention setter couldn't have default parameters, just getter can have it as last ones
+            //    We should remove default parameters of getter from stack*/
+            //CollectionElementReceiver collectionElementReceiver = (CollectionElementReceiver) receiver;
+            //if (collectionElementReceiver.isGetter) {
+            //    for (int i = collectionElementReceiver.valueArguments.size() - 1; i >= 0; i++) {
+            //
+            //    }
+            //}
+            callGenerator.genCall(setter, resolvedSetCall, false, codegen);
             Type returnType = setter.getReturnType();
             if (returnType != Type.VOID_TYPE) {
                 pop(v, returnType);
