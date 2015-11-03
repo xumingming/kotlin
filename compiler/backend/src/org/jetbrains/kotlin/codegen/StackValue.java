@@ -201,7 +201,7 @@ public abstract class StackValue {
 
     @NotNull
     public static StackValue collectionElement(
-            StackValue collectionElementReceiver,
+            CollectionElementReceiver collectionElementReceiver,
             Type type,
             ResolvedCall<FunctionDescriptor> getter,
             ResolvedCall<FunctionDescriptor> setter,
@@ -774,6 +774,7 @@ public abstract class StackValue {
         private final StackValue receiver;
         private final ResolvedCall<FunctionDescriptor> resolvedGetCall;
         private final ResolvedCall<FunctionDescriptor> resolvedSetCall;
+        DefaultCallMask mask;
 
         public CollectionElementReceiver(
                 @NotNull Callable callable,
@@ -803,7 +804,7 @@ public abstract class StackValue {
             ResolvedCall<?> call = isGetter ? resolvedGetCall : resolvedSetCall;
             StackValue newReceiver = StackValue.receiver(call, receiver, codegen, callable);
             newReceiver.put(newReceiver.type, v);
-            argumentGenerator.generate(valueArguments, valueArguments);
+            mask = argumentGenerator.generate(valueArguments, valueArguments);
         }
 
         @Override
@@ -912,7 +913,7 @@ public abstract class StackValue {
         private final FunctionDescriptor getterDescriptor;
 
         public CollectionElement(
-                @NotNull StackValue collectionElementReceiver,
+                @NotNull CollectionElementReceiver collectionElementReceiver,
                 @NotNull Type type,
                 @Nullable ResolvedCall<FunctionDescriptor> resolvedGetCall,
                 @Nullable ResolvedCall<FunctionDescriptor> resolvedSetCall,
@@ -933,9 +934,30 @@ public abstract class StackValue {
             if (getter == null) {
                 throw new UnsupportedOperationException("no getter specified");
             }
-
-            getter.genInvokeInstruction(v);
+            CallGenerator callGenerator = codegen.defaultCallGenerator;
+            callGenerator.genCall(getter, resolvedGetCall, genDefaultMaskIfPresent(callGenerator), codegen);
             coerceTo(type, v);
+        }
+
+        @Override
+        public void storeSelector(@NotNull Type topOfStackType, @NotNull InstructionAdapter v) {
+            if (setter == null) {
+                throw new UnsupportedOperationException("no setter specified");
+            }
+
+            Type[] argumentTypes = setter.getParameterTypes();
+            coerce(topOfStackType, argumentTypes[argumentTypes.length - 1], v);
+            CallGenerator callGenerator = codegen.defaultCallGenerator;
+            callGenerator.genCall(setter, resolvedSetCall, genDefaultMaskIfPresent(callGenerator), codegen);
+            Type returnType = setter.getReturnType();
+            if (returnType != Type.VOID_TYPE) {
+                pop(v, returnType);
+            }
+        }
+
+        private boolean genDefaultMaskIfPresent(CallGenerator callGenerator) {
+            DefaultCallMask mask = ((CollectionElementReceiver) receiver).mask;
+            return mask.generateOnStackIfNeeded(callGenerator);
         }
 
         @Override
@@ -977,21 +999,6 @@ public abstract class StackValue {
             }
 
             return true;
-        }
-
-        @Override
-        public void storeSelector(@NotNull Type topOfStackType, @NotNull InstructionAdapter v) {
-            if (setter == null) {
-                throw new UnsupportedOperationException("no setter specified");
-            }
-
-            Type[] argumentTypes = setter.getParameterTypes();
-            coerce(topOfStackType, argumentTypes[argumentTypes.length - 1], v);
-            setter.genInvokeInstruction(v);
-            Type returnType = setter.getReturnType();
-            if (returnType != Type.VOID_TYPE) {
-                pop(v, returnType);
-            }
         }
     }
 
