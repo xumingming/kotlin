@@ -17,6 +17,7 @@ enum class Family {
     ArraysOfObjects,
     ArraysOfPrimitives,
     InvariantArraysOfObjects,
+    CharSequences,
     Strings,
     Ranges,
     RangesOfPrimitives,
@@ -28,7 +29,7 @@ enum class Family {
 
     companion object {
         val primitiveSpecializations = setOf(ArraysOfPrimitives, RangesOfPrimitives, ProgressionsOfPrimitives, Primitives)
-        val defaultFamilies = setOf(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives, Strings)
+        val defaultFamilies = setOf(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives)
     }
 }
 
@@ -57,6 +58,7 @@ fun PrimitiveType.isIntegral(): Boolean = this in PrimitiveType.integralPrimitiv
 fun PrimitiveType.isNumeric(): Boolean = this in PrimitiveType.numericPrimitives
 
 data class Deprecation(val message: String, val replaceWith: String? = null, val level: DeprecationLevel = DeprecationLevel.WARNING)
+val forBinaryCompatibility = Deprecation("Provided for binary compatibility", level = DeprecationLevel.HIDDEN)
 
 class ConcreteFunction(val textBuilder: (Appendable) -> Unit, val sourceFile: SourceFile)
 
@@ -198,6 +200,7 @@ class GenericFunction(val signature: String, val keyword: String = "fun") {
         ArraysOfObjects, InvariantArraysOfObjects, ArraysOfPrimitives -> SourceFile.Arrays
         Maps -> SourceFile.Maps
         Strings -> SourceFile.Strings
+        CharSequences -> SourceFile.Strings
         Primitives, Generic -> SourceFile.Misc
     }
 
@@ -258,14 +261,14 @@ class GenericFunction(val signature: String, val keyword: String = "fun") {
                                   }
                                   "TCollection" -> {
                                       when (f) {
-                                          Strings -> "Appendable"
+                                          CharSequences, Strings -> "Appendable"
                                           else -> renderType("MutableCollection<in T>", receiver)
                                       }
                                   }
                                   "T" -> {
                                       when (f) {
                                           Generic -> "T"
-                                          Strings -> "Char"
+                                          CharSequences, Strings -> "Char"
                                           Maps -> "Map.Entry<K, V>"
                                           else -> primitive?.name ?: token
                                       }
@@ -300,6 +303,7 @@ class GenericFunction(val signature: String, val keyword: String = "fun") {
             InvariantArraysOfObjects -> "Array<T>"
             ArraysOfObjects -> "Array<${isAsteriskOrT.replace("T", "out T")}>"
             Strings -> "String"
+            CharSequences -> "CharSequence"
             Ranges -> "Range<$isAsteriskOrT>"
             ArraysOfPrimitives -> primitive?.let { it.name + "Array" } ?: throw IllegalArgumentException("Primitive array should specify primitive type")
             RangesOfPrimitives -> primitive?.let { it.name + "Range" } ?: throw IllegalArgumentException("Primitive range should specify primitive type")
@@ -328,7 +332,7 @@ class GenericFunction(val signature: String, val keyword: String = "fun") {
                 }
                 return types
             }
-            else if (primitive == null && f != Strings) {
+            else if (primitive == null && f != Strings && f != CharSequences) {
                 val implicitTypeParameters = getGenericTypeParameters(receiver) + types.flatMap { getGenericTypeParameters(it) }
                 for (implicit in implicitTypeParameters.reversed()) {
                     if (implicit != "*" && !types.any { it.startsWith(implicit) || it.startsWith("reified " + implicit) }) {
