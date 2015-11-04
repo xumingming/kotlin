@@ -298,12 +298,10 @@ public abstract class LazyJavaScope(
         return propertyType
     }
 
-    override fun getProperties(name: Name, location: LookupLocation): Collection<VariableDescriptor> {
+    override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
         recordLookup(name, location)
         return properties(name)
     }
-
-    override fun getOwnDeclaredDescriptors() = getDescriptors()
 
     override fun getDescriptors(kindFilter: DescriptorKindFilter,
                                 nameFilter: (Name) -> Boolean) = allDescriptors()

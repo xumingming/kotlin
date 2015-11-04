@@ -206,8 +206,7 @@ public class DeserializedClassDescriptor(
         override fun computeNonDeclaredProperties(name: Name, descriptors: MutableCollection<PropertyDescriptor>) {
             val fromSupertypes = ArrayList<PropertyDescriptor>()
             for (supertype in classDescriptor.getTypeConstructor().supertypes) {
-                @Suppress("UNCHECKED_CAST")
-                fromSupertypes.addAll(supertype.memberScope.getProperties(name, NoLookupLocation.FOR_ALREADY_TRACKED) as Collection<PropertyDescriptor>)
+                fromSupertypes.addAll(supertype.memberScope.getProperties(name, NoLookupLocation.FOR_ALREADY_TRACKED))
             }
             generateFakeOverrides(name, fromSupertypes, descriptors)
         }
@@ -230,7 +229,7 @@ public class DeserializedClassDescriptor(
 
         override fun addNonDeclaredDescriptors(result: MutableCollection<DeclarationDescriptor>, location: LookupLocation) {
             for (supertype in classDescriptor.getTypeConstructor().supertypes) {
-                for (descriptor in supertype.memberScope.getAllDescriptors()) {
+                for (descriptor in supertype.memberScope.getDescriptors()) {
                     if (descriptor is FunctionDescriptor) {
                         result.addAll(getFunctions(descriptor.name, location))
                     }
@@ -241,8 +240,6 @@ public class DeserializedClassDescriptor(
                 }
             }
         }
-
-        override fun getImplicitReceiver() = classDescriptor.getThisAsReceiverParameter()
 
         override fun getClassDescriptor(name: Name): ClassifierDescriptor? =
                 classDescriptor.enumEntries.findEnumEntry(name) ?: classDescriptor.nestedClasses.findNestedClass(name)
@@ -315,7 +312,7 @@ public class DeserializedClassDescriptor(
             val result = HashSet<Name>()
 
             for (supertype in getTypeConstructor().getSupertypes()) {
-                for (descriptor in supertype.getMemberScope().getAllDescriptors()) {
+                for (descriptor in supertype.getMemberScope().getDescriptors()) {
                     if (descriptor is SimpleFunctionDescriptor || descriptor is PropertyDescriptor) {
                         result.add(descriptor.getName())
                     }

@@ -24,13 +24,8 @@ import org.jetbrains.kotlin.utils.Printer
 
 // see utils/ScopeUtils.kt
 
-interface LexicalScope {
-    val parent: LexicalScope?
-
-    val ownerDescriptor: DeclarationDescriptor
-    val isOwnerDescriptorAccessibleByLabel: Boolean
-
-    val implicitReceiver: ReceiverParameterDescriptor?
+interface HierarchicalScope {
+    val parent: HierarchicalScope?
 
     /**
      * All visible descriptors from current scope possibly filtered by the given name and kind filters
@@ -50,17 +45,27 @@ interface LexicalScope {
     fun printStructure(p: Printer)
 }
 
-// TODO: common base interface instead direct inheritance
-interface ImportingScope : LexicalScope {
+interface LexicalScope: HierarchicalScope {
+    override val parent: HierarchicalScope
+
+    val ownerDescriptor: DeclarationDescriptor
+    val isOwnerDescriptorAccessibleByLabel: Boolean
+
+    val implicitReceiver: ReceiverParameterDescriptor?
+
+    companion object {
+        fun empty(parent: HierarchicalScope, ownerDescriptor: DeclarationDescriptor): BaseLexicalScope {
+            return object : BaseLexicalScope(parent, ownerDescriptor) {
+                override fun printStructure(p: Printer) {
+                    p.println("Empty lexical scope with owner = $ownerDescriptor and parent = ${parent}.")
+                }
+            }
+        }
+    }
+}
+
+interface ImportingScope : HierarchicalScope {
     override val parent: ImportingScope?
-
-    override val isOwnerDescriptorAccessibleByLabel: Boolean
-        get() = false
-
-    override val implicitReceiver: ReceiverParameterDescriptor?
-        get() = null
-
-    // methods getDeclaredSmth for this scope will be delegated to importScope
 
     fun getContributedPackage(name: Name): PackageViewDescriptor?
 
@@ -77,13 +82,7 @@ interface ImportingScope : LexicalScope {
     }
 }
 
-abstract class BaseLexicalScope(override val parent: LexicalScope?) : LexicalScope {
-    override val isOwnerDescriptorAccessibleByLabel: Boolean
-        get() = false
-
-    override val implicitReceiver: ReceiverParameterDescriptor?
-        get() = null
-
+abstract class BaseHierarchicalScope(override val parent: HierarchicalScope?) : HierarchicalScope {
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean): Collection<DeclarationDescriptor> = emptyList()
 
     override fun getContributedClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? = null
@@ -93,18 +92,23 @@ abstract class BaseLexicalScope(override val parent: LexicalScope?) : LexicalSco
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor> = emptyList()
 }
 
-abstract class BaseImportingScope(parent: ImportingScope?) : BaseLexicalScope(parent), ImportingScope {
-    override val parent: ImportingScope?
-        get() = super.parent as ImportingScope?
+abstract class BaseLexicalScope(
+        parent: HierarchicalScope,
+        override val ownerDescriptor: DeclarationDescriptor
+): BaseHierarchicalScope(parent), LexicalScope {
+    override val parent: HierarchicalScope
+        get() = super.parent!!
 
-    override val ownerDescriptor: DeclarationDescriptor
-        get() = throw UnsupportedOperationException()
-
-    override final val isOwnerDescriptorAccessibleByLabel: Boolean
+    override val isOwnerDescriptorAccessibleByLabel: Boolean
         get() = false
 
-    override final val implicitReceiver: ReceiverParameterDescriptor?
+    override val implicitReceiver: ReceiverParameterDescriptor?
         get() = null
+}
+
+abstract class BaseImportingScope(parent: ImportingScope?) : BaseHierarchicalScope(parent), ImportingScope {
+    override val parent: ImportingScope?
+        get() = super.parent as ImportingScope?
 
     override fun getContributedPackage(name: Name): PackageViewDescriptor? = null
 

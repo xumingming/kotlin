@@ -28,8 +28,8 @@ import org.jetbrains.kotlin.resolve.DescriptorFactory
 import org.jetbrains.kotlin.resolve.calls.tasks.collectors.CallableDescriptorCollector
 import org.jetbrains.kotlin.resolve.calls.tasks.collectors.CallableDescriptorCollectors
 import org.jetbrains.kotlin.resolve.descriptorUtil.builtIns
-import org.jetbrains.kotlin.resolve.scopes.KtScope
 import org.jetbrains.kotlin.resolve.scopes.KtScopeImpl
+import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.TransientReceiver
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.Variance
@@ -78,7 +78,7 @@ class DynamicCallableDescriptors(private val builtIns: KotlinBuiltIns) {
             return false
         }
 
-        override fun getProperties(name: Name, location: LookupLocation): Collection<VariableDescriptor> {
+        override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
             return if (call.getValueArgumentList() == null && call.getValueArguments().isEmpty()) {
                 listOf(createDynamicProperty(owner, name, call))
             }
@@ -229,7 +229,7 @@ public fun DeclarationDescriptor.isDynamic(): Boolean {
 }
 
 class CollectorForDynamicReceivers<D: CallableDescriptor>(val delegate: CallableDescriptorCollector<D>) : CallableDescriptorCollector<D> by delegate {
-    override fun getExtensionsByName(scope: KtScope, name: Name, receiverTypes: Collection<KotlinType>, location: LookupLocation): Collection<D> {
+    override fun getExtensionsByName(scope: LexicalScope, name: Name, receiverTypes: Collection<KotlinType>, location: LookupLocation): Collection<D> {
         return delegate.getExtensionsByName(scope, name, receiverTypes, location).filter {
             it.getExtensionReceiverParameter()?.getType()?.isDynamic() ?: false
         }

@@ -16,7 +16,6 @@
 
 package org.jetbrains.kotlin.resolve;
 
-import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
@@ -32,7 +31,7 @@ import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.name.SpecialNames;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
 import org.jetbrains.kotlin.resolve.constants.StringValue;
-import org.jetbrains.kotlin.resolve.scopes.FilteringScope;
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.KtScope;
 import org.jetbrains.kotlin.types.ErrorUtils;
 import org.jetbrains.kotlin.types.KotlinType;
@@ -406,17 +405,6 @@ public class DescriptorUtils {
                !((ClassDescriptor) descriptor).isInner();
     }
 
-    @NotNull
-    public static KtScope getStaticNestedClassesScope(@NotNull ClassDescriptor descriptor) {
-        KtScope innerClassesScope = descriptor.getUnsubstitutedInnerClassesScope();
-        return new FilteringScope(innerClassesScope, new Function1<DeclarationDescriptor, Boolean>() {
-            @Override
-            public Boolean invoke(DeclarationDescriptor descriptor) {
-                return descriptor instanceof ClassDescriptor && !((ClassDescriptor) descriptor).isInner();
-            }
-        });
-    }
-
     /**
      * @return true iff {@code descriptor}'s first non-class container is a package
      */
@@ -559,5 +547,10 @@ public class DescriptorUtils {
         }
 
         return SourceFile.NO_SOURCE_FILE;
+    }
+
+    @NotNull
+    public static Collection<DeclarationDescriptor> getAllDescriptors(@NotNull KtScope scope) {
+        return scope.getDescriptors(DescriptorKindFilter.ALL, KtScope.Companion.getALL_NAME_FILTER());
     }
 }

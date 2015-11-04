@@ -52,14 +52,14 @@ class FunctionClassScope(
         return allDescriptors().filterIsInstance<FunctionDescriptor>().filter { it.getName() == name }
     }
 
-    override fun getProperties(name: Name, location: LookupLocation): Collection<VariableDescriptor> {
+    override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
         return allDescriptors().filterIsInstance<PropertyDescriptor>().filter { it.getName() == name }
     }
 
     private fun createFakeOverrides(invoke: FunctionDescriptor?): List<DeclarationDescriptor> {
         val result = ArrayList<DeclarationDescriptor>(3)
         val allSuperDescriptors = functionClass.getTypeConstructor().getSupertypes()
-                .flatMap { it.getMemberScope().getAllDescriptors() }
+                .flatMap { it.getMemberScope().getDescriptors() }
                 .filterIsInstance<CallableMemberDescriptor>()
         for ((name, group) in allSuperDescriptors.groupBy { it.getName() }) {
             for ((isFunction, descriptors) in group.groupBy { it is FunctionDescriptor }) {

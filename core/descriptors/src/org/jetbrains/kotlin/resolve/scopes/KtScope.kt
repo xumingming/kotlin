@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.resolve.scopes
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.toReadOnlyList
 import java.lang.reflect.Modifier
@@ -28,30 +27,14 @@ public interface KtScope {
 
     public fun getClassifier(name: Name, location: LookupLocation): ClassifierDescriptor?
 
+    @Deprecated("Should be removed soon")
     public fun getPackage(name: Name): PackageViewDescriptor?
 
-    public fun getProperties(name: Name, location: LookupLocation): Collection<VariableDescriptor>
-
-    public fun getLocalVariable(name: Name): VariableDescriptor?
+    public fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor>
 
     public fun getFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor>
 
-    public fun getSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<PropertyDescriptor>
-    public fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor>
-
-    public fun getSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>): Collection<PropertyDescriptor>
-    public fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>): Collection<FunctionDescriptor>
-
     public fun getContainingDeclaration(): DeclarationDescriptor
-
-    public fun getDeclarationsByLabel(labelName: Name): Collection<DeclarationDescriptor>
-
-    /**
-     * All visible descriptors from current scope.
-     *
-     * @return All visible descriptors from current scope.
-     */
-    public fun getAllDescriptors(): Collection<DeclarationDescriptor> = getDescriptors()
 
     /**
      * All visible descriptors from current scope possibly filtered by the given name and kind filters
@@ -63,30 +46,23 @@ public interface KtScope {
     ): Collection<DeclarationDescriptor>
 
     /**
-     * Adds receivers to the list in order of locality, so that the closest (the most local) receiver goes first
-     */
-    public fun getImplicitReceiversHierarchy(): List<ReceiverParameterDescriptor>
-
-    public fun getOwnDeclaredDescriptors(): Collection<DeclarationDescriptor>
-
-    /**
      * Is supposed to be used in tests and debug only
      */
     public fun printScopeStructure(p: Printer)
 
-    public object Empty : KtScopeImpl() {
-        override fun getContainingDeclaration(): DeclarationDescriptor {
-            throw UnsupportedOperationException("Don't take containing declaration of the Empty scope")
-        }
-
-        override fun toString() = "Empty"
-
-        override fun printScopeStructure(p: Printer) {
-            p.println("Empty")
-        }
-    }
-
     companion object {
+        public fun empty(ownerDescriptor: DeclarationDescriptor): KtScope {
+            return object : KtScopeImpl() {
+                override fun getContainingDeclaration() = ownerDescriptor
+
+                override fun toString() = "Empty scope with owner: $ownerDescriptor"
+
+                override fun printScopeStructure(p: Printer) {
+                    p.println(toString())
+                }
+            }
+        }
+
         public val ALL_NAME_FILTER: (Name) -> Boolean = { true }
     }
 }
@@ -173,15 +149,15 @@ public class DescriptorKindFilter(
         public val VALUES_MASK: Int = SINGLETON_CLASSIFIERS_MASK or FUNCTIONS_MASK or VARIABLES_MASK
         public val CALLABLES_MASK: Int = FUNCTIONS_MASK or VARIABLES_MASK
 
-        public val ALL: DescriptorKindFilter = DescriptorKindFilter(ALL_KINDS_MASK)
-        public val CALLABLES: DescriptorKindFilter = DescriptorKindFilter(CALLABLES_MASK)
-        public val NON_SINGLETON_CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(NON_SINGLETON_CLASSIFIERS_MASK)
-        public val SINGLETON_CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(SINGLETON_CLASSIFIERS_MASK)
-        public val CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(CLASSIFIERS_MASK)
-        public val PACKAGES: DescriptorKindFilter = DescriptorKindFilter(PACKAGES_MASK)
-        public val FUNCTIONS: DescriptorKindFilter = DescriptorKindFilter(FUNCTIONS_MASK)
-        public val VARIABLES: DescriptorKindFilter = DescriptorKindFilter(VARIABLES_MASK)
-        public val VALUES: DescriptorKindFilter = DescriptorKindFilter(VALUES_MASK)
+        @JvmField public val ALL: DescriptorKindFilter = DescriptorKindFilter(ALL_KINDS_MASK)
+        @JvmField public val CALLABLES: DescriptorKindFilter = DescriptorKindFilter(CALLABLES_MASK)
+        @JvmField public val NON_SINGLETON_CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(NON_SINGLETON_CLASSIFIERS_MASK)
+        @JvmField public val SINGLETON_CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(SINGLETON_CLASSIFIERS_MASK)
+        @JvmField public val CLASSIFIERS: DescriptorKindFilter = DescriptorKindFilter(CLASSIFIERS_MASK)
+        @JvmField public val PACKAGES: DescriptorKindFilter = DescriptorKindFilter(PACKAGES_MASK)
+        @JvmField public val FUNCTIONS: DescriptorKindFilter = DescriptorKindFilter(FUNCTIONS_MASK)
+        @JvmField public val VARIABLES: DescriptorKindFilter = DescriptorKindFilter(VARIABLES_MASK)
+        @JvmField public val VALUES: DescriptorKindFilter = DescriptorKindFilter(VALUES_MASK)
 
         private class MaskToName(val mask: Int, val name: String)
 

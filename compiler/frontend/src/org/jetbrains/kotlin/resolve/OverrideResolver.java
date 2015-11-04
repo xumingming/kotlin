@@ -243,7 +243,7 @@ public class OverrideResolver {
 
     private static List<CallableMemberDescriptor> getCallableMembersFromType(KotlinType type) {
         List<CallableMemberDescriptor> r = Lists.newArrayList();
-        for (DeclarationDescriptor decl : type.getMemberScope().getAllDescriptors()) {
+        for (DeclarationDescriptor decl : DescriptorUtils.getAllDescriptors(type.getMemberScope())) {
             if (decl instanceof PropertyDescriptor || decl instanceof SimpleFunctionDescriptor) {
                 r.add((CallableMemberDescriptor) decl);
             }
@@ -305,7 +305,7 @@ public class OverrideResolver {
             @NotNull Set<CallableMemberDescriptor> abstractInBaseClassNoImpl,
             @NotNull Set<CallableMemberDescriptor> conflictingInterfaceOverrides
     ) {
-        for (DeclarationDescriptor member : classDescriptor.getDefaultType().getMemberScope().getAllDescriptors()) {
+        for (DeclarationDescriptor member : DescriptorUtils.getAllDescriptors(classDescriptor.getDefaultType().getMemberScope())) {
             if (member instanceof CallableMemberDescriptor) {
                 collectMissingImplementations((CallableMemberDescriptor) member,
                                               abstractNoImpl, manyImpl,
@@ -812,7 +812,7 @@ public class OverrideResolver {
 
     private void checkParameterOverridesForAllClasses(@NotNull TopDownAnalysisContext c) {
         for (ClassDescriptorWithResolutionScopes classDescriptor : c.getDeclaredClasses().values()) {
-            for (DeclarationDescriptor member : classDescriptor.getDefaultType().getMemberScope().getAllDescriptors()) {
+            for (DeclarationDescriptor member : DescriptorUtils.getAllDescriptors(classDescriptor.getDefaultType().getMemberScope())) {
                 if (member instanceof CallableMemberDescriptor) {
                     checkOverridesForParameters((CallableMemberDescriptor) member);
                 }

@@ -18,21 +18,23 @@ package org.jetbrains.kotlin.resolve.scopes.receivers
 
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.diagnostics.Errors.*
-import org.jetbrains.kotlin.incremental.components.NoLookupLocation
+import org.jetbrains.kotlin.incremental.KotlinLookupLocation
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.getTopmostParentQualifiedExpressionForSelector
 import org.jetbrains.kotlin.resolve.BindingContext.*
-import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.DescriptorUtils.getFqName
 import org.jetbrains.kotlin.resolve.bindingContextUtil.recordScope
 import org.jetbrains.kotlin.resolve.descriptorUtil.classObjectType
 import org.jetbrains.kotlin.resolve.descriptorUtil.hasClassObjectType
 import org.jetbrains.kotlin.resolve.scopes.ChainedScope
 import org.jetbrains.kotlin.resolve.scopes.FilteringScope
+import org.jetbrains.kotlin.resolve.scopes.JetScopeUtils
 import org.jetbrains.kotlin.resolve.scopes.KtScope
-import org.jetbrains.kotlin.resolve.scopes.utils.asKtScope
+import org.jetbrains.kotlin.resolve.scopes.utils.findClassifier
+import org.jetbrains.kotlin.resolve.scopes.utils.findPackage
+import org.jetbrains.kotlin.resolve.scopes.utils.memberScopeAsImportingScope
 import org.jetbrains.kotlin.resolve.validation.SymbolUsageValidator
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingContext
@@ -102,7 +104,7 @@ class ClassifierQualifier(
 
     override val scope: KtScope get() {
         if (classifier !is ClassDescriptor) {
-            return KtScope.Empty
+            return KtScope.empty(classifier)
         }
 
         val scopes = ArrayList<KtScope>(3)
@@ -123,7 +125,7 @@ class ClassifierQualifier(
 
     override fun getNestedClassesAndPackageMembersScope(): KtScope {
         if (classifier !is ClassDescriptor) {
-            return KtScope.Empty
+            return KtScope.empty(classifier)
         }
 
         val scopes = ArrayList<KtScope>(2)
@@ -131,7 +133,7 @@ class ClassifierQualifier(
         scopes.add(classifier.staticScope)
 
         if (classifier.kind != ClassKind.ENUM_ENTRY) {
-            scopes.add(DescriptorUtils.getStaticNestedClassesScope(classifier))
+            scopes.add(JetScopeUtils.getStaticNestedClassesScope(classifier))
         }
 
         return ChainedScope(descriptor, "Static scope for $name as class or object", *scopes.toTypedArray())
@@ -147,14 +149,14 @@ fun createQualifier(
         context: ExpressionTypingContext
 ): QualifierReceiver? {
     val receiverScope = when {
-        !receiver.exists() -> context.scope.asKtScope()
-        receiver is QualifierReceiver -> receiver.scope
-        else -> receiver.getType().getMemberScope()
+        !receiver.exists() -> context.scope
+        receiver is QualifierReceiver -> receiver.scope.memberScopeAsImportingScope()
+        else -> receiver.getType().getMemberScope().memberScopeAsImportingScope()
     }
 
     val name = expression.getReferencedNameAsName()
-    val packageViewDescriptor = receiverScope.getPackage(name)
-    val classifierDescriptor = receiverScope.getClassifier(name, NoLookupLocation.WHEN_TYPING)
+    val packageViewDescriptor = receiverScope.findPackage(name)
+    val classifierDescriptor = receiverScope.findClassifier(name, KotlinLookupLocation(expression))
 
     if (packageViewDescriptor == null && classifierDescriptor == null) return null
 

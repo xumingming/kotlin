@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.util.collectionUtils.getFirstMatch
 import org.jetbrains.kotlin.util.collectionUtils.getFromAllScopes
 import org.jetbrains.kotlin.utils.Printer
 
-public class LexicalChainedScope(
+public class LexicalChainedScope @JvmOverloads constructor(
         parent: LexicalScope,
         override val ownerDescriptor: DeclarationDescriptor,
         override val isOwnerDescriptorAccessibleByLabel: Boolean,
@@ -39,7 +39,7 @@ public class LexicalChainedScope(
     private val scopeChain = memberScopes.clone()
 
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean)
-            = getFromAllScopes(scopeChain) { it.getAllDescriptors() }
+            = getFromAllScopes(scopeChain) { it.getDescriptors() }
 
     override fun getContributedClassifier(name: Name, location: LookupLocation) = getFirstMatch(scopeChain) { it.getClassifier(name, location) }
 
