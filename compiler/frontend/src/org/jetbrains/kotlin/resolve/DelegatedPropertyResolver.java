@@ -312,24 +312,23 @@ public class DelegatedPropertyResolver {
         return builder.toString();
     }
 
-    @Nullable
+    @NotNull
     public KotlinType resolveDelegateExpression(
             @NotNull KtExpression delegateExpression,
             @NotNull KtProperty jetProperty,
             @NotNull PropertyDescriptor propertyDescriptor,
-            @NotNull LexicalScope propertyDeclarationInnerScope,
-            @NotNull LexicalScope accessorScope,
+            @NotNull LexicalScope scopeForDelegate,
             @NotNull BindingTrace trace,
             @NotNull DataFlowInfo dataFlowInfo
     ) {
         TemporaryBindingTrace traceToResolveDelegatedProperty = TemporaryBindingTrace.create(trace, "Trace to resolve delegated property");
         KtExpression calleeExpression = CallUtilKt.getCalleeExpressionIfAny(delegateExpression);
         ConstraintSystemCompleter completer = createConstraintSystemCompleter(
-                jetProperty, propertyDescriptor, delegateExpression, accessorScope, trace);
+                jetProperty, propertyDescriptor, delegateExpression, scopeForDelegate, trace);
         if (calleeExpression != null) {
             traceToResolveDelegatedProperty.record(CONSTRAINT_SYSTEM_COMPLETER, calleeExpression, completer);
         }
-        KotlinType delegateType = expressionTypingServices.safeGetType(propertyDeclarationInnerScope, delegateExpression, NO_EXPECTED_TYPE,
+        KotlinType delegateType = expressionTypingServices.safeGetType(scopeForDelegate, delegateExpression, NO_EXPECTED_TYPE,
                                                                        dataFlowInfo, traceToResolveDelegatedProperty);
         traceToResolveDelegatedProperty.commit(new TraceEntryFilter() {
             @Override
