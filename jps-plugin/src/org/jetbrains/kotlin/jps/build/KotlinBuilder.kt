@@ -151,9 +151,9 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
         messageCollector.report(INFO, "Kotlin JPS plugin version " + KotlinVersion.VERSION, CompilerMessageLocation.NO_LOCATION)
 
         val project = projectDescriptor.project
-        val incrementalCaches = getIncrementalCaches(chunk, context, lookupStorage)
         val lookupTracker = getLookupTracker(project)
         val lookupStorage = dataManager.getStorage(LOOKUP_TRACKER_TARGET, LOOKUP_TRACKER_STORAGE_PROVIDER)
+        val incrementalCaches = getIncrementalCaches(chunk, context)
         val environment = createCompileEnvironment(incrementalCaches, lookupTracker, context)
         if (!environment.success()) {
             environment.reportErrorsTo(messageCollector)
@@ -165,6 +165,9 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
 
         val allCompiledFiles = getAllCompiledFilesContainer(context)
         val filesToCompile = KotlinSourceFileCollector.getDirtySourceFiles(dirtyFilesHolder)
+        filesToCompile.values().forEach { lookupStorage.removeLookupsFrom(it) }
+        val removedFiles = chunk.targets.flatMap { KotlinSourceFileCollector.getRemovedKotlinFiles(dirtyFilesHolder, it) }
+        removedFiles.forEach { lookupStorage.removeLookupsFrom(it) }
 
         val start = System.nanoTime()
         val outputItemCollector = doCompileModuleChunk(allCompiledFiles, chunk, commonArguments, context, dirtyFilesHolder,
@@ -642,7 +645,7 @@ private fun getLookupTracker(project: JpsProject): LookupTracker {
     return lookupTracker
 }
 
-private fun getIncrementalCaches(chunk: ModuleChunk, context: CompileContext, lookupStorage: LookupStorage): Map<ModuleBuildTarget, IncrementalCacheImpl> {
+private fun getIncrementalCaches(chunk: ModuleChunk, context: CompileContext): Map<ModuleBuildTarget, IncrementalCacheImpl> {
     val dataManager = context.projectDescriptor.dataManager
     val targets = chunk.targets
 
@@ -672,8 +675,6 @@ private fun getIncrementalCaches(chunk: ModuleChunk, context: CompileContext, lo
         dependents[target]?.forEach {
             cache.addDependentCache(caches[it]!!)
         }
-
-        cache.setLookupStorage(lookupStorage)
     }
 
     return caches
