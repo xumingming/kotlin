@@ -35,9 +35,10 @@ import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import java.util.*
 
 public object SamConversionResolverImpl : SamConversionResolver {
-    override fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: ClassifierDescriptor?): SamConstructorDescriptor? {
-        if (classifier !is LazyJavaClassDescriptor || classifier.getFunctionTypeForSamInterface() == null) return null
-        return SingleAbstractMethodUtils.createSamConstructorFunction(constructorOwner, classifier)
+    override fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: () -> ClassifierDescriptor?): SamConstructorDescriptor? {
+        val classifierDescriptor = classifier()
+        if (classifierDescriptor !is LazyJavaClassDescriptor || classifierDescriptor.functionTypeForSamInterface == null) return null
+        return SingleAbstractMethodUtils.createSamConstructorFunction(constructorOwner, classifierDescriptor)
     }
 
     @Suppress("UNCHECKED_CAST")

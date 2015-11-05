@@ -27,13 +27,13 @@ import org.jetbrains.kotlin.types.KotlinType
 public interface SamConversionResolver {
     public companion object EMPTY : SamConversionResolver {
         override fun <D : FunctionDescriptor> resolveSamAdapter(original: D) = null
-        override fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: ClassifierDescriptor?) = null
+        override fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: () -> ClassifierDescriptor?) = null
         override fun resolveFunctionTypeIfSamInterface(
                 classDescriptor: JavaClassDescriptor, resolveMethod: (JavaMethod) -> FunctionDescriptor
         ): KotlinType? = null
     }
 
-    public fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: ClassifierDescriptor?): SamConstructorDescriptor?
+    public fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: () -> ClassifierDescriptor?): SamConstructorDescriptor?
 
     public fun <D : FunctionDescriptor> resolveSamAdapter(original: D): D?
 
