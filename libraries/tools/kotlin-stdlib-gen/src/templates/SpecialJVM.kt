@@ -122,19 +122,25 @@ fun specialJVM(): List<GenericFunction> {
     templates add f("sort(fromIndex: Int = 0, toIndex: Int = size())") {
         only(ArraysOfObjects, ArraysOfPrimitives)
         exclude(PrimitiveType.Boolean)
-        doc { "Sorts array or range in array inplace." }
+        doc { "Sorts array or range in array in-place." }
         returns("Unit")
         body {
-            "Arrays.sort(this, fromIndex, toIndex)"
+            """
+            if ((toIndex - fromIndex) !in 0..1)
+                Arrays.sort(this, fromIndex, toIndex)
+            """
         }
     }
 
     templates add f("sortWith(comparator: Comparator<in T>, fromIndex: Int = 0, toIndex: Int = size())") {
         only(ArraysOfObjects)
-        doc { "Sorts array or range in array inplace." }
+        doc { "Sorts array or range in array in-place." }
         returns("Unit")
         body {
-            "Arrays.sort(this, fromIndex, toIndex, comparator)"
+            """
+            if ((toIndex - fromIndex) !in 0..1)
+                Arrays.sort(this, fromIndex, toIndex, comparator)
+            """
         }
 
     }

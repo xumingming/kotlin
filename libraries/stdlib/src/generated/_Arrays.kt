@@ -4572,56 +4572,56 @@ public fun ShortArray.sortDescending(): Unit {
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun <T : Comparable<T>> Array<out T>.sorted(): List<T> {
-    return toArrayList().apply { sort() }
+    return sortedArray().asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun ByteArray.sorted(): List<Byte> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun CharArray.sorted(): List<Char> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun DoubleArray.sorted(): List<Double> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun FloatArray.sorted(): List<Float> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun IntArray.sorted(): List<Int> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun LongArray.sorted(): List<Long> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to their natural sort order.
  */
 public fun ShortArray.sorted(): List<Short> {
-    return toArrayList().apply { sort() }
+    return toTypedArray().apply { sort() }.asList()
 }
 
 /**
@@ -4946,63 +4946,63 @@ public fun ShortArray.sortedDescending(): List<Short> {
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun <T> Array<out T>.sortedWith(comparator: Comparator<in T>): List<T> {
-    return toArrayList().apply { sortWith(comparator) }
+    return sortedArrayWith(comparator).asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun BooleanArray.sortedWith(comparator: Comparator<in Boolean>): List<Boolean> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun ByteArray.sortedWith(comparator: Comparator<in Byte>): List<Byte> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun CharArray.sortedWith(comparator: Comparator<in Char>): List<Char> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun DoubleArray.sortedWith(comparator: Comparator<in Double>): List<Double> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun FloatArray.sortedWith(comparator: Comparator<in Float>): List<Float> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun IntArray.sortedWith(comparator: Comparator<in Int>): List<Int> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun LongArray.sortedWith(comparator: Comparator<in Long>): List<Long> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
  * Returns a list of all elements sorted according to the specified [comparator].
  */
 public fun ShortArray.sortedWith(comparator: Comparator<in Short>): List<Short> {
-    return toArrayList().apply { sortWith(comparator) }
+    return toTypedArray().apply { sortWith(comparator) }.asList()
 }
 
 /**
@@ -11242,75 +11242,84 @@ public operator fun <T> Array<T>.plus(element: T): Array<T> {
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun <T> Array<out T>.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun ByteArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun CharArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun DoubleArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun FloatArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun IntArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun LongArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun ShortArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array inplace.
+ * Sorts array or range in array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun <T> Array<out T>.sortWith(comparator: Comparator<in T>, fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    Arrays.sort(this, fromIndex, toIndex, comparator)
+    if ((toIndex - fromIndex) !in 0..1)
+        Arrays.sort(this, fromIndex, toIndex, comparator)
 }
 
 /**
