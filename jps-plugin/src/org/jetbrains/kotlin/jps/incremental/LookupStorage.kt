@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.utils.Printer
 import java.io.File
 import java.util.*
 
-object LOOKUP_TRACKER_STORAGE_PROVIDER : StorageProvider<LookupStorage>() {
+object LookupStorageProvider : StorageProvider<LookupStorage>() {
     override fun createStorage(targetDataDir: File): LookupStorage = LookupStorage(targetDataDir)
 }
 
