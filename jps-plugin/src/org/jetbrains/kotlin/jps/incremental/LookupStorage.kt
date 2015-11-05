@@ -55,9 +55,9 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
         }
     }
 
-    public fun add(lookupSymbol: LookupSymbol, containingFiles: Collection<File>) {
+    public fun add(lookupSymbol: LookupSymbol, containingPaths: Collection<String>) {
         val key = LookupSymbolKey(lookupSymbol.name, lookupSymbol.scope)
-        val fileIds = containingFiles.map { addFileIfNeeded(it) }.toHashSet()
+        val fileIds = containingPaths.map { addFileIfNeeded(File(it)) }.toHashSet()
         fileIds.addAll(lookupMap[key] ?: emptySet())
         lookupMap[key] = fileIds
     }
@@ -171,10 +171,10 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
 }
 
 class LookupTrackerImpl(private val delegate: LookupTracker) : LookupTracker {
-    val lookups = MultiMap<LookupSymbol, File>()
+    val lookups = MultiMap<LookupSymbol, String>()
 
     override fun record(locationInfo: LocationInfo, scopeFqName: String, scopeKind: ScopeKind, name: String) {
-        lookups.putValue(LookupSymbol(name, scopeFqName), File(locationInfo.filePath))
+        lookups.putValue(LookupSymbol(name, scopeFqName), locationInfo.filePath)
         delegate.record(locationInfo, scopeFqName, scopeKind, name)
     }
 }
