@@ -56,7 +56,7 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
     }
 
     public fun add(lookupSymbol: LookupSymbol, containingFiles: Collection<File>) {
-        val key = lookupSymbol.toHashPair()
+        val key = LookupSymbolKey(lookupSymbol.name, lookupSymbol.scope)
         val fileIds = containingFiles.map { addFileIfNeeded(it) }.toHashSet()
         fileIds.addAll(lookupMap[key] ?: emptySet())
         lookupMap[key] = fileIds
@@ -151,7 +151,7 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
 
         val sb = StringBuilder()
         val p = Printer(sb)
-        val lookupsStrings = lookupSymbols.groupBy { LookupHashPair(it.name, it.scope) }
+        val lookupsStrings = lookupSymbols.groupBy { LookupSymbolKey(it.name, it.scope) }
         val lookups = lookupMap.copyAsMap()
 
         for ((lookup, fileIds) in lookups.entries.sortedBy { it.key }) {
@@ -180,5 +180,3 @@ class LookupTrackerImpl(private val delegate: LookupTracker) : LookupTracker {
 }
 
 data class LookupSymbol(val name: String, val scope: String)
-
-fun LookupSymbol.toHashPair() = LookupHashPair(name, scope)
