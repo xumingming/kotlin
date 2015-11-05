@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.*;
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope;
+import org.jetbrains.kotlin.resolve.scopes.LexicalScopeKind;
 import org.jetbrains.kotlin.resolve.scopes.LexicalWritableScope;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ClassReceiver;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver;
@@ -104,9 +105,9 @@ public class ExpressionTypingUtils {
     }
 
     @NotNull
-    public static LexicalWritableScope newWritableScopeImpl(ExpressionTypingContext context, @NotNull String scopeDebugName) {
-        LexicalWritableScope scope = new LexicalWritableScope(
-                context.scope, context.scope.getOwnerDescriptor(), false, null, new TraceBasedRedeclarationHandler(context.trace), scopeDebugName);
+    public static LexicalWritableScope newWritableScopeImpl(ExpressionTypingContext context, @NotNull LexicalScopeKind scopeKind) {
+        LexicalWritableScope scope = new LexicalWritableScope(context.scope, context.scope.getOwnerDescriptor(), false, null,
+                                                              new TraceBasedRedeclarationHandler(context.trace), scopeKind);
         scope.changeLockLevel(LexicalWritableScope.LockLevel.BOTH);
         return scope;
     }

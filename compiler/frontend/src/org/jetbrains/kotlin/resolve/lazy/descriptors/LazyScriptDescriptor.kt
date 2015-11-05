@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.lazy.ForceResolveUtil
 import org.jetbrains.kotlin.resolve.lazy.LazyEntity
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.scopes.LexicalScopeImpl
+import org.jetbrains.kotlin.resolve.scopes.LexicalScopeKind
 import org.jetbrains.kotlin.resolve.scopes.receivers.ScriptReceiver
 import org.jetbrains.kotlin.resolve.source.toSourceElement
 import org.jetbrains.kotlin.types.DeferredType
@@ -87,7 +88,7 @@ public class LazyScriptDescriptor(
                 DeferredType.create(resolveSession.storageManager, resolveSession.trace) {
                     val scope = LexicalScopeImpl(
                             resolveSession.fileScopeProvider.getFileResolutionScope(jetScript.getContainingJetFile()),
-                            this, false, implicitReceiver, "Scope for body resolution for $this"
+                            this, false, implicitReceiver, LexicalScopeKind.CODE_BLOCK
                     ) {
                         for (valueParameterDescriptor in result.valueParameters) {
                             addVariableDescriptor(valueParameterDescriptor)

@@ -133,7 +133,7 @@ private fun getPackageInnerScope(descriptor: PackageFragmentDescriptor): MemberS
 private fun getClassInnerScope(outerScope: LexicalScope, descriptor: ClassDescriptor): LexicalScope {
 
     val headerScope = LexicalScopeImpl(outerScope, descriptor, false, descriptor.thisAsReceiverParameter,
-                                       "Class ${descriptor.getName()} header scope") {
+                                       LexicalScopeKind.SYNTHETIC) {
         for (typeParameter in descriptor.getTypeConstructor().getParameters()) {
             addClassifierDescriptor(typeParameter)
         }
@@ -142,7 +142,7 @@ private fun getClassInnerScope(outerScope: LexicalScope, descriptor: ClassDescri
         }
     }
     return LexicalChainedScope(headerScope, descriptor, false, null,
-                               "Class ${descriptor.getName()} scope", descriptor.getDefaultType().getMemberScope())
+                               LexicalScopeKind.SYNTHETIC, descriptor.getDefaultType().getMemberScope())
 }
 
 public fun getResolutionScope(resolutionFacade: ResolutionFacade, descriptor: DeclarationDescriptor): LexicalScope {

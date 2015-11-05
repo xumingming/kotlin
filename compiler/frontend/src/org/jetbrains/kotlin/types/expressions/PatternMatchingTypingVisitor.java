@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValue;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory;
 import org.jetbrains.kotlin.resolve.calls.util.CallMaker;
+import org.jetbrains.kotlin.resolve.scopes.LexicalScopeKind;
 import org.jetbrains.kotlin.resolve.scopes.LexicalWritableScope;
 import org.jetbrains.kotlin.types.*;
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker;
@@ -113,7 +114,7 @@ public class PatternMatchingTypingVisitor extends ExpressionTypingVisitor {
 
             KtExpression bodyExpression = whenEntry.getExpression();
             if (bodyExpression != null) {
-                LexicalWritableScope scopeToExtend = newWritableScopeImpl(context, "Scope extended in when entry");
+                LexicalWritableScope scopeToExtend = newWritableScopeImpl(context, LexicalScopeKind.WHEN);
                 ExpressionTypingContext newContext = contextWithExpectedType
                         .replaceScope(scopeToExtend).replaceDataFlowInfo(infosForCondition.thenInfo).replaceContextDependency(INDEPENDENT);
                 CoercionStrategy coercionStrategy = isStatement ? CoercionStrategy.COERCION_TO_UNIT : CoercionStrategy.NO_COERCION;
