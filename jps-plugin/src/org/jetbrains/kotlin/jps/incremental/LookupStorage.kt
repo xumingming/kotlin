@@ -81,7 +81,15 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
     override fun flush(memoryCachesOnly: Boolean) {
         try {
             removeGarbageIfNeeded()
-            countersFile.writeText("$size\n$deletedCount")
+
+            if (size > 0) {
+                if (!countersFile.exists()) {
+                    countersFile.parentFile.mkdirs()
+                    countersFile.createNewFile()
+                }
+
+                countersFile.writeText("$size\n$deletedCount")
+            }
         }
         finally {
             super.flush(memoryCachesOnly)
