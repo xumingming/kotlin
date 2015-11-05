@@ -21,6 +21,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.refactoring.BaseRefactoringProcessor
+import com.intellij.util.containers.MultiMap
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.idea.core.*
@@ -405,7 +406,7 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
         declarationToReplace: KtNamedDeclaration? = null
 ): ExtractionResult{
     val psiFactory = KtPsiFactory(descriptor.extractionData.originalFile)
-    val nameByOffset = HashMap<Int, KtElement>()
+    val nameByOffset = MultiMap<Int, KtElement>()
 
     fun createDeclaration(): KtNamedDeclaration {
         return with(descriptor.extractionData) {
@@ -451,7 +452,13 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
         }
 
         val counterpartMap = createNameCounterpartMap(currentResultExpression, expressionToUnifyWith ?: newResultExpression)
-        nameByOffset.entries.forEach { e -> counterpartMap.getRaw(e.value)?.let { e.setValue(it) } }
+        nameByOffset.entrySet().forEach {
+            val (offset, replacements) = it
+            counterpartMap.getRaw(offset)?.let {
+                nameByOffset.putValue(offset, it)
+            }
+
+        }
     }
 
     fun getCounterparts<T : KtExpression>(originalExpressions: Collection<T>,
@@ -468,7 +475,7 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
     fun adjustDeclarationBody(declaration: KtNamedDeclaration) {
         val body = declaration.getGeneratedBody()
 
-        val exprReplacementMap = HashMap<KtElement, (ExtractableCodeDescriptor, KtElement) -> KtElement>()
+        val exprReplacementMap = MultiMap<KtElement, (ExtractableCodeDescriptor, KtElement) -> KtElement>()
         val originalOffsetByExpr = LinkedHashMap<KtElement, Int>()
 
         val bodyOffset = body.getBlockContentOffset()
@@ -484,8 +491,10 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
 
             originalOffsetByExpr[expr!!] = offsetInBody
 
-            descriptor.replacementMap[offsetInBody]?.let { replacement ->
-                exprReplacementMap[expr] = replacement
+            descriptor.replacementMap[offsetInBody].let { replacements ->
+                replacements.forEach {
+                    exprReplacementMap.putValue(expr, it)
+                }
             }
         }
 
@@ -516,7 +525,7 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
 
         for ((expr, originalOffset) in originalOffsetByExpr) {
             if (expr.isValid) {
-                nameByOffset.put(originalOffset, exprReplacementMap[expr]?.invoke(descriptor, expr) ?: expr)
+                nameByOffset.put(originalOffset, exprReplacementMap[expr].map { it?.invoke(descriptor, expr) ?: expr })
             }
         }
 
@@ -642,7 +651,7 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
         }
     }
 
-    if (generatorOptions.inTempFile) return ExtractionResult(this, declaration, Collections.emptyMap(), nameByOffset)
+    if (generatorOptions.inTempFile) return ExtractionResult(this, declaration, emptyMap(), nameByOffset)
 
     makeCall(descriptor, declaration, descriptor.controlFlow, descriptor.extractionData.originalRange, descriptor.parameters.map { it.argumentText })
     if (shouldInsert) {

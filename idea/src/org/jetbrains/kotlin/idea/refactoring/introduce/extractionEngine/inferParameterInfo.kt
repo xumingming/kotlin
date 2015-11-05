@@ -84,6 +84,11 @@ internal fun ExtractionData.inferParametersInfo(
         extractReceiver(receiverToExtract, ref, project, originalElements,
                         originalDescriptor, info, options, targetScope, refInfo,
                         originalDeclaration, originalRef, extractedDescriptorToParameter, resolvedCall, pseudocode, codeFragmentText, bindingContext, false)
+        if (resolvedCall != null && options.canWrapInWith && isMemberExtensionFunction(resolvedCall, ref)) {
+            extractReceiver(resolvedCall.dispatchReceiver, ref, project, originalElements,
+                            originalDescriptor, info, options, targetScope, refInfo,
+                            originalDeclaration, originalRef, extractedDescriptorToParameter, resolvedCall, pseudocode, codeFragmentText, bindingContext, true)
+        }
     }
 
     val varNameValidator = NewDeclarationNameValidator(
@@ -159,13 +164,13 @@ private fun extractReceiver(
         } as? ClassifierDescriptor
     }
 
-    if (referencedClassifierDescriptor != null) {
+    if (referencedClassifierDescriptor != null && !isMemberExtensionFunction) {
         if (!referencedClassifierDescriptor.defaultType.processTypeIfExtractable(
                 info.typeParameters, info.nonDenotableTypes, options, targetScope, referencedClassifierDescriptor is TypeParameterDescriptor
         )) return
 
         if (referencedClassifierDescriptor is ClassDescriptor) {
-            info.replacementMap[refInfo.offsetInBody] = FqNameReplacement(originalDescriptor.getImportableDescriptor().fqNameSafe)
+            info.replacementMap.putValue(refInfo.offsetInBody, FqNameReplacement(originalDescriptor.getImportableDescriptor().fqNameSafe))
         }
     }
     else {
@@ -230,7 +235,7 @@ private fun extractReceiver(
             }
 
             parameter.refCount++
-            info.originalRefToParameter[originalRef] = parameter
+            info.originalRefToParameter.putValue(originalRef, parameter)
 
             parameter.addDefaultType(parameterType)
 
@@ -251,11 +256,12 @@ private fun extractReceiver(
                 }
             }
 
-            info.replacementMap[refInfo.offsetInBody] =
+            info.replacementMap.putValue(refInfo.offsetInBody,
                     when {
+                        isMemberExtensionFunction -> WrapInWithReplacement(parameter)
                         hasThisReceiver && extractThis -> AddPrefixReplacement(parameter)
                         else -> RenameReplacement(parameter)
-                    }
+                    })
         }
     }
 }
@@ -297,4 +303,12 @@ private fun suggestParameterType(
                receiverToExtract.exists() -> receiverToExtract.type
                else -> null
            } ?: builtIns.defaultParameterType
+}
+
+private fun isMemberExtensionFunction(resolvedCall: ResolvedCall<*>, ref: KtSimpleNameExpression): Boolean {
+    // TODO temporary hack because we couldn't correctly extract member extension function with two explicit receivers
+    if (ref.parent !is KtCallExpression || ref.parent.parent !is KtQualifiedExpression) return false
+
+    val resultingDescriptor = resolvedCall.resultingDescriptor
+    return resultingDescriptor is FunctionDescriptor && resolvedCall.extensionReceiver != ReceiverValue.NO_RECEIVER && resolvedCall.dispatchReceiver != ReceiverValue.NO_RECEIVER
 }

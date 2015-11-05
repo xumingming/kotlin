@@ -28,9 +28,7 @@ import org.jetbrains.kotlin.idea.core.replaced
 import org.jetbrains.kotlin.idea.refactoring.JetRefactoringBundle
 import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.AnalysisResult.ErrorMessage
 import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.AnalysisResult.Status
-import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.OutputValue.ExpressionValue
-import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.OutputValue.Initializer
-import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.OutputValue.Jump
+import org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine.OutputValue.*
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference.ShorteningMode
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.util.approximateFlexibleTypes
@@ -40,16 +38,15 @@ import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiRange
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.getQualifiedElementSelector
-import org.jetbrains.kotlin.psi.psiUtil.getQualifiedExpressionForSelector
-import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
+import org.jetbrains.kotlin.psi.psiUtil.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.descriptorUtil.resolveTopLevelClass
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.typeUtil.builtIns
 import org.jetbrains.kotlin.types.typeUtil.isUnit
-import java.util.Collections
+import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
+import java.util.*
 
 interface Parameter {
     val argumentText: String
@@ -95,6 +92,17 @@ class RenameReplacement(override val parameter: Parameter): ParameterReplacement
         }
         return expressionToReplace.replaced(replacement)
     }
+}
+
+class WrapInWithReplacement(override val parameter: Parameter): ParameterReplacement {
+    override fun invoke(descriptor: ExtractableCodeDescriptor, e: KtElement): KtElement {
+        val call = e.parents.firstIsInstance<KtCallExpression>().getQualifiedExpressionForSelectorOrThis()
+        val replacingExpression = KtPsiFactory(e).createExpressionByPattern("with($0) { $1 }", parameter.name, call.text)
+        val replace = call.replace(replacingExpression)
+        return (replace as KtCallExpression).functionLiteralArguments.first().getFunctionLiteral().bodyExpression!!.statements.first()
+    }
+
+    override fun copy(parameter: Parameter) = WrapInWithReplacement(parameter)
 }
 
 class AddPrefixReplacement(override val parameter: Parameter): ParameterReplacement {
@@ -326,7 +334,7 @@ data class ExtractableCodeDescriptor(
         val parameters: List<Parameter>,
         val receiverParameter: Parameter?,
         val typeParameters: List<TypeParameter>,
-        val replacementMap: Map<Int, Replacement>,
+        val replacementMap: MultiMap<Int, Replacement>,
         val controlFlow: ControlFlow,
         val returnType: KotlinType
 ) {
@@ -423,7 +431,7 @@ data class ExtractionResult(
         val config: ExtractionGeneratorConfiguration,
         val declaration: KtNamedDeclaration,
         val duplicateReplacers: Map<KotlinPsiRange, () -> Unit>,
-        val nameByOffset: Map<Int, KtElement>
+        val nameByOffset: MultiMap<Int, KtElement>
 )
 
 class AnalysisResult (
