@@ -24,38 +24,38 @@ import org.jetbrains.kotlin.utils.Printer
 /**
  * Introduces a simple wrapper for internal scope.
  */
-public abstract class AbstractScopeAdapter : KtScope {
-    protected abstract val workerScope: KtScope
+public abstract class AbstractScopeAdapter : MemberScope {
+    protected abstract val workerScope: MemberScope
 
-    public fun getActualScope(): KtScope =
+    public fun getActualScope(): MemberScope =
             if (workerScope is AbstractScopeAdapter)
                 (workerScope as AbstractScopeAdapter).getActualScope()
             else
                 workerScope
 
-    override fun getFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
-        return workerScope.getFunctions(name, location)
+    override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
+        return workerScope.getContributedFunctions(name, location)
     }
 
     override fun getPackage(name: Name): PackageViewDescriptor? {
         return workerScope.getPackage(name)
     }
 
-    override fun getClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? {
-        return workerScope.getClassifier(name, location)
+    override fun getContributedClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? {
+        return workerScope.getContributedClassifier(name, location)
     }
 
-    override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
-        return workerScope.getProperties(name, location)
+    override fun getContributedVariables(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
+        return workerScope.getContributedVariables(name, location)
     }
 
     override fun getContainingDeclaration(): DeclarationDescriptor {
         return workerScope.getContainingDeclaration()
     }
 
-    override fun getDescriptors(kindFilter: DescriptorKindFilter,
-                                nameFilter: (Name) -> Boolean): Collection<DeclarationDescriptor> {
-        return workerScope.getDescriptors(kindFilter, nameFilter)
+    override fun getContributedDescriptors(kindFilter: DescriptorKindFilter,
+                                           nameFilter: (Name) -> Boolean): Collection<DeclarationDescriptor> {
+        return workerScope.getContributedDescriptors(kindFilter, nameFilter)
     }
 
     override fun printScopeStructure(p: Printer) {

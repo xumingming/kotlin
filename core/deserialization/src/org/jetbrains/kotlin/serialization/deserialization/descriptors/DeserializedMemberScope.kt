@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.incremental.record
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.resolve.scopes.KtScopeImpl
+import org.jetbrains.kotlin.resolve.scopes.MemberScopeImpl
 import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationContext
 import org.jetbrains.kotlin.serialization.deserialization.receiverType
@@ -34,7 +34,7 @@ public abstract class DeserializedMemberScope protected constructor(
         protected val c: DeserializationContext,
         functionList: Collection<ProtoBuf.Function>,
         propertyList: Collection<ProtoBuf.Property>
-) : KtScopeImpl() {
+) : MemberScopeImpl() {
 
     private data class ProtoKey(val name: Name, val isExtension: Boolean)
 
@@ -82,7 +82,7 @@ public abstract class DeserializedMemberScope protected constructor(
     protected open fun computeNonDeclaredFunctions(name: Name, functions: MutableCollection<FunctionDescriptor>) {
     }
 
-    override fun getFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
+    override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
         recordLookup(name, location)
         return functions(name)
     }
@@ -102,12 +102,12 @@ public abstract class DeserializedMemberScope protected constructor(
     protected open fun computeNonDeclaredProperties(name: Name, descriptors: MutableCollection<PropertyDescriptor>) {
     }
 
-    override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
+    override fun getContributedVariables(name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
         recordLookup(name, location)
         return properties.invoke(name)
     }
 
-    override fun getClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? {
+    override fun getContributedClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? {
         recordLookup(name, location)
         return getClassDescriptor(name)
     }
@@ -150,12 +150,12 @@ public abstract class DeserializedMemberScope protected constructor(
     ) {
         if (kindFilter.acceptsKinds(DescriptorKindFilter.VARIABLES_MASK)) {
             val keys = propertyProtos().keySet().filter { nameFilter(it.name) }
-            addMembers(result, keys) { getProperties(it, location) }
+            addMembers(result, keys) { getContributedVariables(it, location) }
         }
 
         if (kindFilter.acceptsKinds(DescriptorKindFilter.FUNCTIONS_MASK)) {
             val keys = functionProtos().keySet().filter { nameFilter(it.name) }
-            addMembers(result, keys) { getFunctions(it, location) }
+            addMembers(result, keys) { getContributedFunctions(it, location) }
         }
     }
 

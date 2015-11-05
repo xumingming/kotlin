@@ -113,12 +113,12 @@ public fun HierarchicalScope.collectSyntheticExtensionFunctions(receiverTypes: C
 public fun HierarchicalScope.takeSnapshot(): HierarchicalScope = if (this is LexicalWritableScope) takeSnapshot() else this
 
 @JvmOverloads
-public fun KtScope.memberScopeAsImportingScope(parentScope: ImportingScope? = null): ImportingScope = MemberScopeToImportingScopeAdapter(parentScope, this)
+public fun MemberScope.memberScopeAsImportingScope(parentScope: ImportingScope? = null): ImportingScope = MemberScopeToImportingScopeAdapter(parentScope, this)
 
 @Deprecated("Temporary method for scope migration")
-public fun KtScope.memberScopeAsLexicalScope(): LexicalScope = LexicalScope.empty(memberScopeAsImportingScope(), getContainingDeclaration())
+public fun MemberScope.memberScopeAsLexicalScope(): LexicalScope = LexicalScope.empty(memberScopeAsImportingScope(), getContainingDeclaration())
 
-private class MemberScopeToImportingScopeAdapter(override val parent: ImportingScope?, val memberScope: KtScope) : ImportingScope {
+private class MemberScopeToImportingScopeAdapter(override val parent: ImportingScope?, val memberScope: MemberScope) : ImportingScope {
     override fun getContributedPackage(name: Name): PackageViewDescriptor? = memberScope.getPackage(name)
 
     override fun getContributedSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation)
@@ -134,13 +134,13 @@ private class MemberScopeToImportingScopeAdapter(override val parent: ImportingS
             = emptyList<FunctionDescriptor>()
 
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean)
-            = memberScope.getDescriptors(kindFilter, nameFilter)
+            = memberScope.getContributedDescriptors(kindFilter, nameFilter)
 
-    override fun getContributedClassifier(name: Name, location: LookupLocation) = memberScope.getClassifier(name, location)
+    override fun getContributedClassifier(name: Name, location: LookupLocation) = memberScope.getContributedClassifier(name, location)
 
-    override fun getContributedVariables(name: Name, location: LookupLocation) = memberScope.getProperties(name, location)
+    override fun getContributedVariables(name: Name, location: LookupLocation) = memberScope.getContributedVariables(name, location)
 
-    override fun getContributedFunctions(name: Name, location: LookupLocation) = memberScope.getFunctions(name, location)
+    override fun getContributedFunctions(name: Name, location: LookupLocation) = memberScope.getContributedFunctions(name, location)
 
     override fun equals(other: Any?) = other is MemberScopeToImportingScopeAdapter && other.memberScope == memberScope
 

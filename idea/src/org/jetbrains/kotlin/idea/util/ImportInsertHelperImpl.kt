@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.resolve.ImportPath
 import org.jetbrains.kotlin.resolve.descriptorUtil.getImportableDescriptor
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.resolve.scopes.KtScope
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.resolve.scopes.getDescriptorsFiltered
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
@@ -237,7 +237,7 @@ public class ImportInsertHelperImpl(private val project: Project) : ImportInsert
             val topLevelScope = resolutionFacade.getFileResolutionScope(file)
             val conflictCandidates: List<ClassifierDescriptor> = classNamesToImport
                     .flatMap {
-                        importedScopes.map { scope -> scope.getClassifier(it, NoLookupLocation.FROM_IDE) }.filterNotNull()
+                        importedScopes.map { scope -> scope.getContributedClassifier(it, NoLookupLocation.FROM_IDE) }.filterNotNull()
                     }
                     .filter { importedClass ->
                         isVisible(importedClass)
@@ -265,14 +265,14 @@ public class ImportInsertHelperImpl(private val project: Project) : ImportInsert
             return ImportDescriptorResult.IMPORT_ADDED
         }
 
-        private fun getMemberScope(fqName: FqName, moduleDescriptor: ModuleDescriptor): KtScope? {
+        private fun getMemberScope(fqName: FqName, moduleDescriptor: ModuleDescriptor): MemberScope? {
             val packageView = moduleDescriptor.getPackage(fqName)
             if (!packageView.isEmpty()) {
                 return packageView.memberScope
             }
 
             val parentScope = getMemberScope(fqName.parent(), moduleDescriptor) ?: return null
-            val classifier = parentScope.getClassifier(fqName.shortName(), NoLookupLocation.FROM_IDE)
+            val classifier = parentScope.getContributedClassifier(fqName.shortName(), NoLookupLocation.FROM_IDE)
             val classDescriptor = classifier as? ClassDescriptor ?: return null
             return classDescriptor.getDefaultType().getMemberScope()
         }

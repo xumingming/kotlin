@@ -40,7 +40,7 @@ import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
-import org.jetbrains.kotlin.resolve.scopes.KtScope
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.serialization.deserialization.findClassAcrossModuleDependencies
 import java.io.File
 import java.net.URL
@@ -108,7 +108,7 @@ public class BuiltInsReferenceResolver(val project: Project, val startupManager:
             containingDeclaration.getConstructors()
         }
         else {
-            memberScope.getDescriptors()
+            memberScope.getContributedDescriptors()
         }
 
         return descriptors.firstOrNull { renderedOriginal == DescriptorRenderer.FQ_NAMES_IN_TYPES.render(it) }
@@ -166,7 +166,7 @@ public class BuiltInsReferenceResolver(val project: Project, val startupManager:
             return url != null && VfsUtilCore.isUnder(url, builtInDirUrls)
         }
 
-        private fun getMemberScope(parent: DeclarationDescriptor?): KtScope? = when(parent) {
+        private fun getMemberScope(parent: DeclarationDescriptor?): MemberScope? = when(parent) {
             is ClassDescriptor -> parent.getDefaultType().getMemberScope()
             is PackageFragmentDescriptor -> parent.getMemberScope()
             else -> null

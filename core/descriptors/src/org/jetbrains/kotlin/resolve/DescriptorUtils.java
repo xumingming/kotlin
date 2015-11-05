@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.name.SpecialNames;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
 import org.jetbrains.kotlin.resolve.constants.StringValue;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
-import org.jetbrains.kotlin.resolve.scopes.KtScope;
+import org.jetbrains.kotlin.resolve.scopes.MemberScope;
 import org.jetbrains.kotlin.types.ErrorUtils;
 import org.jetbrains.kotlin.types.KotlinType;
 import org.jetbrains.kotlin.types.LazyType;
@@ -383,7 +383,7 @@ public class DescriptorUtils {
     @Nullable
     public static ClassDescriptor getInnerClassByName(@NotNull ClassDescriptor classDescriptor, @NotNull String innerClassName, @NotNull LookupLocation location) {
         ClassifierDescriptor classifier =
-                classDescriptor.getDefaultType().getMemberScope().getClassifier(Name.identifier(innerClassName), location);
+                classDescriptor.getDefaultType().getMemberScope().getContributedClassifier(Name.identifier(innerClassName), location);
         assert classifier instanceof ClassDescriptor :
                 "Inner class " + innerClassName + " in " + classDescriptor + " should be instance of ClassDescriptor, but was: "
                 + (classifier == null ? "null" : classifier.getClass());
@@ -550,7 +550,7 @@ public class DescriptorUtils {
     }
 
     @NotNull
-    public static Collection<DeclarationDescriptor> getAllDescriptors(@NotNull KtScope scope) {
-        return scope.getDescriptors(DescriptorKindFilter.ALL, KtScope.Companion.getALL_NAME_FILTER());
+    public static Collection<DeclarationDescriptor> getAllDescriptors(@NotNull MemberScope scope) {
+        return scope.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.Companion.getALL_NAME_FILTER());
     }
 }

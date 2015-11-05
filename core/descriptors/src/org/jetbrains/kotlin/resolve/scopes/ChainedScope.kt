@@ -26,26 +26,26 @@ import org.jetbrains.kotlin.utils.Printer
 public open class ChainedScope(
         private val containingDeclaration: DeclarationDescriptor?/* it's nullable as a hack for TypeUtils.intersect() */,
         private val debugName: String,
-        vararg scopes: KtScope
-) : KtScope {
+        vararg scopes: MemberScope
+) : MemberScope {
     private val scopeChain = scopes.clone()
 
-    override fun getClassifier(name: Name, location: LookupLocation): ClassifierDescriptor?
-            = getFirstMatch(scopeChain) { it.getClassifier(name, location) }
+    override fun getContributedClassifier(name: Name, location: LookupLocation): ClassifierDescriptor?
+            = getFirstMatch(scopeChain) { it.getContributedClassifier(name, location) }
 
     override fun getPackage(name: Name): PackageViewDescriptor?
             = getFirstMatch(scopeChain) { it.getPackage(name) }
 
-    override fun getProperties(name: Name, location: LookupLocation): Collection<PropertyDescriptor>
-            = getFromAllScopes(scopeChain) { it.getProperties(name, location) }
+    override fun getContributedVariables(name: Name, location: LookupLocation): Collection<PropertyDescriptor>
+            = getFromAllScopes(scopeChain) { it.getContributedVariables(name, location) }
 
-    override fun getFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor>
-            = getFromAllScopes(scopeChain) { it.getFunctions(name, location) }
+    override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor>
+            = getFromAllScopes(scopeChain) { it.getContributedFunctions(name, location) }
 
     override fun getContainingDeclaration(): DeclarationDescriptor = containingDeclaration!!
 
-    override fun getDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean)
-            = getFromAllScopes(scopeChain) { it.getDescriptors(kindFilter, nameFilter) }
+    override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean)
+            = getFromAllScopes(scopeChain) { it.getContributedDescriptors(kindFilter, nameFilter) }
 
     override fun toString() = debugName
 

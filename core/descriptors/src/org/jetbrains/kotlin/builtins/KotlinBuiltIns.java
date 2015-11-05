@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.name.FqNameUnsafe;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
-import org.jetbrains.kotlin.resolve.scopes.KtScope;
+import org.jetbrains.kotlin.resolve.scopes.MemberScope;
 import org.jetbrains.kotlin.serialization.deserialization.AdditionalSupertypes;
 import org.jetbrains.kotlin.storage.LockBasedStorageManager;
 import org.jetbrains.kotlin.types.*;
@@ -202,12 +202,12 @@ public abstract class KotlinBuiltIns {
     }
 
     @NotNull
-    public KtScope getBuiltInsPackageScope() {
+    public MemberScope getBuiltInsPackageScope() {
         return builtinsPackageFragment.getMemberScope();
     }
 
     @NotNull
-    public KtScope getAnnotationPackageScope() {
+    public MemberScope getAnnotationPackageScope() {
         return annotationPackageFragment.getMemberScope();
     }
 
@@ -219,8 +219,8 @@ public abstract class KotlinBuiltIns {
 
     @NotNull
     public ClassDescriptor getAnnotationClassByName(@NotNull Name simpleName) {
-        ClassifierDescriptor classifier = annotationPackageFragment.getMemberScope().getClassifier(simpleName,
-                                                                                                   NoLookupLocation.FROM_BUILTINS);
+        ClassifierDescriptor classifier = annotationPackageFragment.getMemberScope().getContributedClassifier(simpleName,
+                                                                                                              NoLookupLocation.FROM_BUILTINS);
         assert classifier instanceof ClassDescriptor : "Must be a class descriptor " + simpleName + ", but was " +
                                                        (classifier == null ? "null" : classifier.toString());
         return (ClassDescriptor) classifier;
@@ -235,8 +235,8 @@ public abstract class KotlinBuiltIns {
 
     @Nullable
     public ClassDescriptor getBuiltInClassByNameNullable(@NotNull Name simpleName) {
-        ClassifierDescriptor classifier = getBuiltInsPackageFragment().getMemberScope().getClassifier(simpleName,
-                                                                                                      NoLookupLocation.FROM_BUILTINS);
+        ClassifierDescriptor classifier = getBuiltInsPackageFragment().getMemberScope().getContributedClassifier(simpleName,
+                                                                                                                 NoLookupLocation.FROM_BUILTINS);
         assert classifier == null ||
                classifier instanceof ClassDescriptor : "Must be a class descriptor " + simpleName + ", but was " + classifier;
         return (ClassDescriptor) classifier;
@@ -405,7 +405,7 @@ public abstract class KotlinBuiltIns {
 
     @Nullable
     public ClassDescriptor getAnnotationTargetEnumEntry(@NotNull KotlinTarget target) {
-        ClassifierDescriptor result = getAnnotationTargetEnum().getUnsubstitutedInnerClassesScope().getClassifier(
+        ClassifierDescriptor result = getAnnotationTargetEnum().getUnsubstitutedInnerClassesScope().getContributedClassifier(
                 Name.identifier(target.name()), NoLookupLocation.FROM_BUILTINS
         );
         return result instanceof ClassDescriptor ? (ClassDescriptor) result : null;
@@ -418,7 +418,7 @@ public abstract class KotlinBuiltIns {
 
     @Nullable
     public ClassDescriptor getAnnotationRetentionEnumEntry(@NotNull KotlinRetention retention) {
-        ClassifierDescriptor result = getAnnotationRetentionEnum().getUnsubstitutedInnerClassesScope().getClassifier(
+        ClassifierDescriptor result = getAnnotationRetentionEnum().getUnsubstitutedInnerClassesScope().getContributedClassifier(
                 Name.identifier(retention.name()), NoLookupLocation.FROM_BUILTINS
         );
         return result instanceof ClassDescriptor ? (ClassDescriptor) result : null;
@@ -1072,7 +1072,7 @@ public abstract class KotlinBuiltIns {
 
     @NotNull
     public FunctionDescriptor getIdentityEquals() {
-        return first(getBuiltInsPackageFragment().getMemberScope().getFunctions(Name.identifier("identityEquals"),
-                                                                                              NoLookupLocation.FROM_BUILTINS));
+        return first(getBuiltInsPackageFragment().getMemberScope().getContributedFunctions(Name.identifier("identityEquals"),
+                                                                                           NoLookupLocation.FROM_BUILTINS));
     }
 }

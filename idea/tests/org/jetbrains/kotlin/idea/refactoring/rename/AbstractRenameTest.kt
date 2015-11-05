@@ -55,7 +55,7 @@ import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
-import org.jetbrains.kotlin.resolve.scopes.KtScope
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.serialization.deserialization.findClassAcrossModuleDependencies
 import org.junit.Assert
 import java.io.File
@@ -198,13 +198,13 @@ public abstract class AbstractRenameTest : KotlinMultiFileTestCase() {
     private fun renameKotlinFunctionTest(renameParamsObject: JsonObject, context: TestContext) {
         val oldMethodName = Name.identifier(renameParamsObject.getString("oldName"))
 
-        doRenameInKotlinClassOrPackage(renameParamsObject, context) { it.getFunctions(oldMethodName, NoLookupLocation.FROM_TEST).first() }
+        doRenameInKotlinClassOrPackage(renameParamsObject, context) { it.getContributedFunctions(oldMethodName, NoLookupLocation.FROM_TEST).first() }
     }
 
     private fun renameKotlinPropertyTest(renameParamsObject: JsonObject, context: TestContext) {
         val oldPropertyName = Name.identifier(renameParamsObject.getString("oldName"))
 
-        doRenameInKotlinClassOrPackage(renameParamsObject, context) { it.getProperties(oldPropertyName, NoLookupLocation.FROM_TEST).first() }
+        doRenameInKotlinClassOrPackage(renameParamsObject, context) { it.getContributedVariables(oldPropertyName, NoLookupLocation.FROM_TEST).first() }
     }
 
     private fun renameKotlinClassTest(renameParamsObject: JsonObject, context: TestContext) {
@@ -263,7 +263,7 @@ public abstract class AbstractRenameTest : KotlinMultiFileTestCase() {
     }
 
     private fun doRenameInKotlinClassOrPackage(
-            renameParamsObject: JsonObject, context: TestContext, findDescriptorToRename: (KtScope) -> DeclarationDescriptor
+            renameParamsObject: JsonObject, context: TestContext, findDescriptorToRename: (MemberScope) -> DeclarationDescriptor
     ) {
         val classIdStr = renameParamsObject.getNullableString("classId")
         val packageFqnStr = renameParamsObject.getNullableString("packageFqn")

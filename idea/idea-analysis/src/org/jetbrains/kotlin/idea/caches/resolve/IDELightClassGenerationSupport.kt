@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.ForceResolveUtil
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
-import org.jetbrains.kotlin.resolve.scopes.KtScope
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.utils.sure
 import java.util.*
 
@@ -136,7 +136,7 @@ public class IDELightClassGenerationSupport(private val project: Project) : Ligh
     }
 
     override fun getSubPackages(fqn: FqName, scope: GlobalSearchScope): Collection<FqName> {
-        return PackageIndexUtil.getSubPackageFqNames(fqn, kotlinSourceAndClassFiles(scope, project), project, KtScope.ALL_NAME_FILTER)
+        return PackageIndexUtil.getSubPackageFqNames(fqn, kotlinSourceAndClassFiles(scope, project), project, MemberScope.ALL_NAME_FILTER)
     }
 
     override fun getPsiClass(classOrObject: KtClassOrObject): PsiClass? {
@@ -239,14 +239,14 @@ public class IDELightClassGenerationSupport(private val project: Project) : Ligh
             for (declaration in file.declarations) {
                 if (declaration is KtFunction) {
                     val name = declaration.nameAsSafeName
-                    val functions = packageDescriptor.memberScope.getFunctions(name, NoLookupLocation.FROM_IDE)
+                    val functions = packageDescriptor.memberScope.getContributedFunctions(name, NoLookupLocation.FROM_IDE)
                     for (descriptor in functions) {
                         ForceResolveUtil.forceResolveAllContents(descriptor)
                     }
                 }
                 else if (declaration is KtProperty) {
                     val name = declaration.nameAsSafeName
-                    val properties = packageDescriptor.memberScope.getProperties(name, NoLookupLocation.FROM_IDE)
+                    val properties = packageDescriptor.memberScope.getContributedVariables(name, NoLookupLocation.FROM_IDE)
                     for (descriptor in properties) {
                         ForceResolveUtil.forceResolveAllContents(descriptor)
                     }
