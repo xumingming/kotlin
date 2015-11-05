@@ -6,18 +6,28 @@ import templates.DocExtensions.collection
 fun ordering(): List<GenericFunction> {
     val templates = arrayListOf<GenericFunction>()
 
-//    templates add f("reverse()") {
-//        deprecate("reverse will change its behavior soon. Use reversed() instead.")
-//        deprecateReplacement("reversed()")
-//        doc { "Returns a list with elements in reversed order." }
-//        returns { "List<T>" }
-//        body { """return reversed()""" }
-//
-//        include(Strings)
-//        returns(Strings) { "SELF" }
-//
-//        exclude(Sequences)
-//    }
+    templates add f("reverse()") {
+        doc { f -> "Reverses elements in the ${f.collection} in-place." }
+        only(Lists, ArraysOfObjects, ArraysOfPrimitives)
+        customReceiver(Lists) { "MutableList<T>" }
+        returns { "Unit" }
+        body { f ->
+            val _this = if (f == ArraysOfObjects) "_this" else "this"
+            """
+            val midPoint = (size / 2) - 1
+            if (midPoint < 0) return
+            ${if (f == ArraysOfObjects) "val _this = this as Array<T>" else "" }
+            var reverseIndex = lastIndex
+            for (index in 0..midPoint) {
+                val tmp = $_this[index]
+                $_this[index] = $_this[reverseIndex]
+                $_this[reverseIndex] = tmp
+                reverseIndex--
+            }
+            """
+        }
+        body(Lists) { """java.util.Collections.reverse(this)""" }
+    }
 
     templates add f("reversed()") {
         doc { "Returns a list with elements in reversed order." }
@@ -89,9 +99,7 @@ fun ordering(): List<GenericFunction> {
         typeParam("T : Comparable<T>")
         body {
             """
-            val sortedList = toArrayList()
-            java.util.Collections.sort(sortedList)
-            return sortedList
+            return toArrayList().apply { sort() }
             """
         }
 
@@ -104,7 +112,7 @@ fun ordering(): List<GenericFunction> {
             return object : Sequence<T> {
                 override fun iterator(): Iterator<T> {
                     val sortedList = this@sorted.toArrayList()
-                    java.util.Collections.sort(sortedList)
+                    sortedList.sort()
                     return sortedList.iterator()
                 }
             }
@@ -128,6 +136,25 @@ fun ordering(): List<GenericFunction> {
         }
     }
 
+    templates add f("sortDescending()") {
+        only(Lists, ArraysOfObjects, ArraysOfPrimitives)
+        exclude(PrimitiveType.Boolean)
+        doc { f -> """Sorts elements in the ${f.collection} in-place descending according to their natural sort order.""" }
+        returns("Unit")
+        typeParam("T : Comparable<T>")
+        customReceiver(Lists) { "MutableList<T>" }
+
+        body { """sortWith(reverseOrder())""" }
+        body(ArraysOfPrimitives) {
+            """
+                if (size > 1) {
+                    sort()
+                    reverse()
+                }
+            """
+        }
+    }
+
     templates add f("sortedDescending()") {
         exclude(PrimitiveType.Boolean)
 
@@ -140,7 +167,7 @@ fun ordering(): List<GenericFunction> {
         typeParam("T : Comparable<T>")
         body {
             """
-            return sortedWith(comparator { x, y -> y.compareTo(x) })
+            return sortedWith(reverseOrder())
             """
         }
         body(ArraysOfPrimitives) {
@@ -152,11 +179,6 @@ fun ordering(): List<GenericFunction> {
         returns("SELF", Sequences)
         doc(Sequences) {
             "Returns a sequence that yields elements of this sequence sorted descending according to their natural sort order."
-        }
-        body(Sequences) {
-            """
-            return sortedWith(comparator { x, y -> y.compareTo(x) })
-            """
         }
     }
 
@@ -171,16 +193,14 @@ fun ordering(): List<GenericFunction> {
         body(ArraysOfObjects) {
             """
             if (isEmpty()) return this
-            // TODO: Use reverseOrder<T>()
-            return this.copyOf().apply { sortWith(comparator { a, b -> b.compareTo(a) }) }
+            return this.copyOf().apply { sortWith(reverseOrder()) }
             """
 
         }
         body() {
             """
             if (isEmpty()) return this
-            // TODO: Use in-place reverse
-            return this.copyOf().apply { sort() }.reversedArray()
+            return this.copyOf().apply { sortDescending() }
             """
         }
     }
@@ -194,9 +214,7 @@ fun ordering(): List<GenericFunction> {
         }
         body {
             """
-            val sortedList = toArrayList()
-            java.util.Collections.sort(sortedList, comparator)
-            return sortedList
+            return toArrayList().apply { sortWith(comparator) }
             """
         }
 
@@ -209,7 +227,7 @@ fun ordering(): List<GenericFunction> {
             return object : Sequence<T> {
                 override fun iterator(): Iterator<T> {
                     val sortedList = this@sortedWith.toArrayList()
-                    java.util.Collections.sort(sortedList, comparator)
+                    sortedList.sortWith(comparator)
                     return sortedList.iterator()
                 }
             }
@@ -229,6 +247,17 @@ fun ordering(): List<GenericFunction> {
             return this.copyOf().apply { sortWith(comparator) }
             """
         }
+    }
+
+    templates add f("sortBy(crossinline selector: (T) -> R?)") {
+        inline(true)
+        only(Lists, ArraysOfObjects)
+        doc { f -> """Sorts elements in the ${f.collection} in-place according to natural sort order of the value returned by specified [selector] function.""" }
+        returns("Unit")
+        typeParam("R : Comparable<R>")
+        customReceiver(Lists) { "MutableList<T>" }
+
+        body { """if (size > 1) sortWith(compareBy(selector))""" }
     }
 
     templates add f("sortedBy(crossinline selector: (T) -> R?)") {
@@ -252,6 +281,18 @@ fun ordering(): List<GenericFunction> {
         }
     }
 
+    templates add f("sortByDescending(crossinline selector: (T) -> R?)") {
+        inline(true)
+        only(Lists, ArraysOfObjects)
+        doc { f -> """Sorts elements in the ${f.collection} in-place descending according to natural sort order of the value returned by specified [selector] function.""" }
+        returns("Unit")
+        typeParam("R : Comparable<R>")
+        customReceiver(Lists) { "MutableList<T>" }
+
+        body {
+            """if (size > 1) sortWith(compareByDescending(selector))""" }
+    }
+
     templates add f("sortedByDescending(crossinline selector: (T) -> R?)") {
         inline(true)
         returns("List<T>")
@@ -272,129 +313,6 @@ fun ordering(): List<GenericFunction> {
             "return sortedWith(compareByDescending(selector))"
         }
     }
-
-//    templates add f("sort()") {
-//        doc {
-//            """
-//            Returns a sorted list of all elements.
-//            """
-//        }
-//        returns("List<T>")
-//        typeParam("T : Comparable<T>")
-//        deprecate("This method may change its behavior soon. Use sorted() instead.")
-//        deprecateReplacement("sorted()")
-//        body {
-//            """
-//            val sortedList = toArrayList()
-//            java.util.Collections.sort(sortedList)
-//            return sortedList
-//            """
-//        }
-//
-//        exclude(Sequences)
-//        exclude(ArraysOfPrimitives)
-//        exclude(ArraysOfObjects)
-//        exclude(Strings)
-//    }
-
-//    templates add f("sortDescending()") {
-//        doc {
-//            """
-//            Returns a sorted list of all elements, in descending order.
-//            """
-//        }
-//        deprecate("This method may change its behavior soon. Use sortedDescending() instead.")
-//        deprecateReplacement("sortedDescending()")
-//        returns("List<T>")
-//        typeParam("T : Comparable<T>")
-//        body {
-//            """
-//            val sortedList = toArrayList()
-//            java.util.Collections.sort(sortedList, comparator { x, y -> y.compareTo(x) })
-//            return sortedList
-//            """
-//        }
-//
-//        exclude(Sequences)
-//        exclude(ArraysOfPrimitives)
-//        exclude(ArraysOfObjects)
-//        exclude(Strings)
-//    }
-
-//    templates add f("sortBy(crossinline order: (T) -> R)") {
-//        inline(true)
-//
-//        doc {
-//            """
-//            Returns a sorted list of all elements, ordered by results of specified [order] function.
-//            """
-//        }
-//        deprecate("This method may change its behavior soon. Use sortedBy() instead.")
-//        deprecateReplacement("sortedBy(order)")
-//        returns("List<T>")
-//        typeParam("R : Comparable<R>")
-//        body {
-//            """
-//            val sortedList = toArrayList()
-//            val sortBy: Comparator<T> = compareBy(order)
-//            java.util.Collections.sort(sortedList, sortBy)
-//            return sortedList
-//            """
-//        }
-//
-//        exclude(Sequences)
-//        exclude(ArraysOfPrimitives)
-//        exclude(Strings)
-//    }
-
-
-//    templates add f("sortDescendingBy(crossinline order: (T) -> R)") {
-//        inline(true)
-//
-//        doc {
-//            """
-//            Returns a sorted list of all elements, in descending order by results of specified [order] function.
-//            """
-//        }
-//        deprecate("This method may change its behavior soon. Use sortedByDescending() instead.")
-//        deprecateReplacement("sortedByDescending(order)")
-//        returns("List<T>")
-//        typeParam("R : Comparable<R>")
-//        body {
-//            """
-//            val sortedList = toArrayList()
-//            val sortBy: Comparator<T> = compareByDescending(order)
-//            java.util.Collections.sort(sortedList, sortBy)
-//            return sortedList
-//            """
-//        }
-//
-//        exclude(Sequences)
-//        exclude(ArraysOfPrimitives)
-//        exclude(Strings)
-//    }
-
-//    templates add f("sortBy(comparator: Comparator<in T>)") {
-//        doc {
-//            """
-//            Returns a list of all elements, sorted by the specified [comparator].
-//            """
-//        }
-//        returns("List<T>")
-//        deprecate("This method may change its behavior soon. Use sortedWith() instead.")
-//        deprecateReplacement("sortedWith(comparator)")
-//        body {
-//            """
-//            val sortedList = toArrayList()
-//            java.util.Collections.sort(sortedList, comparator)
-//            return sortedList
-//            """
-//        }
-//
-//        exclude(Sequences)
-//        exclude(ArraysOfPrimitives)
-//        exclude(Strings)
-//    }
 
     return templates
 }
