@@ -203,7 +203,7 @@ object ConstantsMapExternalizer : DataExternalizer<Map<String, Any>> {
             val name = IOUtil.readString(input)!!
             val kind = Kind.values()[input.readByte().toInt()]
 
-            val value: Any = when (kind) {
+            val value = when (kind) {
                 Kind.INT -> input.readInt()
                 Kind.FLOAT -> input.readFloat()
                 Kind.LONG -> input.readLong()
