@@ -16,31 +16,22 @@
 
 package org.jetbrains.kotlin.jps.incremental
 
+import com.intellij.util.containers.MultiMap
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.jps.builders.storage.StorageProvider
+import org.jetbrains.kotlin.incremental.components.LocationInfo
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.incremental.components.ScopeKind
-import org.jetbrains.kotlin.jps.incremental.storage.BasicMapsOwner
-import org.jetbrains.kotlin.jps.incremental.storage.FileToIdMap
-import org.jetbrains.kotlin.jps.incremental.storage.IdToFileMap
-import org.jetbrains.kotlin.jps.incremental.storage.LookupMap
+import org.jetbrains.kotlin.jps.incremental.storage.*
+import org.jetbrains.kotlin.utils.Printer
 import java.io.File
+import java.util.*
 
-object LOOKUP_TRACKER_STORAGE_PROVIDER : StorageProvider<LookupTrackerImpl>() {
-    override fun createStorage(targetDataDir: File): LookupTrackerImpl = LookupTrackerImpl(targetDataDir)
+object LOOKUP_TRACKER_STORAGE_PROVIDER : StorageProvider<LookupStorage>() {
+    override fun createStorage(targetDataDir: File): LookupStorage = LookupStorage(targetDataDir)
 }
 
-interface LookupStorage {
-    fun removeLookupsFrom(file: File)
-
-    companion object {
-        val DO_NOTHING: LookupStorage = object : LookupStorage {
-            override fun removeLookupsFrom(file: File) {}
-        }
-    }
-}
-
-class LookupTrackerImpl(private val targetDataDir: File) : BasicMapsOwner(), LookupTracker, LookupStorage {
-
+class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
     companion object {
         private val DELETED_TO_SIZE_TRESHOLD = 0.5
         private val MINIMUM_GARBAGE_COLLECTIBLE_SIZE = 10000
@@ -64,13 +55,14 @@ class LookupTrackerImpl(private val targetDataDir: File) : BasicMapsOwner(), Loo
         }
     }
 
-    override fun record(lookupContainingFile: String, lookupLine: Int?, lookupColumn: Int?, scopeFqName: String, scopeKind: ScopeKind, name: String) {
-        val file = File(lookupContainingFile)
-        val fileId = fileToId[file] ?: addFile(file)
-        lookupMap.add(name, scopeFqName, fileId)
+    public fun add(lookupSymbol: LookupSymbol, containingFiles: Collection<File>) {
+        val key = lookupSymbol.toHashPair()
+        val fileIds = containingFiles.map { addFileIfNeeded(it) }.toHashSet()
+        fileIds.addAll(lookupMap[key] ?: emptySet())
+        lookupMap[key] = fileIds
     }
 
-    override fun removeLookupsFrom(file: File) {
+    public fun removeLookupsFrom(file: File) {
         val id = fileToId[file] ?: return
         idToFile.remove(id)
         fileToId.remove(file)
@@ -98,7 +90,10 @@ class LookupTrackerImpl(private val targetDataDir: File) : BasicMapsOwner(), Loo
         }
     }
 
-    private fun addFile(file: File): Int {
+    private fun addFileIfNeeded(file: File): Int {
+        val existing = fileToId[file]
+        if (existing != null) return existing
+
         val id = size++
         fileToId[file] = id
         idToFile[id] = file
@@ -117,5 +112,17 @@ class LookupTrackerImpl(private val targetDataDir: File) : BasicMapsOwner(), Loo
         idToFile.clean()
 
         fileToId.files.forEach { addFile(it) }
+}
+
+class LookupTrackerImpl(private val delegate: LookupTracker) : LookupTracker {
+    val lookups = MultiMap<LookupSymbol, File>()
+
+    override fun record(locationInfo: LocationInfo, scopeFqName: String, scopeKind: ScopeKind, name: String) {
+        lookups.putValue(LookupSymbol(name, scopeFqName), File(locationInfo.filePath))
+        delegate.record(locationInfo, scopeFqName, scopeKind, name)
     }
 }
+
+data class LookupSymbol(val name: String, val scope: String)
+
+fun LookupSymbol.toHashPair() = LookupHashPair(name, scope)
