@@ -35,6 +35,7 @@ import org.jetbrains.jps.incremental.fs.CompilationRound
 import org.jetbrains.jps.incremental.java.JavaBuilder
 import org.jetbrains.jps.incremental.messages.BuildMessage
 import org.jetbrains.jps.incremental.messages.CompilerMessage
+import org.jetbrains.jps.incremental.storage.BuildDataManager
 import org.jetbrains.jps.model.JpsProject
 import org.jetbrains.jps.model.JpsSimpleElement
 import org.jetbrains.jps.model.ex.JpsElementChildRoleBase
@@ -152,7 +153,6 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
 
         val project = projectDescriptor.project
         val lookupTracker = getLookupTracker(project)
-        val lookupStorage = dataManager.getStorage(LOOKUP_TRACKER_TARGET, LOOKUP_TRACKER_STORAGE_PROVIDER)
         val incrementalCaches = getIncrementalCaches(chunk, context)
         val environment = createCompileEnvironment(incrementalCaches, lookupTracker, context)
         if (!environment.success()) {
@@ -165,10 +165,6 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
 
         val allCompiledFiles = getAllCompiledFilesContainer(context)
         val filesToCompile = KotlinSourceFileCollector.getDirtySourceFiles(dirtyFilesHolder)
-        filesToCompile.values().forEach { lookupStorage.removeLookupsFrom(it) }
-        val removedFiles = chunk.targets.flatMap { KotlinSourceFileCollector.getRemovedKotlinFiles(dirtyFilesHolder, it) }
-        removedFiles.forEach { lookupStorage.removeLookupsFrom(it) }
-
         val start = System.nanoTime()
         val outputItemCollector = doCompileModuleChunk(allCompiledFiles, chunk, commonArguments, context, dirtyFilesHolder,
                                                        environment, filesToCompile, incrementalCaches, messageCollector, project)
@@ -187,10 +183,6 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
             LOG.info("Compiled successfully")
         }
 
-        if (lookupTracker is LookupTrackerImpl) {
-            lookupTracker.lookups.entrySet().forEach { lookupStorage.add(it.key, it.value) }
-        }
-
         val generatedFiles = getGeneratedFiles(chunk, outputItemCollector)
 
         registerOutputItems(outputConsumer, generatedFiles)
@@ -204,6 +196,7 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
                 val generatedClasses = generatedFiles.filterIsInstance<GeneratedJvmClass>()
                 val info = updateKotlinIncrementalCache(compilationErrors, incrementalCaches, generatedFiles, chunk)
                 updateJavaMappings(chunk, compilationErrors, context, dirtyFilesHolder, filesToCompile, generatedClasses)
+                updateLookupStorage(chunk, lookupTracker, dataManager, dirtyFilesHolder, filesToCompile)
                 info
             }
         }
@@ -471,6 +464,26 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
         }
 
         return changesInfo
+    }
+
+    private fun updateLookupStorage(
+            chunk: ModuleChunk,
+            lookupTracker: LookupTracker,
+            dataManager: BuildDataManager,
+            dirtyFilesHolder: DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget>,
+            filesToCompile: MultiMap<ModuleBuildTarget, File>
+    ) {
+        if (!IncrementalCompilation.isExperimental()) return
+
+        if (lookupTracker !is LookupTrackerImpl) throw AssertionError("Lookup tracker is expected to be LookupTrackerImpl, got ${lookupTracker.javaClass}")
+
+        val lookupStorage = dataManager.getStorage(LOOKUP_TRACKER_TARGET, LOOKUP_TRACKER_STORAGE_PROVIDER)
+
+        filesToCompile.values().forEach { lookupStorage.removeLookupsFrom(it) }
+        val removedFiles = chunk.targets.flatMap { KotlinSourceFileCollector.getRemovedKotlinFiles(dirtyFilesHolder, it) }
+        removedFiles.forEach { lookupStorage.removeLookupsFrom(it) }
+
+        lookupTracker.lookups.entrySet().forEach { lookupStorage.add(it.key, it.value) }
     }
 
     private fun File.isModuleMappingFile() = extension == ModuleMapping.MAPPING_FILE_EXT && parentFile.name == "META-INF"
