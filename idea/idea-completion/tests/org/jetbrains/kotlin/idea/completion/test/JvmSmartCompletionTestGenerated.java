@@ -479,6 +479,18 @@ public class JvmSmartCompletionTestGenerated extends AbstractJvmSmartCompletionT
         doTest(fileName);
     }
 
+    @TestMetadata("SuperMembers.kt")
+    public void testSuperMembers() throws Exception {
+        String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/smart/SuperMembers.kt");
+        doTest(fileName);
+    }
+
+    @TestMetadata("SuperMembers2.kt")
+    public void testSuperMembers2() throws Exception {
+        String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/smart/SuperMembers2.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("ThisConstructorArgument.kt")
     public void testThisConstructorArgument() throws Exception {
         String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/smart/ThisConstructorArgument.kt");

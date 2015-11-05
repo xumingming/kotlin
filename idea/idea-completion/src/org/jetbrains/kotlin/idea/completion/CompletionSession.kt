@@ -126,7 +126,7 @@ abstract class CompletionSession(protected val configuration: CompletionSessionC
 
     protected val isVisibleFilter: (DeclarationDescriptor) -> Boolean = { isVisibleDescriptor(it) }
 
-    protected val referenceVariantsHelper = ReferenceVariantsHelper(bindingContext, resolutionFacade, isVisibleFilter)
+    protected val referenceVariantsHelper = ReferenceVariantsHelper(bindingContext, resolutionFacade, moduleDescriptor, isVisibleFilter)
 
     protected val callTypeAndReceiver: CallTypeAndReceiver<*, *>
     protected val receiverTypes: Collection<KotlinType>?
@@ -250,6 +250,14 @@ abstract class CompletionSession(protected val configuration: CompletionSessionC
 
         sorter = sorter.weighAfter("stats", VariableOrFunctionWeigher, ImportedWeigher(importableFqNameClassifier))
 
+        val preferContextElementsWeigher = PreferContextElementsWeigher(inDescriptor)
+        if (callTypeAndReceiver is CallTypeAndReceiver.SUPER_MEMBERS) { // for completion after "super." strictly prefer the current member
+            sorter = sorter.weighBefore("kotlin.deprecated", preferContextElementsWeigher)
+        }
+        else {
+            sorter = sorter.weighBefore("kotlin.proximity", preferContextElementsWeigher)
+        }
+
         sorter = sorter.weighBefore("middleMatching", PreferMatchingItemWeigher)
 
         return sorter
@@ -298,11 +306,6 @@ abstract class CompletionSession(protected val configuration: CompletionSessionC
                 excludeNonInitializedVariable = false,
                 useReceiverType = runtimeReceiver?.type)
 
-        val shadowedDeclarationsFilter = if (runtimeReceiver != null)
-            ShadowedDeclarationsFilter(bindingContext, resolutionFacade, position, runtimeReceiver)
-         else
-            ShadowedDeclarationsFilter.create(bindingContext, resolutionFacade, position, callTypeAndReceiver)
-
         var notImportedExtensions: Collection<CallableDescriptor> = emptyList()
         if (callTypeAndReceiver.shouldCompleteCallableExtensions()) {
             val nameFilter: (String) -> Boolean = { prefixMatcher.prefixMatches(it) }
@@ -315,6 +318,11 @@ abstract class CompletionSession(protected val configuration: CompletionSessionC
             variants += pair.first
             notImportedExtensions = pair.second
         }
+
+        val shadowedDeclarationsFilter = if (runtimeReceiver != null)
+            ShadowedDeclarationsFilter(bindingContext, resolutionFacade, position, runtimeReceiver)
+        else
+            ShadowedDeclarationsFilter.create(bindingContext, resolutionFacade, position, callTypeAndReceiver)
 
         if (shadowedDeclarationsFilter != null) {
             variants = shadowedDeclarationsFilter.filter(variants)
@@ -412,7 +420,7 @@ abstract class CompletionSession(protected val configuration: CompletionSessionC
 
     protected fun createLookupElementFactory(contextVariablesProvider: ContextVariablesProvider): LookupElementFactory {
         return LookupElementFactory(basicLookupElementFactory, resolutionFacade, receiverTypes,
-                                    callTypeAndReceiver.callType, contextVariablesProvider)
+                                    callTypeAndReceiver.callType, inDescriptor, contextVariablesProvider)
     }
 
     private fun detectCallTypeAndReceiverTypes(): Pair<CallTypeAndReceiver<*, *>, Collection<KotlinType>?> {

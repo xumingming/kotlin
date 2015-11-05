@@ -631,6 +631,12 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
             doTest(fileName);
         }
 
+        @TestMetadata("QualifiedSuperMembers.kt")
+        public void testQualifiedSuperMembers() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/QualifiedSuperMembers.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("RecieverMembersFromExtAccessor.kt")
         public void testRecieverMembersFromExtAccessor() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/RecieverMembersFromExtAccessor.kt");
@@ -682,6 +688,30 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
         @TestMetadata("SubpackageInFun.kt")
         public void testSubpackageInFun() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/SubpackageInFun.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("SuperMembers.kt")
+        public void testSuperMembers() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/SuperMembers.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("SuperMembers2.kt")
+        public void testSuperMembers2() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/SuperMembers2.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("SuperMembers3.kt")
+        public void testSuperMembers3() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/SuperMembers3.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("SuperMembers4.kt")
+        public void testSuperMembers4() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/common/SuperMembers4.kt");
             doTest(fileName);
         }
 
@@ -2389,12 +2419,6 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
         @TestMetadata("TopLevelFromStandardLibrary.kt")
         public void testTopLevelFromStandardLibrary() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/java/TopLevelFromStandardLibrary.kt");
-            doTest(fileName);
-        }
-
-        @TestMetadata("TopLevelFromStandardLibraryWithoutParam.kt")
-        public void testTopLevelFromStandardLibraryWithoutParam() throws Exception {
-            String fileName = KotlinTestUtils.navigationMetadata("idea/idea-completion/testData/basic/java/TopLevelFromStandardLibraryWithoutParam.kt");
             doTest(fileName);
         }
 
