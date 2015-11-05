@@ -115,7 +115,7 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
             lookupMap[hash] = lookupMap[hash]!!.filter { it in idToFile }.toSet()
         }
 
-        val oldFileToId = fileToId.copyAsMap()
+        val oldFileToId = fileToId.toMap()
         val oldIdToNewId = HashMap<Int, Int>(oldFileToId.size)
         idToFile.clean()
         fileToId.clean()
@@ -152,9 +152,10 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
         val sb = StringBuilder()
         val p = Printer(sb)
         val lookupsStrings = lookupSymbols.groupBy { LookupSymbolKey(it.name, it.scope) }
-        val lookups = lookupMap.copyAsMap()
 
-        for ((lookup, fileIds) in lookups.entries.sortedBy { it.key }) {
+        for (lookup in lookupMap.keys.sorted()) {
+            val fileIds = lookupMap[lookup]!!
+
             val key = if (lookup in lookupsStrings) {
                 lookupsStrings[lookup]!!.map { "${it.scope}#${it.name}" }.sorted().joinToString(", ")
             }
