@@ -105,7 +105,8 @@ internal open class KFunctionImpl protected constructor(
     }
 
     override fun equals(other: Any?): Boolean =
-            other is KFunctionImpl && descriptor == other.descriptor
+            name == (other as? KFunction<*>)?.name && // optimization
+            descriptor == other.asKFunctionImpl()?.descriptor
 
     override fun hashCode(): Int =
             descriptor.hashCode()

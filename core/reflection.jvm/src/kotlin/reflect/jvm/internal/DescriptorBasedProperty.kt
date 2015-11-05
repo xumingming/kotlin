@@ -19,6 +19,7 @@ package kotlin.reflect.jvm.internal
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBufUtil
 import java.lang.reflect.Field
+import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.internal.JvmPropertySignature.JavaField
 import kotlin.reflect.jvm.internal.JvmPropertySignature.KotlinProperty
 
@@ -56,7 +57,8 @@ internal abstract class DescriptorBasedProperty<out R> protected constructor(
     }
 
     override fun equals(other: Any?): Boolean =
-            other is DescriptorBasedProperty<*> && descriptor == other.descriptor
+            name == (other as? KProperty<*>)?.name && // optimization
+            descriptor == other.asKPropertyImpl()?.descriptor
 
     override fun hashCode(): Int =
             descriptor.hashCode()
