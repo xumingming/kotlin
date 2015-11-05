@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.idea.decompiler.navigation.SourceNavigationHelper
 import org.jetbrains.kotlin.idea.project.ResolveElementCache
-import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.idea.stubindex.*
 import org.jetbrains.kotlin.idea.stubindex.KotlinSourceFilterScope.kotlinSourceAndClassFiles
 import org.jetbrains.kotlin.idea.util.ProjectRootsUtil
@@ -43,7 +42,6 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.lazy.ForceResolveUtil
 import org.jetbrains.kotlin.resolve.lazy.NoDescriptorForDeclarationException
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
@@ -147,7 +145,7 @@ public class IDELightClassGenerationSupport(private val project: Project) : Ligh
             }
             return SourceNavigationHelper.getOriginalClass(classOrObject)
         }
-        return KtLightClassForExplicitDeclaration.create(psiManager, classOrObject)
+        return KtLightClassForExplicitDeclaration.create(classOrObject)
     }
 
     private fun withFakeLightClasses(
