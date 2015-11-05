@@ -17,13 +17,11 @@
 package org.jetbrains.kotlin.jps.incremental
 
 import com.intellij.util.containers.MultiMap
-import org.jetbrains.annotations.TestOnly
 import org.jetbrains.jps.builders.storage.StorageProvider
 import org.jetbrains.kotlin.incremental.components.LocationInfo
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.incremental.components.ScopeKind
 import org.jetbrains.kotlin.jps.incremental.storage.*
-import org.jetbrains.kotlin.utils.Printer
 import java.io.File
 import java.util.*
 
@@ -100,18 +98,36 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
         return id
     }
 
-    private fun removeGarbageIfNeeded() {
-        if (size <= MINIMUM_GARBAGE_COLLECTIBLE_SIZE && deletedCount.toDouble() / size <= DELETED_TO_SIZE_TRESHOLD) return
+    private fun removeGarbageIfNeeded(force: Boolean = false) {
+        if (!force && size <= MINIMUM_GARBAGE_COLLECTIBLE_SIZE && deletedCount.toDouble() / size <= DELETED_TO_SIZE_TRESHOLD) return
 
         for (hash in lookupMap.keys) {
             lookupMap[hash] = lookupMap[hash]!!.filter { it in idToFile }.toSet()
         }
 
+        val oldFileToId = fileToId.copyAsMap()
+        val oldIdToNewId = HashMap<Int, Int>(oldFileToId.size)
+        idToFile.clean()
+        fileToId.clean()
         size = 0
         deletedCount = 0
-        idToFile.clean()
 
-        fileToId.files.forEach { addFile(it) }
+        for ((file, oldId) in oldFileToId.entries) {
+            val newId = addFileIfNeeded(file)
+            oldIdToNewId[oldId] = newId
+        }
+
+        for (lookup in lookupMap.keys) {
+            val fileIds = lookupMap[lookup]!!.map { oldIdToNewId[it] }.filterNotNull().toSet()
+
+            if (fileIds.isEmpty()) {
+                lookupMap.remove(lookup)
+            }
+            else {
+                lookupMap[lookup] = fileIds
+            }
+        }
+    }
 }
 
 class LookupTrackerImpl(private val delegate: LookupTracker) : LookupTracker {
