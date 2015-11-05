@@ -896,10 +896,6 @@ fun main(args: Array<String>) {
             model("incremental/inlineFunCallSite", extension = null, excludeParentDirs = true)
         }
 
-        testClass<AbstractExperimentalLookupTrackerTest>() {
-            model("incremental/lookupTracker", extension = null, recursive = false)
-        }
-
         testClass<AbstractExperimentalIncrementalLazyCachesTest>() {
             model("incremental/lazyKotlinCaches", extension = null, excludeParentDirs = true)
         }

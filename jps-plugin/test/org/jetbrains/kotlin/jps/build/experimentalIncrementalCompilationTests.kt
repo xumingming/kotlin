@@ -20,10 +20,6 @@ abstract class AbstractExperimentalIncrementalJpsTest : AbstractIncrementalJpsTe
     override val enableExperimentalIncrementalCompilation = true
 }
 
-abstract class AbstractExperimentalLookupTrackerTest : AbstractLookupTrackerTest() {
-    override val enableExperimentalIncrementalCompilation = true
-}
-
 abstract class AbstractExperimentalIncrementalLazyCachesTest : AbstractIncrementalLazyCachesTest() {
     override val enableExperimentalIncrementalCompilation = true
 }
