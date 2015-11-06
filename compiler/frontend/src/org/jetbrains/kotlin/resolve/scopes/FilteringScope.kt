@@ -25,8 +25,6 @@ public class FilteringScope(private val workerScope: MemberScope, private val pr
 
     override fun getContributedFunctions(name: Name, location: LookupLocation) = workerScope.getContributedFunctions(name, location).filter(predicate)
 
-    override fun getContainingDeclaration() = workerScope.getContainingDeclaration()
-
     private fun <D : DeclarationDescriptor> filterDescriptor(descriptor: D?): D?
             = if (descriptor != null && predicate(descriptor)) descriptor else null
 

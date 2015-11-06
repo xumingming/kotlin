@@ -40,17 +40,14 @@ private class PackageFragmentWithMissingDependencies(override val fqName: FqName
     }
 }
 
-private class ScopeWithMissingDependencies(val fqName: FqName, val containing: DeclarationDescriptor) : MemberScopeImpl() {
-    override fun getContainingDeclaration(): DeclarationDescriptor {
-        return containing
-    }
+private class ScopeWithMissingDependencies(val fqName: FqName, val ownerDescriptor: DeclarationDescriptor) : MemberScopeImpl() {
 
     override fun printScopeStructure(p: Printer) {
         p.println("Special scope for decompiler, containing class with any name")
     }
 
     override fun getContributedClassifier(name: Name, location: LookupLocation): ClassifierDescriptor? {
-        return MissingDependencyErrorClassDescriptor(getContainingDeclaration(), fqName.child(name))
+        return MissingDependencyErrorClassDescriptor(ownerDescriptor, fqName.child(name))
     }
 }
 
@@ -74,7 +71,7 @@ private class MissingDependencyErrorClassDescriptor(
         val emptyConstructor = ConstructorDescriptorImpl.create(this, Annotations.EMPTY, true, SourceElement.NO_SOURCE)
         emptyConstructor.initialize(listOf(), listOf(), Visibilities.DEFAULT_VISIBILITY)
         emptyConstructor.setReturnType(createErrorType("<ERROR RETURN TYPE>"))
-        initialize(MemberScope.empty(this), setOf(emptyConstructor), emptyConstructor)
+        initialize(MemberScope.Empty, setOf(emptyConstructor), emptyConstructor)
     }
 
     override fun substitute(substitutor: TypeSubstitutor) = this

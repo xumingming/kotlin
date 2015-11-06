@@ -175,7 +175,8 @@ public class ErrorUtils {
 
         @NotNull
         @Override
-        public Set<PropertyDescriptor> getContributedVariables(@NotNull Name name, @NotNull LookupLocation location) {
+        @SuppressWarnings({"unchecked"}) // KT-9898 Impossible implement kotlin interface in java
+        public Set getContributedVariables(@NotNull Name name, @NotNull LookupLocation location) {
             return ERROR_PROPERTY_GROUP;
         }
 
@@ -188,12 +189,6 @@ public class ErrorUtils {
         @Override
         public Set<FunctionDescriptor> getContributedFunctions(@NotNull Name name, @NotNull LookupLocation location) {
             return Collections.<FunctionDescriptor>singleton(createErrorFunction(this));
-        }
-
-        @NotNull
-        @Override
-        public DeclarationDescriptor getContainingDeclaration() {
-            return ERROR_MODULE;
         }
 
         @NotNull
@@ -236,7 +231,8 @@ public class ErrorUtils {
 
         @NotNull
         @Override
-        public Collection<PropertyDescriptor> getContributedVariables(@NotNull Name name, @NotNull LookupLocation location) {
+        @SuppressWarnings({"unchecked"}) // KT-9898 Impossible implement kotlin interface from java
+        public Collection getContributedVariables(@NotNull Name name, @NotNull LookupLocation location) {
             throw new IllegalStateException();
         }
 
@@ -244,12 +240,6 @@ public class ErrorUtils {
         @Override
         public Collection<FunctionDescriptor> getContributedFunctions(@NotNull Name name, @NotNull LookupLocation location) {
             throw new IllegalStateException();
-        }
-
-        @NotNull
-        @Override
-        public DeclarationDescriptor getContainingDeclaration() {
-            return ERROR_MODULE;
         }
 
         @NotNull

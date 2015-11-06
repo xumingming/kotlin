@@ -32,16 +32,16 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
-import org.jetbrains.kotlin.utils.addIfNotNull
 
 public class LazyJavaPackageScope(
         c: LazyJavaResolverContext,
         private val jPackage: JavaPackage,
-        private val containingDeclaration: LazyJavaPackageFragment
-) : LazyJavaStaticScope(c, containingDeclaration) {
+        override val ownerDescriptor: LazyJavaPackageFragment
+) : LazyJavaStaticScope(c) {
+
     private val partToFacade = c.storageManager.createLazyValue {
         val result = hashMapOf<String, String>()
-        kotlinClasses@for (kotlinClass in containingDeclaration.kotlinBinaryClasses) {
+        kotlinClasses@for (kotlinClass in ownerDescriptor.kotlinBinaryClasses) {
             val header = kotlinClass.classHeader
             when (header.kind) {
                 KotlinClassHeader.Kind.MULTIFILE_CLASS_PART -> {
@@ -63,25 +63,23 @@ public class LazyJavaPackageScope(
             partToFacade()[partName]
 
     private val deserializedPackageScope = c.storageManager.createLazyValue {
-        if (containingDeclaration.kotlinBinaryClasses.isEmpty()) {
+        if (ownerDescriptor.kotlinBinaryClasses.isEmpty()) {
             // If the scope is queried but no package parts are found, there's a possibility that we're trying to load symbols
             // from an old package with the binary-incompatible facade.
             // We try to read the old package facade if there is one, to report the "incompatible ABI version" message.
-            packageFragment.oldPackageFacade?.let { binaryClass ->
+            ownerDescriptor.oldPackageFacade?.let { binaryClass ->
                 c.components.deserializedDescriptorResolver.readData(binaryClass, DeserializedDescriptorResolver.KOTLIN_PACKAGE_FACADE)
             }
 
-            MemberScope.empty(packageFragment)
+            MemberScope.Empty
         }
         else {
-            c.components.deserializedDescriptorResolver.createKotlinPackageScope(packageFragment, containingDeclaration.kotlinBinaryClasses)
+            c.components.deserializedDescriptorResolver.createKotlinPackageScope(ownerDescriptor, ownerDescriptor.kotlinBinaryClasses)
         }
     }
 
-    private val packageFragment: LazyJavaPackageFragment get() = getContainingDeclaration() as LazyJavaPackageFragment
-
     private val classes = c.storageManager.createMemoizedFunctionWithNullableValues<Name, ClassDescriptor> { name ->
-        val classId = ClassId(packageFragment.fqName, name)
+        val classId = ClassId(ownerDescriptor.fqName, name)
 
         val kotlinResult = c.resolveKotlinBinaryClass(c.components.kotlinClassFinder.findKotlinClass(classId))
         when (kotlinResult) {
@@ -90,8 +88,8 @@ public class LazyJavaPackageScope(
             is KotlinClassLookupResult.NotFound -> {
                 c.components.finder.findClass(classId)?.let { javaClass ->
                     c.javaClassResolver.resolveClass(javaClass).apply {
-                        assert(this == null || this.containingDeclaration == packageFragment) {
-                            "Wrong package fragment for $this, expected $packageFragment"
+                        assert(this == null || this.containingDeclaration == ownerDescriptor) {
+                            "Wrong package fragment for $this, expected $ownerDescriptor"
                         }
                     }
                 }
@@ -154,7 +152,9 @@ public class LazyJavaPackageScope(
     )
 
     override fun computeNonDeclaredFunctions(result: MutableCollection<SimpleFunctionDescriptor>, name: Name) {
-        result.addIfNotNull(c.components.samConversionResolver.resolveSamConstructor(name, this, NoLookupLocation.FOR_ALREADY_TRACKED))
+        c.components.samConversionResolver.resolveSamConstructor(ownerDescriptor) {
+            getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
+        }?.let { result.add(it) }
     }
 
     override fun getSubPackages() = subPackages()

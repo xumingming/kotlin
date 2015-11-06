@@ -23,8 +23,7 @@ import org.jetbrains.kotlin.util.collectionUtils.getFirstMatch
 import org.jetbrains.kotlin.util.collectionUtils.getFromAllScopes
 import org.jetbrains.kotlin.utils.Printer
 
-public open class ChainedScope(
-        private val containingDeclaration: DeclarationDescriptor?/* it's nullable as a hack for TypeUtils.intersect() */,
+public class ChainedScope(
         private val debugName: String,
         vararg scopes: MemberScope
 ) : MemberScope {
@@ -41,8 +40,6 @@ public open class ChainedScope(
 
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<FunctionDescriptor>
             = getFromAllScopes(scopeChain) { it.getContributedFunctions(name, location) }
-
-    override fun getContainingDeclaration(): DeclarationDescriptor = containingDeclaration!!
 
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean)
             = getFromAllScopes(scopeChain) { it.getContributedDescriptors(kindFilter, nameFilter) }

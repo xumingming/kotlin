@@ -116,8 +116,6 @@ public abstract class DeserializedMemberScope protected constructor(
 
     protected abstract fun addClassDescriptors(result: MutableCollection<DeclarationDescriptor>, nameFilter: (Name) -> Boolean)
 
-    override fun getContainingDeclaration() = c.containingDeclaration
-
     protected fun computeDescriptors(
             kindFilter: DescriptorKindFilter,
             nameFilter: (Name) -> Boolean,
@@ -179,13 +177,13 @@ public abstract class DeserializedMemberScope protected constructor(
         p.println(javaClass.simpleName, " {")
         p.pushIndent()
 
-        p.println("containingDeclaration = " + getContainingDeclaration())
+        p.println("containingDeclaration = " + c.containingDeclaration)
 
         p.popIndent()
         p.println("}")
     }
 
     private fun recordLookup(name: Name, from: LookupLocation) {
-        c.components.lookupTracker.record(from, this, name)
+        c.components.lookupTracker.record(from, c.containingDeclaration, this, name)
     }
 }

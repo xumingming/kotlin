@@ -49,10 +49,6 @@ public abstract class AbstractScopeAdapter : MemberScope {
         return workerScope.getContributedVariables(name, location)
     }
 
-    override fun getContainingDeclaration(): DeclarationDescriptor {
-        return workerScope.getContainingDeclaration()
-    }
-
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter,
                                            nameFilter: (Name) -> Boolean): Collection<DeclarationDescriptor> {
         return workerScope.getContributedDescriptors(kindFilter, nameFilter)

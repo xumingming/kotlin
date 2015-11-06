@@ -57,8 +57,6 @@ public class StaticScopeForKotlinClass(
 
     override fun getContributedFunctions(name: Name, location: LookupLocation) = functions.filterTo(ArrayList<FunctionDescriptor>(2)) { it.getName() == name }
 
-    override fun getContainingDeclaration() = containingClass
-
     override fun printScopeStructure(p: Printer) {
         p.println("Static scope for $containingClass")
     }

@@ -67,8 +67,6 @@ public class SubstitutingScope(private val workerScope: MemberScope, private val
 
     override fun getPackage(name: Name) = workerScope.getPackage(name)
 
-    override fun getContainingDeclaration() = workerScope.getContainingDeclaration()
-
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter,
                                            nameFilter: (Name) -> Boolean) = _allDescriptors
 

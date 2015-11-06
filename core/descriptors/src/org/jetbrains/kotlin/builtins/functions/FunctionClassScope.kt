@@ -41,8 +41,6 @@ class FunctionClassScope(
         }
     }
 
-    override fun getContainingDeclaration() = functionClass
-
     override fun getContributedDescriptors(kindFilter: DescriptorKindFilter, nameFilter: (Name) -> Boolean): Collection<DeclarationDescriptor> {
         if (!kindFilter.acceptsKinds(DescriptorKindFilter.CALLABLES.kindMask)) return listOf()
         return allDescriptors()
@@ -75,7 +73,7 @@ class FunctionClassScope(
                             }
 
                             override fun conflict(fromSuper: CallableMemberDescriptor, fromCurrent: CallableMemberDescriptor) {
-                                error("Conflict in scope of ${getContainingDeclaration()}: $fromSuper vs $fromCurrent")
+                                error("Conflict in scope of $functionClass: $fromSuper vs $fromCurrent")
                             }
                         }
                 )
