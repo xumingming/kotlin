@@ -97,7 +97,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
         super(facade);
     }
 
-    private boolean isLValue(@NotNull KtSimpleNameExpression expression) {
+    private static boolean isLValue(@NotNull KtSimpleNameExpression expression) {
         PsiElement parent = PsiTreeUtil.skipParentsOfType(expression, KtParenthesizedExpression.class);
         if (!(parent instanceof KtBinaryExpression)) return false;
         KtBinaryExpression binaryExpression = (KtBinaryExpression) parent;
