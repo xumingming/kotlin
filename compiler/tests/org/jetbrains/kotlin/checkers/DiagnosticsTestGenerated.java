@@ -1553,6 +1553,12 @@ public class DiagnosticsTestGenerated extends AbstractDiagnosticsTest {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/backingField/kt782packageLevel.kt");
                 doTest(fileName);
             }
+
+            @TestMetadata("SetterWithExplicitType.kt")
+            public void testSetterWithExplicitType() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/backingField/SetterWithExplicitType.kt");
+                doTest(fileName);
+            }
         }
 
         @TestMetadata("compiler/testData/diagnostics/tests/callableReference")
@@ -16560,6 +16566,18 @@ public class DiagnosticsTestGenerated extends AbstractDiagnosticsTest {
             @TestMetadata("deprecatedSyntax.kt")
             public void testDeprecatedSyntax() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/typeParameters/deprecatedSyntax.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("extFunctionTypeAsUpperBound.kt")
+            public void testExtFunctionTypeAsUpperBound() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/typeParameters/extFunctionTypeAsUpperBound.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("functionTypeAsUpperBound.kt")
+            public void testFunctionTypeAsUpperBound() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/typeParameters/functionTypeAsUpperBound.kt");
                 doTest(fileName);
             }
 

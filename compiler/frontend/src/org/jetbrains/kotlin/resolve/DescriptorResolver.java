@@ -589,6 +589,9 @@ public class DescriptorResolver {
         if (DynamicTypesKt.isDynamic(upperBoundType)) {
             trace.report(DYNAMIC_UPPER_BOUND.on(upperBound));
         }
+        if (KotlinBuiltIns.isExactExtensionFunctionType(upperBoundType)) {
+            trace.report(UPPER_BOUND_IS_EXTENSION_FUNCTION_TYPE.on(upperBound));
+        }
     }
 
     @NotNull
@@ -1007,6 +1010,14 @@ public class DescriptorResolver {
                                                                 setter.hasBody(), false, setter.hasModifier(EXTERNAL_KEYWORD),
                                                                 CallableMemberDescriptor.Kind.DECLARATION, null, KotlinSourceElementKt
                                                                         .toSourceElement(setter));
+            KtTypeReference returnTypeReference = setter.getReturnTypeReference();
+            if (returnTypeReference != null) {
+                KotlinType returnType = typeResolver.resolveType(scope, returnTypeReference, trace, true);
+                if (!KotlinBuiltIns.isUnit(returnType)) {
+                    trace.report(WRONG_SETTER_RETURN_TYPE.on(returnTypeReference));
+                }
+            }
+
             if (parameter != null) {
 
                 // This check is redundant: the parser does not allow a default value, but we'll keep it just in case
