@@ -67,19 +67,25 @@ class ConstraintSystemBuilderImpl : ConstraintSystem.Builder {
         })
     }
 
-    override fun registerTypeVariables(
-            typeVariables: Collection<TypeParameterDescriptor>,
-            mapToDescriptor: (TypeParameterDescriptor) -> TypeParameterDescriptor,
-            external: Boolean
-    ) {
-        if (external) externalTypeParameters.addAll(typeVariables)
+    override fun registerTypeVariables(typeParameters: Collection<TypeParameterDescriptor>, external: Boolean) {
+        if (typeParameters.isEmpty()) return
 
-        for (typeVariable in typeVariables) {
+        val typeVariables = if (external) {
+            externalTypeParameters.addAll(typeParameters)
+            typeParameters
+        }
+        else ArrayList<TypeParameterDescriptor>(typeParameters.size).apply {
+            DescriptorSubstitutor.substituteTypeParameters(
+                    typeParameters.toList(), TypeSubstitution.EMPTY, typeParameters.first().containingDeclaration, this
+            )
+        }
+
+        for ((descriptor, typeVariable) in typeParameters.zip(typeVariables)) {
             allTypeParameterBounds.put(typeVariable, TypeBoundsImpl(typeVariable))
-            val descriptor = mapToDescriptor(typeVariable)
             descriptorToVariable[descriptor] = typeVariable
             variableToDescriptor[typeVariable] = descriptor
         }
+
         for ((typeVariable, typeBounds) in allTypeParameterBounds) {
             for (declaredUpperBound in typeVariable.upperBounds) {
                 if (declaredUpperBound.isDefaultBound()) continue //todo remove this line (?)
