@@ -83,8 +83,6 @@ public final class Byte : kotlin.Number, kotlin.Comparable<kotlin.Byte> {
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Long
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Int
     public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.IntRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.FloatRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.IntRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.LongRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.IntRange
@@ -388,12 +386,6 @@ public final class Double : kotlin.Number, kotlin.Comparable<kotlin.Double> {
     public final operator fun plus(/*0*/ other: kotlin.Int): kotlin.Double
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Double
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Double
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.DoubleRange
     public final operator fun times(/*0*/ other: kotlin.Byte): kotlin.Double
     public final operator fun times(/*0*/ other: kotlin.Double): kotlin.Double
     public final operator fun times(/*0*/ other: kotlin.Float): kotlin.Double
@@ -440,55 +432,6 @@ public abstract class DoubleIterator : kotlin.Iterator<kotlin.Double> {
     public abstract override /*1*/ /*fake_override*/ fun hasNext(): kotlin.Boolean
     public final override /*1*/ fun next(): kotlin.Double
     public abstract fun nextDouble(): kotlin.Double
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This progression implementation has unclear semantics and will be removed soon.") public open class DoubleProgression : kotlin.Progression<kotlin.Double> {
-    /*primary*/ public constructor DoubleProgression(/*0*/ start: kotlin.Double, /*1*/ endInclusive: kotlin.Double, /*2*/ increment: kotlin.Double)
-    @kotlin.Deprecated(message = "Use endInclusive instead.", replaceWith = kotlin.ReplaceWith(expression = "endInclusive", imports = {})) public open override /*1*/ val end: kotlin.Double
-        public open override /*1*/ fun <get-end>(): kotlin.Double
-    public final val endInclusive: kotlin.Double
-        public final fun <get-endInclusive>(): kotlin.Double
-    public open override /*1*/ val increment: kotlin.Double
-        public open override /*1*/ fun <get-increment>(): kotlin.Double
-    public open override /*1*/ val start: kotlin.Double
-        public open override /*1*/ fun <get-start>(): kotlin.Double
-    public open fun isEmpty(): kotlin.Boolean
-    public open override /*1*/ fun iterator(): kotlin.DoubleIterator
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This progression implementation has unclear semantics and will be removed soon.") internal final class DoubleProgressionIterator : kotlin.DoubleIterator {
-    /*primary*/ public constructor DoubleProgressionIterator(/*0*/ start: kotlin.Double, /*1*/ end: kotlin.Double, /*2*/ increment: kotlin.Double)
-    public final val end: kotlin.Double
-        public final fun <get-end>(): kotlin.Double
-    public final val increment: kotlin.Double
-        public final fun <get-increment>(): kotlin.Double
-    private final var next: kotlin.Double
-        private final fun <get-next>(): kotlin.Double
-        private final fun <set-next>(/*0*/ <set-?>: kotlin.Double): kotlin.Unit
-    public open override /*1*/ fun hasNext(): kotlin.Boolean
-    public final override /*1*/ /*fake_override*/ fun next(): kotlin.Double
-    public open override /*1*/ fun nextDouble(): kotlin.Double
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This range implementation has unclear semantics and will be removed soon.") @kotlin.Suppress(names = {"DEPRECATION_ERROR"}) public final class DoubleRange : kotlin.DoubleProgression, kotlin.ClosedRange<kotlin.Double> {
-    /*primary*/ public constructor DoubleRange(/*0*/ start: kotlin.Double, /*1*/ endInclusive: kotlin.Double)
-    @kotlin.Deprecated(message = "Use endInclusive instead.", replaceWith = kotlin.ReplaceWith(expression = "endInclusive", imports = {})) public open override /*2*/ val end: kotlin.Double
-        public open override /*2*/ fun <get-end>(): kotlin.Double
-    public final override /*2*/ /*fake_override*/ val endInclusive: kotlin.Double
-        public final override /*2*/ /*fake_override*/ fun <get-endInclusive>(): kotlin.Double
-    public open override /*1*/ /*fake_override*/ val increment: kotlin.Double
-        public open override /*1*/ /*fake_override*/ fun <get-increment>(): kotlin.Double
-    public open override /*2*/ /*fake_override*/ val start: kotlin.Double
-        public open override /*2*/ /*fake_override*/ fun <get-start>(): kotlin.Double
-    public open override /*1*/ fun contains(/*0*/ item: kotlin.Double): kotlin.Boolean
-    public open override /*2*/ fun isEmpty(): kotlin.Boolean
-    public open override /*1*/ /*fake_override*/ fun iterator(): kotlin.DoubleIterator
-
-    public companion object Companion {
-        /*primary*/ private constructor Companion()
-        public final val EMPTY: kotlin.DoubleRange
-            public final fun <get-EMPTY>(): kotlin.DoubleRange
-    }
 }
 
 public abstract class Enum</*0*/ E : kotlin.Enum<E>> : kotlin.Comparable<E> {
@@ -543,12 +486,6 @@ public final class Float : kotlin.Number, kotlin.Comparable<kotlin.Float> {
     public final operator fun plus(/*0*/ other: kotlin.Int): kotlin.Float
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Float
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Float
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.FloatRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.FloatRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.FloatRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.FloatRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.FloatRange
     public final operator fun times(/*0*/ other: kotlin.Byte): kotlin.Float
     public final operator fun times(/*0*/ other: kotlin.Double): kotlin.Double
     public final operator fun times(/*0*/ other: kotlin.Float): kotlin.Float
@@ -595,55 +532,6 @@ public abstract class FloatIterator : kotlin.Iterator<kotlin.Float> {
     public abstract override /*1*/ /*fake_override*/ fun hasNext(): kotlin.Boolean
     public final override /*1*/ fun next(): kotlin.Float
     public abstract fun nextFloat(): kotlin.Float
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This progression implementation has unclear semantics and will be removed soon.") public open class FloatProgression : kotlin.Progression<kotlin.Float> {
-    /*primary*/ public constructor FloatProgression(/*0*/ start: kotlin.Float, /*1*/ endInclusive: kotlin.Float, /*2*/ increment: kotlin.Float)
-    @kotlin.Deprecated(message = "Use endInclusive instead.", replaceWith = kotlin.ReplaceWith(expression = "endInclusive", imports = {})) public open override /*1*/ val end: kotlin.Float
-        public open override /*1*/ fun <get-end>(): kotlin.Float
-    public final val endInclusive: kotlin.Float
-        public final fun <get-endInclusive>(): kotlin.Float
-    public open override /*1*/ val increment: kotlin.Float
-        public open override /*1*/ fun <get-increment>(): kotlin.Float
-    public open override /*1*/ val start: kotlin.Float
-        public open override /*1*/ fun <get-start>(): kotlin.Float
-    public open fun isEmpty(): kotlin.Boolean
-    public open override /*1*/ fun iterator(): kotlin.FloatIterator
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This progression implementation has unclear semantics and will be removed soon.") internal final class FloatProgressionIterator : kotlin.FloatIterator {
-    /*primary*/ public constructor FloatProgressionIterator(/*0*/ start: kotlin.Float, /*1*/ end: kotlin.Float, /*2*/ increment: kotlin.Float)
-    public final val end: kotlin.Float
-        public final fun <get-end>(): kotlin.Float
-    public final val increment: kotlin.Float
-        public final fun <get-increment>(): kotlin.Float
-    private final var next: kotlin.Float
-        private final fun <get-next>(): kotlin.Float
-        private final fun <set-next>(/*0*/ <set-?>: kotlin.Float): kotlin.Unit
-    public open override /*1*/ fun hasNext(): kotlin.Boolean
-    public final override /*1*/ /*fake_override*/ fun next(): kotlin.Float
-    public open override /*1*/ fun nextFloat(): kotlin.Float
-}
-
-@kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "This range implementation has unclear semantics and will be removed soon.") @kotlin.Suppress(names = {"DEPRECATION_ERROR"}) public final class FloatRange : kotlin.FloatProgression, kotlin.ClosedRange<kotlin.Float> {
-    /*primary*/ public constructor FloatRange(/*0*/ start: kotlin.Float, /*1*/ endInclusive: kotlin.Float)
-    @kotlin.Deprecated(message = "Use endInclusive instead.", replaceWith = kotlin.ReplaceWith(expression = "endInclusive", imports = {})) public open override /*2*/ val end: kotlin.Float
-        public open override /*2*/ fun <get-end>(): kotlin.Float
-    public final override /*2*/ /*fake_override*/ val endInclusive: kotlin.Float
-        public final override /*2*/ /*fake_override*/ fun <get-endInclusive>(): kotlin.Float
-    public open override /*1*/ /*fake_override*/ val increment: kotlin.Float
-        public open override /*1*/ /*fake_override*/ fun <get-increment>(): kotlin.Float
-    public open override /*2*/ /*fake_override*/ val start: kotlin.Float
-        public open override /*2*/ /*fake_override*/ fun <get-start>(): kotlin.Float
-    public open override /*1*/ fun contains(/*0*/ item: kotlin.Float): kotlin.Boolean
-    public open override /*2*/ fun isEmpty(): kotlin.Boolean
-    public open override /*1*/ /*fake_override*/ fun iterator(): kotlin.FloatIterator
-
-    public companion object Companion {
-        /*primary*/ private constructor Companion()
-        public final val EMPTY: kotlin.FloatRange
-            public final fun <get-EMPTY>(): kotlin.FloatRange
-    }
 }
 
 public interface FloatingPointConstants</*0*/ T> {
@@ -704,8 +592,6 @@ public final class Int : kotlin.Number, kotlin.Comparable<kotlin.Int> {
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Long
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Int
     public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.IntRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.FloatRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.IntRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.LongRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.IntRange
@@ -892,8 +778,6 @@ public final class Long : kotlin.Number, kotlin.Comparable<kotlin.Long> {
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Long
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Long
     public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.LongRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.FloatRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.LongRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.LongRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.LongRange
@@ -1219,8 +1103,6 @@ public final class Short : kotlin.Number, kotlin.Comparable<kotlin.Short> {
     public final operator fun plus(/*0*/ other: kotlin.Long): kotlin.Long
     public final operator fun plus(/*0*/ other: kotlin.Short): kotlin.Int
     public final operator fun rangeTo(/*0*/ other: kotlin.Byte): kotlin.IntRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Double): kotlin.DoubleRange
-    @kotlin.Deprecated(message = "This range implementation has unclear semantics and will be removed soon.") public final operator fun rangeTo(/*0*/ other: kotlin.Float): kotlin.FloatRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Int): kotlin.IntRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Long): kotlin.LongRange
     public final operator fun rangeTo(/*0*/ other: kotlin.Short): kotlin.IntRange
