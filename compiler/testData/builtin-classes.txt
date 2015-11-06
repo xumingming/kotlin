@@ -129,9 +129,8 @@ public abstract class ByteIterator : kotlin.Iterator<kotlin.Byte> {
 }
 
 @kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "Use IntProgression instead.", replaceWith = kotlin.ReplaceWith(expression = "IntProgression", imports = {})) public open class ByteProgression : kotlin.Progression<kotlin.Byte> {
-    public constructor ByteProgression(/*0*/ start: kotlin.Byte, /*1*/ endInclusive: kotlin.Byte, /*2*/ increment: kotlin.Int)
-    /*primary*/ private constructor ByteProgression(/*0*/ first: kotlin.Byte, /*1*/ last: kotlin.Byte, /*2*/ increment: kotlin.Int, /*3*/ _dummy: kotlin.Boolean)
-    @kotlin.Deprecated(message = "Use last instead.", replaceWith = kotlin.ReplaceWith(expression = "last", imports = {})) public open override /*1*/ val end: kotlin.Byte
+    /*primary*/ public constructor ByteProgression(/*0*/ start: kotlin.Byte, /*1*/ endInclusive: kotlin.Byte, /*2*/ increment: kotlin.Int)
+    @kotlin.Deprecated(message = "Use 'last' property instead.") public open override /*1*/ val end: kotlin.Byte
         public open override /*1*/ fun <get-end>(): kotlin.Byte
     public final val first: kotlin.Byte
         public final fun <get-first>(): kotlin.Byte
@@ -227,9 +226,8 @@ public abstract class CharIterator : kotlin.Iterator<kotlin.Char> {
 }
 
 public open class CharProgression : kotlin.Progression<kotlin.Char> {
-    public constructor CharProgression(/*0*/ start: kotlin.Char, /*1*/ endInclusive: kotlin.Char, /*2*/ increment: kotlin.Int)
-    /*primary*/ private constructor CharProgression(/*0*/ first: kotlin.Char, /*1*/ last: kotlin.Char, /*2*/ increment: kotlin.Int, /*3*/ _dummy: kotlin.Boolean)
-    @kotlin.Deprecated(message = "Use last instead.", replaceWith = kotlin.ReplaceWith(expression = "last", imports = {})) public open override /*1*/ val end: kotlin.Char
+    /*primary*/ public constructor CharProgression(/*0*/ start: kotlin.Char, /*1*/ endInclusive: kotlin.Char, /*2*/ increment: kotlin.Int)
+    @kotlin.Deprecated(message = "Use 'last' property instead.") public open override /*1*/ val end: kotlin.Char
         public open override /*1*/ fun <get-end>(): kotlin.Char
     public final val first: kotlin.Char
         public final fun <get-first>(): kotlin.Char
@@ -642,9 +640,8 @@ public abstract class IntIterator : kotlin.Iterator<kotlin.Int> {
 }
 
 public open class IntProgression : kotlin.Progression<kotlin.Int> {
-    public constructor IntProgression(/*0*/ start: kotlin.Int, /*1*/ endInclusive: kotlin.Int, /*2*/ increment: kotlin.Int)
-    /*primary*/ private constructor IntProgression(/*0*/ first: kotlin.Int, /*1*/ last: kotlin.Int, /*2*/ increment: kotlin.Int, /*3*/ _dummy: kotlin.Boolean)
-    @kotlin.Deprecated(message = "Use last instead.", replaceWith = kotlin.ReplaceWith(expression = "last", imports = {})) public open override /*1*/ val end: kotlin.Int
+    /*primary*/ public constructor IntProgression(/*0*/ start: kotlin.Int, /*1*/ endInclusive: kotlin.Int, /*2*/ increment: kotlin.Int)
+    @kotlin.Deprecated(message = "Use 'last' property instead.") public open override /*1*/ val end: kotlin.Int
         public open override /*1*/ fun <get-end>(): kotlin.Int
     public final val first: kotlin.Int
         public final fun <get-first>(): kotlin.Int
@@ -828,9 +825,8 @@ public abstract class LongIterator : kotlin.Iterator<kotlin.Long> {
 }
 
 public open class LongProgression : kotlin.Progression<kotlin.Long> {
-    public constructor LongProgression(/*0*/ start: kotlin.Long, /*1*/ endInclusive: kotlin.Long, /*2*/ increment: kotlin.Long)
-    /*primary*/ private constructor LongProgression(/*0*/ first: kotlin.Long, /*1*/ last: kotlin.Long, /*2*/ increment: kotlin.Long, /*3*/ _dummy: kotlin.Boolean)
-    @kotlin.Deprecated(message = "Use last instead.", replaceWith = kotlin.ReplaceWith(expression = "last", imports = {})) public open override /*1*/ val end: kotlin.Long
+    /*primary*/ public constructor LongProgression(/*0*/ start: kotlin.Long, /*1*/ endInclusive: kotlin.Long, /*2*/ increment: kotlin.Long)
+    @kotlin.Deprecated(message = "Use 'last' property instead.") public open override /*1*/ val end: kotlin.Long
         public open override /*1*/ fun <get-end>(): kotlin.Long
     public final val first: kotlin.Long
         public final fun <get-first>(): kotlin.Long
@@ -1149,9 +1145,8 @@ public abstract class ShortIterator : kotlin.Iterator<kotlin.Short> {
 }
 
 @kotlin.Deprecated(level = DeprecationLevel.WARNING, message = "Use IntProgression instead.", replaceWith = kotlin.ReplaceWith(expression = "IntProgression", imports = {})) public open class ShortProgression : kotlin.Progression<kotlin.Short> {
-    public constructor ShortProgression(/*0*/ start: kotlin.Short, /*1*/ endInclusive: kotlin.Short, /*2*/ increment: kotlin.Int)
-    /*primary*/ private constructor ShortProgression(/*0*/ first: kotlin.Short, /*1*/ last: kotlin.Short, /*2*/ increment: kotlin.Int, /*3*/ _dummy: kotlin.Boolean)
-    @kotlin.Deprecated(message = "Use last instead.", replaceWith = kotlin.ReplaceWith(expression = "last", imports = {})) public open override /*1*/ val end: kotlin.Short
+    /*primary*/ public constructor ShortProgression(/*0*/ start: kotlin.Short, /*1*/ endInclusive: kotlin.Short, /*2*/ increment: kotlin.Int)
+    @kotlin.Deprecated(message = "Use 'last' property instead.") public open override /*1*/ val end: kotlin.Short
         public open override /*1*/ fun <get-end>(): kotlin.Short
     public final val first: kotlin.Short
         public final fun <get-first>(): kotlin.Short
