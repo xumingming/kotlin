@@ -18,6 +18,7 @@ fun ranges(): List<GenericFunction> {
         doc(ProgressionsOfPrimitives) { "Returns a progression that goes over the same range in the opposite direction with the same step." }
         doc(RangesOfPrimitives) { "Returns a progression that goes over this range in reverse direction." }
         returns("TProgression")
+        deprecate(RangesOfPrimitives) { forBinaryCompatibility }
         body(RangesOfPrimitives) {
             "return TProgression(last, first, -ONE)"
         }
@@ -33,6 +34,7 @@ fun ranges(): List<GenericFunction> {
         doc(RangesOfPrimitives) { "Returns a progression that goes over this range in reverse direction." }
         returns("TProgression")
         deprecate(Deprecation("This range implementation has unclear semantics and will be removed soon.", level = DeprecationLevel.WARNING))
+        deprecate(RangesOfPrimitives) { forBinaryCompatibility }
         annotations("""@Suppress("DEPRECATION_ERROR")""")
         body(RangesOfPrimitives) {
             "return TProgression(last, first, -ONE)"
@@ -50,6 +52,7 @@ fun ranges(): List<GenericFunction> {
         doc(ProgressionsOfPrimitives) { "Returns a progression that goes over the same range with the given step." }
         doc(RangesOfPrimitives) { "Returns a progression that goes over this range with given step." }
         returns("TProgression")
+        deprecate(RangesOfPrimitives) { forBinaryCompatibility }
         body(RangesOfPrimitives) {
             """
             checkStepIsPositive(step > 0, step)
@@ -73,6 +76,7 @@ fun ranges(): List<GenericFunction> {
         doc(RangesOfPrimitives) { "Returns a progression that goes over this range with given step." }
         returns("TProgression")
         deprecate(Deprecation("This range implementation has unclear semantics and will be removed soon.", level = DeprecationLevel.WARNING))
+        deprecate(RangesOfPrimitives) { forBinaryCompatibility }
         annotations("""@Suppress("DEPRECATION_ERROR")""")
         body(RangesOfPrimitives) {
             """
@@ -182,16 +186,10 @@ fun ranges(): List<GenericFunction> {
 
     templates addAll integralPermutations.map { until(it.first, it.second) }
 
-    fun contains(rangeType: PrimitiveType, itemType: PrimitiveType) = f("contains(item: $itemType)") {
+    fun containsDeprecated(rangeType: PrimitiveType, itemType: PrimitiveType) = f("contains(item: $itemType)") {
         operator(true)
 
-//        if (!rangeType.isIntegral()) {
-//            deprecate(Deprecation("This range implementation has unclear semantics and will be removed soon.", level = DeprecationLevel.WARNING))
-//            annotations("""@Suppress("DEPRECATION_ERROR")""")
-//        }
-//        else if (rangeType !in rangePrimitives) {
-//            deprecate(Deprecation("This range will be removed soon.", level = DeprecationLevel.WARNING))
-//        }
+        deprecate("Range<T> is deprecated. Use ClosedRange<T> instead.")
 
         check(rangeType.isNumeric() == itemType.isNumeric()) { "Required rangeType and itemType both to be numeric or both not, got: $rangeType, $itemType" }
         only(Ranges)
@@ -202,8 +200,23 @@ fun ranges(): List<GenericFunction> {
         body { "return start <= item && item <= end" }
     }
 
+    fun contains(rangeType: PrimitiveType, itemType: PrimitiveType) = f("contains(item: $itemType)") {
+        operator(true)
 
-    templates addAll numericPermutations.filter { it.first != it.second }.map { contains(it.first, it.second) }
+        check(rangeType.isNumeric() == itemType.isNumeric()) { "Required rangeType and itemType both to be numeric or both not, got: $rangeType, $itemType" }
+        only(Ranges)
+        onlyPrimitives(Ranges, rangeType)
+        customReceiver("ClosedRange<T>")
+        platformName("${rangeType.name.decapitalize()}RangeContains")
+        returns("Boolean")
+        doc { "Checks if the specified [item] belongs to this range." }
+        body { "return start <= item && item <= endInclusive" }
+    }
+
+
+    templates addAll numericPermutations.filter { it.first != it.second }
+            .flatMap { listOf(containsDeprecated(it.first, it.second), contains(it.first, it.second)) }
+
 
     return templates
 }

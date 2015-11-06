@@ -72,6 +72,7 @@ fun comparables(): List<GenericFunction> {
         only(numericPrimitives.filterNot { it.isIntegral() })
         returns("SELF")
         typeParam("T: Comparable<T>")
+        //deprecate("Range<T> is deprecated. Use ClosedRange<T> instead.")
         doc {
             """
             Ensures that this value lies in the specified [range].
@@ -86,6 +87,29 @@ fun comparables(): List<GenericFunction> {
             """
         }
     }
+
+    /*
+    templates add f("coerceIn(range: ClosedRange<T>)") {
+        sourceFile(SourceFile.Ranges)
+        only(Primitives, Generic)
+        only(numericPrimitives.filterNot { it.isIntegral() })
+        returns("SELF")
+        typeParam("T: Comparable<T>")
+        doc {
+            """
+            Ensures that this value lies in the specified [range].
+
+            @return this value if it's in the [range], or range.start if this value is less than range.start, or range.end if this value is greater than range.end.
+            """
+        }
+        body {
+            """
+            if (range.isEmpty()) throw IllegalArgumentException("Cannot coerce value to an empty range: ${'$'}range.")
+            return if (this < range.start) range.start else if (this > range.endInclusive) range.endInclusive else this
+            """
+        }
+    }
+    */
 
     templates add f("coerceIn(minimumValue: SELF?, maximumValue: SELF?)") {
         sourceFile(SourceFile.Ranges)
