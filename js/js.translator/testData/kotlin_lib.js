@@ -867,7 +867,9 @@
         function() {
             return [Kotlin.modules['builtins'].kotlin.ClosedRange, Kotlin.NumberProgression]
         },
-        function (start, endInclusive) {
+        function $fun(start, endInclusive) {
+            // TODO: Inhertiance
+            $fun.baseInitializer.call(this, start, endInclusive, 1);
             this.start = start;
             this.end = endInclusive;
             this.endInclusive = endInclusive;
