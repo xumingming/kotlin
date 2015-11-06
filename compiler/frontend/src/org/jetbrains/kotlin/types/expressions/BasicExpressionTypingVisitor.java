@@ -119,7 +119,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
                     context.trace.report(ALWAYS_NULL.on(expression));
                 }
                 else {
-                    // TODO: Nothing
+                    typeInfo = typeInfo.replaceType(components.builtIns.getNothingType());
                 }
             }
         }
@@ -799,31 +799,33 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
         KotlinType result;
         if (operationType == KtTokens.PLUSPLUS || operationType == KtTokens.MINUSMINUS) {
             assert returnType != null : "returnType is null for " + resolutionResults.getResultingDescriptor();
+            KotlinType receiverType = receiver.getType();
             if (KotlinBuiltIns.isUnit(returnType)) {
-                result = ErrorUtils.createErrorType(components.builtIns.getUnit().getName().asString());
                 context.trace.report(INC_DEC_SHOULD_NOT_RETURN_UNIT.on(operationSign));
             }
+            else if (!KotlinTypeChecker.DEFAULT.isSubtypeOf(returnType, receiverType)) {
+                context.trace.report(RESULT_TYPE_MISMATCH.on(operationSign, name.asString(), receiverType, returnType));
+            }
             else {
-                KotlinType receiverType = receiver.getType();
-                if (!KotlinTypeChecker.DEFAULT.isSubtypeOf(returnType, receiverType)) {
-                    context.trace.report(RESULT_TYPE_MISMATCH.on(operationSign, name.asString(), receiverType, returnType));
+                context.trace.record(BindingContext.VARIABLE_REASSIGNMENT, expression);
+                KtExpression stubExpression = ExpressionTypingUtils.createFakeExpressionOfType(baseExpression.getProject(), context.trace, "e", type);
+                checkLValue(context.trace, context, baseExpression, stubExpression);
+            }
+            // x++ type is x type, but ++x type is x.inc() type
+            DataFlowValue receiverValue = DataFlowValueFactory.createDataFlowValue(call.getExplicitReceiver(), contextWithExpectedType);
+            if (expression instanceof KtPrefixExpression) {
+                if (KotlinBuiltIns.isUnit(returnType)) {
+                    result = ErrorUtils.createErrorType(components.builtIns.getUnit().getName().asString());
                 }
                 else {
-                    context.trace.record(BindingContext.VARIABLE_REASSIGNMENT, expression);
-                    KtExpression stubExpression = ExpressionTypingUtils.createFakeExpressionOfType(baseExpression.getProject(), context.trace, "e", type);
-                    checkLValue(context.trace, context, baseExpression, stubExpression);
-                }
-                // x++ type is x type, but ++x type is x.inc() type
-                DataFlowValue receiverValue = DataFlowValueFactory.createDataFlowValue(call.getExplicitReceiver(), contextWithExpectedType);
-                if (expression instanceof KtPrefixExpression) {
                     result = returnType;
                 }
-                else {
-                    result = receiverType;
-                    // Also record data flow information for x++ value (= x)
-                    DataFlowValue returnValue = DataFlowValueFactory.createDataFlowValue(expression, receiverType, contextWithExpectedType);
-                    typeInfo = typeInfo.replaceDataFlowInfo(typeInfo.getDataFlowInfo().assign(returnValue, receiverValue));
-                }
+            }
+            else {
+                result = receiverType;
+                // Also record data flow information for x++ value (= x)
+                DataFlowValue returnValue = DataFlowValueFactory.createDataFlowValue(expression, receiverType, contextWithExpectedType);
+                typeInfo = typeInfo.replaceDataFlowInfo(typeInfo.getDataFlowInfo().assign(returnValue, receiverValue));
             }
         }
         else {
