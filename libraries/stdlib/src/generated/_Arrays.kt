@@ -11242,84 +11242,147 @@ public operator fun <T> Array<T>.plus(element: T): Array<T> {
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun <T> Array<out T>.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun ByteArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun CharArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun DoubleArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun FloatArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun IntArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun LongArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts the array in-place.
+ */
+@kotlin.jvm.JvmVersion
+public fun ShortArray.sort(): Unit {
+    if (size > 1) Arrays.sort(this)
+}
+
+/**
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun <T> Array<out T>.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun ByteArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun CharArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun DoubleArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun FloatArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun IntArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun LongArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts a range in the array in-place.
  */
 @kotlin.jvm.JvmVersion
 public fun ShortArray.sort(fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex)
+    Arrays.sort(this, fromIndex, toIndex)
 }
 
 /**
- * Sorts array or range in array in-place.
+ * Sorts the array in-place with the given [comparator].
+ */
+@kotlin.jvm.JvmVersion
+public fun <T> Array<out T>.sortWith(comparator: Comparator<in T>): Unit {
+    if (size > 1) Arrays.sort(this, comparator)
+}
+
+/**
+ * Sorts a range in the array in-place with the given [comparator].
  */
 @kotlin.jvm.JvmVersion
 public fun <T> Array<out T>.sortWith(comparator: Comparator<in T>, fromIndex: Int = 0, toIndex: Int = size()): Unit {
-    if ((toIndex - fromIndex) !in 0..1)
-        Arrays.sort(this, fromIndex, toIndex, comparator)
+    Arrays.sort(this, fromIndex, toIndex, comparator)
 }
 
 /**
