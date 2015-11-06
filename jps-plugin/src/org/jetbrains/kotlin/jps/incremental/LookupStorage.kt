@@ -55,6 +55,14 @@ class LookupStorage(private val targetDataDir: File) : BasicMapsOwner() {
         }
     }
 
+    fun get(lookupSymbol: LookupSymbol): Collection<String> {
+        val key = LookupSymbolKey(lookupSymbol.name, lookupSymbol.scope)
+        val fileIds = lookupMap[key] ?: return emptySet()
+        return fileIds.map {
+            idToFile[it]?.path
+        }.filterNotNull()
+    }
+
     public fun add(lookupSymbol: LookupSymbol, containingPaths: Collection<String>) {
         val key = LookupSymbolKey(lookupSymbol.name, lookupSymbol.scope)
         val fileIds = containingPaths.map { addFileIfNeeded(File(it)) }.toHashSet()

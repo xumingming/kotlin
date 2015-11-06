@@ -189,6 +189,7 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
 
         context.checkCanceled()
 
+        var updateLookupStorage = false
         val isJsModule = JpsUtils.isJsKotlinModule(chunk.representativeTarget())
         val changesInfo: ChangesInfo = when {
             isJsModule -> ChangesInfo.NO_CHANGES
@@ -196,7 +197,8 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
                 val generatedClasses = generatedFiles.filterIsInstance<GeneratedJvmClass>()
                 val info = updateKotlinIncrementalCache(compilationErrors, incrementalCaches, generatedFiles, chunk)
                 updateJavaMappings(chunk, compilationErrors, context, dirtyFilesHolder, filesToCompile, generatedClasses)
-                updateLookupStorage(chunk, lookupTracker, dataManager, dirtyFilesHolder, filesToCompile)
+                updateLookupStorage = true
+
                 info
             }
         }
@@ -214,7 +216,11 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
         }
 
         val caches = filesToCompile.keySet().map { incrementalCaches[it]!! }
-        processChanges(context, chunk, allCompiledFiles, caches, changesInfo)
+
+        processChanges(context, chunk, allCompiledFiles, dataManager, caches, changesInfo)
+
+        if (updateLookupStorage) updateLookupStorage(chunk, lookupTracker, dataManager, dirtyFilesHolder, filesToCompile)
+
         return ADDITIONAL_PASS_REQUIRED
     }
 
@@ -222,6 +228,7 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
             context: CompileContext,
             chunk: ModuleChunk,
             allCompiledFiles: MutableSet<File>,
+            dataManager: BuildDataManager,
             caches: List<IncrementalCacheImpl>,
             changesInfo: ChangesInfo
     ) {
@@ -259,7 +266,28 @@ public class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR
             }
         }
 
-        changesInfo.doProcessChanges()
+        fun ChangesInfo.doProcessChangesExperimental() {
+            val lookupStorage = dataManager.getStorage(KotlinDataContainerTarget, LookupStorageProvider)
+
+            for (change in changes) {
+                if (change is ChangeInfo.MembersChanged) {
+                    val files = change.names.flatMap { lookupStorage.get(LookupSymbol(it, change.fqName.asString())) }.map { File(it) }.filter { it !in allCompiledFiles }
+
+                    files.forEach {
+                        FSOperations.markDirty(context, CompilationRound.NEXT, it)
+                    }
+                }
+            }
+
+            caches.forEach { it.getFilesToReinline() } // force to clean dirty inline functions
+        }
+
+        if (IncrementalCompilation.isExperimental()) {
+            changesInfo.doProcessChangesExperimental()
+        }
+        else {
+            changesInfo.doProcessChanges()
+        }
     }
 
     private fun doCompileModuleChunk(
