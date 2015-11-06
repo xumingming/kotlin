@@ -800,7 +800,8 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
         if (operationType == KtTokens.PLUSPLUS || operationType == KtTokens.MINUSMINUS) {
             assert returnType != null : "returnType is null for " + resolutionResults.getResultingDescriptor();
             KotlinType receiverType = receiver.getType();
-            if (KotlinBuiltIns.isUnit(returnType)) {
+            boolean isUnit = KotlinBuiltIns.isUnit(returnType);
+            if (isUnit) {
                 context.trace.report(INC_DEC_SHOULD_NOT_RETURN_UNIT.on(operationSign));
             }
             else if (!KotlinTypeChecker.DEFAULT.isSubtypeOf(returnType, receiverType)) {
@@ -814,12 +815,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
             // x++ type is x type, but ++x type is x.inc() type
             DataFlowValue receiverValue = DataFlowValueFactory.createDataFlowValue(call.getExplicitReceiver(), contextWithExpectedType);
             if (expression instanceof KtPrefixExpression) {
-                if (KotlinBuiltIns.isUnit(returnType)) {
-                    result = ErrorUtils.createErrorType(components.builtIns.getUnit().getName().asString());
-                }
-                else {
-                    result = returnType;
-                }
+                result = isUnit ? ErrorUtils.createErrorType(components.builtIns.getUnit().getName().asString()) : returnType;
             }
             else {
                 result = receiverType;
