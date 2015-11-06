@@ -835,7 +835,10 @@ public class AsmUtil {
     }
 
     public static void dup(@NotNull InstructionAdapter v, @NotNull Type type) {
-        int size = type.getSize();
+        dup(v, type.getSize());
+    }
+
+    private static void dup(@NotNull InstructionAdapter v, int size) {
         if (size == 2) {
             v.dup2();
         }
@@ -844,6 +847,36 @@ public class AsmUtil {
         }
         else {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    public static void dup(@NotNull FrameMap frame, @NotNull InstructionAdapter v, @NotNull Type topOfStack, @NotNull Type afterTop) {
+        if (topOfStack.getSize() == 0 && afterTop.getSize() == 0) {
+            return;
+        }
+
+        if (topOfStack.getSize() == 0) {
+            dup(v, afterTop);
+        }
+        else if (afterTop.getSize() == 0) {
+            dup(v, topOfStack);
+        }
+        else if (topOfStack.getSize() == 1 && afterTop.getSize() == 1) {
+            dup(v, 2);
+        }
+        else {
+            int index = frame.enterTemp(topOfStack);
+            StackValue.Local local = StackValue.local(index, topOfStack);
+            local.store(StackValue.onStack(topOfStack), v, false);
+            dup(v, afterTop);
+            local.put(topOfStack, v);
+            if (afterTop.getSize() == 1) {
+                v.dup2X1();
+            }
+            else {
+                v.visitInsn(topOfStack.getSize() == 1 ? Opcodes.DUP_X2 : Opcodes.DUP2_X2);
+            }
+            frame.leaveTemp(topOfStack);
         }
     }
 

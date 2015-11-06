@@ -522,7 +522,7 @@ public abstract class StackValue {
             StackValue extensionReceiver = genReceiver(receiver, codegen, resolvedCall, callableMethod, callExtensionReceiver, true);
             Type type = CallReceiver.calcType(resolvedCall, dispatchReceiverParameter, extensionReceiverParameter, codegen.typeMapper, callableMethod, codegen.getState());
             assert type != null : "Could not map receiver type for " + resolvedCall;
-            return new CallReceiver(dispatchReceiver, extensionReceiver, type);
+            return new CallReceiver(dispatchReceiver, extensionReceiver, type, codegen);
         }
         return receiver;
     }
@@ -578,7 +578,7 @@ public abstract class StackValue {
     public static StackValue receiverWithoutReceiverArgument(StackValue receiverWithParameter) {
         if (receiverWithParameter instanceof CallReceiver) {
             CallReceiver callReceiver = (CallReceiver) receiverWithParameter;
-            return new CallReceiver(callReceiver.dispatchReceiver, none(), callReceiver.type);
+            return new CallReceiver(callReceiver.dispatchReceiver, none(), callReceiver.type, callReceiver.codegen);
         }
         return receiverWithParameter;
     }
@@ -771,12 +771,12 @@ public abstract class StackValue {
         private final boolean isGetter;
         private final ExpressionCodegen codegen;
         private final ArgumentGenerator argumentGenerator;
-        final List<ResolvedValueArgument> valueArguments;
+        private final List<ResolvedValueArgument> valueArguments;
         private final FrameMap frame;
         private final StackValue receiver;
         private final ResolvedCall<FunctionDescriptor> resolvedGetCall;
         private final ResolvedCall<FunctionDescriptor> resolvedSetCall;
-        DefaultCallMask mask;
+        private DefaultCallMask mask;
 
         public CollectionElementReceiver(
                 @NotNull Callable callable,
@@ -1349,15 +1349,18 @@ public abstract class StackValue {
     public static class CallReceiver extends StackValue {
         private final StackValue dispatchReceiver;
         private final StackValue extensionReceiver;
+        private final ExpressionCodegen codegen;
 
         public CallReceiver(
                 @NotNull StackValue dispatchReceiver,
                 @NotNull StackValue extensionReceiver,
-                @NotNull Type type
+                @NotNull Type type,
+                @NotNull ExpressionCodegen codegen
         ) {
             super(type, dispatchReceiver.canHaveSideEffects() || extensionReceiver.canHaveSideEffects());
             this.dispatchReceiver = dispatchReceiver;
             this.extensionReceiver = extensionReceiver;
+            this.codegen = codegen;
         }
 
         @Nullable
@@ -1423,6 +1426,11 @@ public abstract class StackValue {
 
             currentExtensionReceiver
                     .moveToTopOfStack(hasExtensionReceiver ? type : currentExtensionReceiver.type, v, dispatchReceiver.type.getSize());
+        }
+
+        @Override
+        public void dup(@NotNull InstructionAdapter v, boolean withReceiver) {
+            AsmUtil.dup(codegen.getFrameMap(), v, extensionReceiver.type, dispatchReceiver.type);
         }
     }
 
