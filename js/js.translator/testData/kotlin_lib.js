@@ -1014,9 +1014,9 @@
             this.start = start;
             this.end = end;
             this.first = start;
-            this.last = getProgressionFinalElement(start, end, increment);
-            this.startCode = this.first.charCodeAt(0);
-            this.endCode = this.last.charCodeAt(0);
+            this.startCode = start.charCodeAt(0);
+            this.endCode = getProgressionFinalElement(this.startCode, end.charCodeAt(0), increment);
+            this.last = String.fromCharCode(this.endCode);
             this.increment = increment;
             if (this.increment === 0)
                 throw new Kotlin.IllegalArgumentException('Increment must be non-zero');
