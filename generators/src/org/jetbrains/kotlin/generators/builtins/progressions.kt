@@ -55,18 +55,23 @@ class GenerateProgressions(out: PrintWriter) : BuiltInsSourceGenerator(out) {
                 """/**
  * A progression of values of type `$t`.
  */
-public open class $progression private constructor(
-        val first: $t,
-        val last: $t,
-        override val increment: $incrementType,
-        _dummy: Boolean
+public open class $progression(
+        start: $t,
+        endInclusive: $t,
+        override val increment: $incrementType
 ) : Progression<$t> /*, Iterable<$t> */ {
     init {
         $checkZero
     }
 
-    public constructor(start: $t, endInclusive: $t, increment: $incrementType) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.to$incrementType(), endInclusive.to$incrementType(), increment).to$t(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: $t = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: $t = kotlin.internal.getProgressionFinalElement(start.to$incrementType(), endInclusive.to$incrementType(), increment).to$t()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: $t get() = first
@@ -74,8 +79,8 @@ public open class $progression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: $t get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: $t = endInclusive
 
     override fun iterator(): ${t}Iterator = ${t}ProgressionIterator(first, last, increment)
 

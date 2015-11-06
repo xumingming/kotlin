@@ -19,10 +19,10 @@ fun ranges(): List<GenericFunction> {
         doc(RangesOfPrimitives) { "Returns a progression that goes over this range in reverse direction." }
         returns("TProgression")
         body(RangesOfPrimitives) {
-            "return TProgression(end, start, -ONE)"
+            "return TProgression(last, first, -ONE)"
         }
         body(ProgressionsOfPrimitives) {
-            "return TProgression(end, start, -increment)"
+            "return TProgression(last, first, -increment)"
         }
     }
 
@@ -35,10 +35,10 @@ fun ranges(): List<GenericFunction> {
         deprecate(Deprecation("This range implementation has unclear semantics and will be removed soon.", level = DeprecationLevel.WARNING))
         annotations("""@Suppress("DEPRECATION_ERROR")""")
         body(RangesOfPrimitives) {
-            "return TProgression(end, start, -ONE)"
+            "return TProgression(last, first, -ONE)"
         }
         body(ProgressionsOfPrimitives) {
-            "return TProgression(end, start, -increment)"
+            "return TProgression(last, first, -increment)"
         }
     }
 
@@ -53,13 +53,13 @@ fun ranges(): List<GenericFunction> {
         body(RangesOfPrimitives) {
             """
             checkStepIsPositive(step > 0, step)
-            return TProgression(start, end, step)
+            return TProgression(first, last, step)
             """
         }
         body(ProgressionsOfPrimitives) {
             """
             checkStepIsPositive(step > 0, step)
-            return TProgression(start, end, if (increment > 0) step else -step)
+            return TProgression(first, last, if (increment > 0) step else -step)
             """
         }
     }
@@ -77,7 +77,7 @@ fun ranges(): List<GenericFunction> {
         body(RangesOfPrimitives) {
             """
             checkStepIsPositive(step > 0, step)
-            return TProgression(start, end, step)
+            return TProgression(first, last, step)
             """
         }
         bodyForTypes(RangesOfPrimitives, PrimitiveType.Float, PrimitiveType.Double) {
@@ -90,7 +90,7 @@ fun ranges(): List<GenericFunction> {
         body(ProgressionsOfPrimitives) {
             """
             checkStepIsPositive(step > 0, step)
-            return TProgression(start, end, if (increment > 0) step else -step)
+            return TProgression(first, last, if (increment > 0) step else -step)
             """
         }
     }

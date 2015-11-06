@@ -392,42 +392,42 @@ public infix fun Short.downTo(to: Short): IntProgression {
  * Returns a progression that goes over the same range in the opposite direction with the same step.
  */
 public fun CharProgression.reversed(): CharProgression {
-    return CharProgression(end, start, -increment)
+    return CharProgression(last, first, -increment)
 }
 
 /**
  * Returns a progression that goes over the same range in the opposite direction with the same step.
  */
 public fun IntProgression.reversed(): IntProgression {
-    return IntProgression(end, start, -increment)
+    return IntProgression(last, first, -increment)
 }
 
 /**
  * Returns a progression that goes over the same range in the opposite direction with the same step.
  */
 public fun LongProgression.reversed(): LongProgression {
-    return LongProgression(end, start, -increment)
+    return LongProgression(last, first, -increment)
 }
 
 /**
  * Returns a progression that goes over this range in reverse direction.
  */
 public fun CharRange.reversed(): CharProgression {
-    return CharProgression(end, start, -1)
+    return CharProgression(last, first, -1)
 }
 
 /**
  * Returns a progression that goes over this range in reverse direction.
  */
 public fun IntRange.reversed(): IntProgression {
-    return IntProgression(end, start, -1)
+    return IntProgression(last, first, -1)
 }
 
 /**
  * Returns a progression that goes over this range in reverse direction.
  */
 public fun LongRange.reversed(): LongProgression {
-    return LongProgression(end, start, -1L)
+    return LongProgression(last, first, -1L)
 }
 
 /**
@@ -436,7 +436,7 @@ public fun LongRange.reversed(): LongProgression {
 @Deprecated("This range implementation has unclear semantics and will be removed soon.")
 @Suppress("DEPRECATION_ERROR")
 public fun ByteProgression.reversed(): ByteProgression {
-    return ByteProgression(end, start, -increment)
+    return ByteProgression(last, first, -increment)
 }
 
 /**
@@ -445,7 +445,7 @@ public fun ByteProgression.reversed(): ByteProgression {
 @Deprecated("This range implementation has unclear semantics and will be removed soon.")
 @Suppress("DEPRECATION_ERROR")
 public fun ShortProgression.reversed(): ShortProgression {
-    return ShortProgression(end, start, -increment)
+    return ShortProgression(last, first, -increment)
 }
 
 /**
@@ -454,7 +454,7 @@ public fun ShortProgression.reversed(): ShortProgression {
 @Deprecated("This range implementation has unclear semantics and will be removed soon.")
 @Suppress("DEPRECATION_ERROR")
 public fun ByteRange.reversed(): ByteProgression {
-    return ByteProgression(end, start, -1)
+    return ByteProgression(last, first, -1)
 }
 
 /**
@@ -463,7 +463,7 @@ public fun ByteRange.reversed(): ByteProgression {
 @Deprecated("This range implementation has unclear semantics and will be removed soon.")
 @Suppress("DEPRECATION_ERROR")
 public fun ShortRange.reversed(): ShortProgression {
-    return ShortProgression(end, start, -1)
+    return ShortProgression(last, first, -1)
 }
 
 /**
@@ -471,7 +471,7 @@ public fun ShortRange.reversed(): ShortProgression {
  */
 public infix fun CharProgression.step(step: Int): CharProgression {
     checkStepIsPositive(step > 0, step)
-    return CharProgression(start, end, if (increment > 0) step else -step)
+    return CharProgression(first, last, if (increment > 0) step else -step)
 }
 
 /**
@@ -479,7 +479,7 @@ public infix fun CharProgression.step(step: Int): CharProgression {
  */
 public infix fun IntProgression.step(step: Int): IntProgression {
     checkStepIsPositive(step > 0, step)
-    return IntProgression(start, end, if (increment > 0) step else -step)
+    return IntProgression(first, last, if (increment > 0) step else -step)
 }
 
 /**
@@ -487,7 +487,7 @@ public infix fun IntProgression.step(step: Int): IntProgression {
  */
 public infix fun LongProgression.step(step: Long): LongProgression {
     checkStepIsPositive(step > 0, step)
-    return LongProgression(start, end, if (increment > 0) step else -step)
+    return LongProgression(first, last, if (increment > 0) step else -step)
 }
 
 /**
@@ -495,7 +495,7 @@ public infix fun LongProgression.step(step: Long): LongProgression {
  */
 public infix fun CharRange.step(step: Int): CharProgression {
     checkStepIsPositive(step > 0, step)
-    return CharProgression(start, end, step)
+    return CharProgression(first, last, step)
 }
 
 /**
@@ -503,7 +503,7 @@ public infix fun CharRange.step(step: Int): CharProgression {
  */
 public infix fun IntRange.step(step: Int): IntProgression {
     checkStepIsPositive(step > 0, step)
-    return IntProgression(start, end, step)
+    return IntProgression(first, last, step)
 }
 
 /**
@@ -511,7 +511,7 @@ public infix fun IntRange.step(step: Int): IntProgression {
  */
 public infix fun LongRange.step(step: Long): LongProgression {
     checkStepIsPositive(step > 0, step)
-    return LongProgression(start, end, step)
+    return LongProgression(first, last, step)
 }
 
 /**
@@ -521,7 +521,7 @@ public infix fun LongRange.step(step: Long): LongProgression {
 @Suppress("DEPRECATION_ERROR")
 public infix fun ByteProgression.step(step: Int): ByteProgression {
     checkStepIsPositive(step > 0, step)
-    return ByteProgression(start, end, if (increment > 0) step else -step)
+    return ByteProgression(first, last, if (increment > 0) step else -step)
 }
 
 /**
@@ -531,7 +531,7 @@ public infix fun ByteProgression.step(step: Int): ByteProgression {
 @Suppress("DEPRECATION_ERROR")
 public infix fun ShortProgression.step(step: Int): ShortProgression {
     checkStepIsPositive(step > 0, step)
-    return ShortProgression(start, end, if (increment > 0) step else -step)
+    return ShortProgression(first, last, if (increment > 0) step else -step)
 }
 
 /**
@@ -541,7 +541,7 @@ public infix fun ShortProgression.step(step: Int): ShortProgression {
 @Suppress("DEPRECATION_ERROR")
 public infix fun ByteRange.step(step: Int): ByteProgression {
     checkStepIsPositive(step > 0, step)
-    return ByteProgression(start, end, step)
+    return ByteProgression(first, last, step)
 }
 
 /**
@@ -551,7 +551,7 @@ public infix fun ByteRange.step(step: Int): ByteProgression {
 @Suppress("DEPRECATION_ERROR")
 public infix fun ShortRange.step(step: Int): ShortProgression {
     checkStepIsPositive(step > 0, step)
-    return ShortProgression(start, end, step)
+    return ShortProgression(first, last, step)
 }
 
 /**

@@ -22,18 +22,23 @@ package kotlin
 /**
  * A progression of values of type `Byte`.
  */
-public open class ByteProgression private constructor(
-        val first: Byte,
-        val last: Byte,
-        override val increment: Int,
-        _dummy: Boolean
+public open class ByteProgression(
+        start: Byte,
+        endInclusive: Byte,
+        override val increment: Int
 ) : Progression<Byte> /*, Iterable<Byte> */ {
     init {
         if (increment == 0) throw IllegalArgumentException("Increment must be non-zero")
     }
 
-    public constructor(start: Byte, endInclusive: Byte, increment: Int) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toByte(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: Byte = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: Byte = kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toByte()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: Byte get() = first
@@ -41,8 +46,8 @@ public open class ByteProgression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: Byte get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: Byte = endInclusive
 
     override fun iterator(): ByteIterator = ByteProgressionIterator(first, last, increment)
 
@@ -62,18 +67,23 @@ public open class ByteProgression private constructor(
 /**
  * A progression of values of type `Char`.
  */
-public open class CharProgression private constructor(
-        val first: Char,
-        val last: Char,
-        override val increment: Int,
-        _dummy: Boolean
+public open class CharProgression(
+        start: Char,
+        endInclusive: Char,
+        override val increment: Int
 ) : Progression<Char> /*, Iterable<Char> */ {
     init {
         if (increment == 0) throw IllegalArgumentException("Increment must be non-zero")
     }
 
-    public constructor(start: Char, endInclusive: Char, increment: Int) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toChar(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: Char = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: Char = kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toChar()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: Char get() = first
@@ -81,8 +91,8 @@ public open class CharProgression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: Char get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: Char = endInclusive
 
     override fun iterator(): CharIterator = CharProgressionIterator(first, last, increment)
 
@@ -103,18 +113,23 @@ public open class CharProgression private constructor(
 /**
  * A progression of values of type `Short`.
  */
-public open class ShortProgression private constructor(
-        val first: Short,
-        val last: Short,
-        override val increment: Int,
-        _dummy: Boolean
+public open class ShortProgression(
+        start: Short,
+        endInclusive: Short,
+        override val increment: Int
 ) : Progression<Short> /*, Iterable<Short> */ {
     init {
         if (increment == 0) throw IllegalArgumentException("Increment must be non-zero")
     }
 
-    public constructor(start: Short, endInclusive: Short, increment: Int) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toShort(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: Short = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: Short = kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toShort()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: Short get() = first
@@ -122,8 +137,8 @@ public open class ShortProgression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: Short get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: Short = endInclusive
 
     override fun iterator(): ShortIterator = ShortProgressionIterator(first, last, increment)
 
@@ -143,18 +158,23 @@ public open class ShortProgression private constructor(
 /**
  * A progression of values of type `Int`.
  */
-public open class IntProgression private constructor(
-        val first: Int,
-        val last: Int,
-        override val increment: Int,
-        _dummy: Boolean
+public open class IntProgression(
+        start: Int,
+        endInclusive: Int,
+        override val increment: Int
 ) : Progression<Int> /*, Iterable<Int> */ {
     init {
         if (increment == 0) throw IllegalArgumentException("Increment must be non-zero")
     }
 
-    public constructor(start: Int, endInclusive: Int, increment: Int) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toInt(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: Int = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: Int = kotlin.internal.getProgressionFinalElement(start.toInt(), endInclusive.toInt(), increment).toInt()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: Int get() = first
@@ -162,8 +182,8 @@ public open class IntProgression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: Int get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: Int = endInclusive
 
     override fun iterator(): IntIterator = IntProgressionIterator(first, last, increment)
 
@@ -183,18 +203,23 @@ public open class IntProgression private constructor(
 /**
  * A progression of values of type `Long`.
  */
-public open class LongProgression private constructor(
-        val first: Long,
-        val last: Long,
-        override val increment: Long,
-        _dummy: Boolean
+public open class LongProgression(
+        start: Long,
+        endInclusive: Long,
+        override val increment: Long
 ) : Progression<Long> /*, Iterable<Long> */ {
     init {
         if (increment == 0L) throw IllegalArgumentException("Increment must be non-zero")
     }
 
-    public constructor(start: Long, endInclusive: Long, increment: Long) :
-        this(start, kotlin.internal.getProgressionFinalElement(start.toLong(), endInclusive.toLong(), increment).toLong(), increment, false)
+    /**
+     * The first element in the progression.
+     */
+    public val first: Long = start
+    /**
+     * The last element in the progression.
+     */
+    public val last: Long = kotlin.internal.getProgressionFinalElement(start.toLong(), endInclusive.toLong(), increment).toLong()
 
     @Deprecated("Use first instead.", ReplaceWith("first"))
     public override val start: Long get() = first
@@ -202,8 +227,8 @@ public open class LongProgression private constructor(
     /**
      * The end value of the progression (inclusive).
      */
-    @Deprecated("Use last instead.", ReplaceWith("last"))
-    public override val end: Long get() = last
+    @Deprecated("Use 'last' property instead.")
+    public override val end: Long = endInclusive
 
     override fun iterator(): LongIterator = LongProgressionIterator(first, last, increment)
 
