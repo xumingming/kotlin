@@ -229,7 +229,13 @@ public open class KtLightClassForExplicitDeclaration(
     override fun hashCode(): Int = classFqName.hashCode()
 
     override fun getContainingClass(): PsiClass? {
-        if (classOrObject.parent === classOrObject.containingFile) return null
+        if (classOrObject.isTopLevel()) return null
+
+        val containingClassOrObject = (classOrObject.parent as? KtClassBody)?.parent as? KtClassOrObject
+        if (containingClassOrObject != null) {
+            return create(containingClassOrObject)
+        }
+
         return super.getContainingClass()
     }
 
@@ -363,6 +369,12 @@ public open class KtLightClassForExplicitDeclaration(
                 if (declaration != null) create(declaration, it) else null
             }
             .filterNotNull()
+        //        val delegatesMap = delegate?.innerClasses?.groupBy { it.name }
+        //        return classOrObject.declarations.filterIsInstance<KtClassOrObject>().map {
+        //            val delegate = delegatesMap?.get(it.name)?.firstOrNull()
+        //
+        //            KtLightClassForExplicitDeclaration.create(it, delegate)
+        //        }.filterNotNull()
     }
 
     override fun getUseScope(): SearchScope = getOrigin().useScope
