@@ -124,7 +124,7 @@ class GeneratePrimitives(out: PrintWriter) : BuiltInsSourceGenerator(out) {
                 maxByDomainCapacity(thisKind, otherKind)
                 .let { if (it == PrimitiveType.CHAR) it else maxByDomainCapacity(it, PrimitiveType.INT) }
             if (returnType == PrimitiveType.DOUBLE || returnType == PrimitiveType.FLOAT)
-                out.println("""@Deprecated("This range implementation has unclear semantics and will be removed soon.")""")
+                continue
             out.println("     /** Creates a range from this value to the specified [other] value. */")
             out.println("    public operator fun rangeTo(other: ${otherKind.capitalized}): ${returnType.capitalized}Range")
         }

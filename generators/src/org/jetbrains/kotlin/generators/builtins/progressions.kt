@@ -166,7 +166,7 @@ public open class $progression(
     override fun generateBody() {
         for (kind in ProgressionKind.values) {
             if (kind == FLOAT || kind == DOUBLE)
-                generateFloatingPointBody(kind)
+                continue
             else
                 generateDiscreteBody(kind)
         }
