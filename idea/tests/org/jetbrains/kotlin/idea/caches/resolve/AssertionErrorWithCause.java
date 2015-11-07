@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.generators.tests.generator;
+package org.jetbrains.kotlin.idea.caches.resolve;
 
-import org.jetbrains.annotations.Nullable;
+public class AssertionErrorWithCause extends AssertionError {
+    public AssertionErrorWithCause(String detailMessage, Throwable cause) {
+        super(detailMessage);
 
-public interface TestEntityModel {
-    String getName();
-
-    @Nullable
-    String getDataString();
+        initCause(cause);
+    }
 }
