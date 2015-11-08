@@ -19,6 +19,8 @@ package org.jetbrains.kotlin.utils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+
 public class WrappedValues {
     private static final Object NULL_VALUE = new Object() {
         @Override
@@ -74,10 +76,34 @@ public class WrappedValues {
     @Nullable
     public static <V> V unescapeThrowable(@Nullable Object value) {
         if (value instanceof ThrowableWrapper) {
-            throw ExceptionUtilsKt.rethrow(((ThrowableWrapper) value).getThrowable());
+            Throwable originThrowable = ((ThrowableWrapper) value).getThrowable();
+
+            Throwable rethrowAsANew = rethrowAsANew(originThrowable);
+            if (rethrowAsANew != null) {
+                throw ExceptionUtilsKt.rethrow(rethrowAsANew);
+            }
+
+            throw ExceptionUtilsKt.rethrow(originThrowable);
         }
 
         //noinspection unchecked
         return (V) value;
+    }
+
+    @Nullable
+    private static Throwable rethrowAsANew(Throwable throwable) {
+        if (!throwable.getClass().getName().equals("com.intellij.openapi.progress.ProcessCanceledException")) {
+            return null;
+        }
+
+        Class<? extends Throwable> processCancelClass = throwable.getClass();
+        try {
+            Constructor<? extends Throwable> constructor = processCancelClass.getConstructor(Throwable.class);
+            return constructor.newInstance(throwable);
+        }
+        catch (Exception e) {
+            // One of reflection exceptions happened. Ignore it as it will lead to rethrowing origin exception.
+            return null;
+        }
     }
 }
